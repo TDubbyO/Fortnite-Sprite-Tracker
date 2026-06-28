@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUNNERS Sprite Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    .variant-btn {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: 2px solid;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+    }
+    .variant-btn:active { transform: scale(0.95); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+ 
+  <script>
+    const spriteTypes = [
+      { name: 'Water', color: '#3b82f6', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Earth', color: '#16a34a', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Fire', color: '#ef4444', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Duck', color: '#facc15', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Ghost', color: '#cbd5e1', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Dream', color: '#a855f7', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Demon', color: '#b91c1c', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Punk', color: '#db2777', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'King', color: '#b45309', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Burnt Peanut', color: '#78350f', variants: ['Base'] },
+      { name: 'Zero Point', color: '#6d28d9', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Fishy', color: '#f97316', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Striker', color: '#000000', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Aura', color: '#ffffff', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Boss', color: '#dc2626', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+      { name: 'Grim', color: '#312e81', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+    ];
+ 
+    const variantColors = { 'Base': '#94a3b8', 'Gold': '#eab308', 'Gummy': '#ec4899', 'Galaxy': '#6366f1' };
+ 
+    let state = {
+      collected: JSON.parse(localStorage.getItem('spriteCollected') || '[]'),
+      mastered: JSON.parse(localStorage.getItem('spriteMastered') || '[]'),
+      isDark: JSON.parse(localStorage.getItem('spriteTrackerTheme') || 'true'),
+      mythicModeActive: JSON.parse(localStorage.getItem('mythicModeActive') || 'false'),
+      showShareView: false,
+      showMythicPopup: false,
+    };
+ 
+    const getTotalItems = () => spriteTypes.reduce((sum, s) => sum + s.variants.length, 0);
+    const getTotalCollected = () => state.collected.length;
+    const getTotalMastered = () => state.mastered.length;
+    const getIsMythicUnlocked = () => getTotalMastered() === getTotalItems() && getTotalItems() > 0;
+    const getShowMythicTheme = () => getIsMythicUnlocked() && state.mythicModeActive;
+ 
+    const save = () => {
+      localStorage.setItem('spriteCollected', JSON.stringify(state.collected));
+      localStorage.setItem('spriteMastered', JSON.stringify(state.mastered));
+      localStorage.setItem('spriteTrackerTheme', JSON.stringify(state.isDark));
+      localStorage.setItem('mythicModeActive', JSON.stringify(state.mythicModeActive));
+    };
+ 
+    const toggleVariant = (spriteName, variant) => {
+      const id = `${spriteName}-${variant}`;
+      const idx = state.collected.indexOf(id);
+      if (idx > -1) state.collected.splice(idx, 1);
+      else state.collected.push(id);
+      save();
+      render();
+    };
+ 
+    const handleLongPress = (spriteName, variant) => {
+      const id = `${spriteName}-${variant}`;
+      const isCollected = state.collected.includes(id);
+      const isMastered = state.mastered.includes(id);
+ 
+      if (!isCollected) {
+        state.collected.push(id);
+        state.mastered.push(id);
+      } else if (!isMastered) {
+        state.mastered.push(id);
+      } else {
+        state.mastered = state.mastered.filter(s => s !== id);
+      }
+ 
+      if (navigator.vibrate) navigator.vibrate(60);
+      if (getIsMythicUnlocked() && !localStorage.getItem('mythicAchieved')) {
+        state.showMythicPopup = true;
+        localStorage.setItem('mythicAchieved', 'true');
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+      }
+ 
+      save();
+      render();
+    };
+ 
+    let pressTimeout;
+    window.startPress = (el, spriteName, variant) => {
+      pressTimeout = setTimeout(() => handleLongPress(spriteName, variant), 500);
+    };
+    window.endPress = () => clearTimeout(pressTimeout);
+ 
+    const createPie = (collected, total, isDark, showPercent) => {
+      const percentage = total > 0 ? (collected / total) * 100 : 0;
+      const radius = 35;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference * (1 - percentage / 100);
+      const label = showPercent ? `${Math.round(percentage)}%` : `${collected}/${total}`;
+      const color = getShowMythicTheme() ? '#fbbf24' : '#06b6d4';
+ 
+      return `<svg width="80" height="80" viewBox="0 0 80 80" style="margin: 0 auto; display: block;">
+        <circle cx="40" cy="40" r="35" fill="${color}" opacity="0.2" />
+        <circle cx="40" cy="40" r="35" fill="none" stroke="${color}" stroke-width="14" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" style="transition: all 0.3s;" />
+        <text x="40" y="43" text-anchor="middle" font-size="22" font-weight="bold" fill="${color}">${label}</text>
+        ${percentage > 0 ? `<text x="40" y="43" text-anchor="middle" font-size="22" font-weight="bold" fill="${isDark ? 'white' : '#1e293b'}" clip-path="url(#pie-clip)">${label}</text>` : ''}
+      </svg>`;
+    };
+ 
+    const render = () => {
+      const isDark = state.isDark;
+      const showMythic = getShowMythicTheme();
+      const totalCollected = getTotalCollected();
+      const totalMastered = getTotalMastered();
+      const totalItems = getTotalItems();
+      const totalPercent = Math.round((totalCollected / totalItems) * 100);
+      const isMythicUnlocked = getIsMythicUnlocked();
+ 
+      const bgClass = isDark ? (showMythic ? 'from-amber-950 via-purple-900 to-slate-900' : 'from-slate-950 via-purple-950 to-slate-950') : (showMythic ? 'from-amber-50 via-purple-100 to-slate-50' : 'from-slate-50 via-purple-50 to-slate-50');
+      const textClass = isDark ? 'text-slate-200' : 'text-slate-800';
+      const cardBg = isDark ? 'bg-slate-800/40' : 'bg-white/60';
+ 
+      if (state.showShareView) {
+        let html = `<div class="min-h-screen bg-gradient-to-br ${bgClass} p-2"><div class="max-w-6xl mx-auto">
+          <button onclick="state.showShareView = false; window.render();" class="${isDark ? 'bg-slate-800/60 text-slate-300' : 'bg-slate-200/60 text-slate-700'} mb-1 px-2 py-1 text-sm rounded-lg font-semibold">← Back</button>
+          <h1 class="text-2xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400">RUNNERS</h1>
+          <p class="${isDark ? 'text-slate-400' : 'text-slate-600'} text-xs mb-4">${totalPercent}% • ${totalCollected}/${totalItems}</p>
+          <div class="grid grid-cols-4 gap-1">`;
+ 
+        spriteTypes.forEach(sprite => {
+          html += `<div class="${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/60 border-slate-300/50'} rounded-lg p-2 border text-center">
+            <h3 class="${isDark ? 'text-white' : 'text-slate-800'} font-bold text-xs mb-1">${sprite.name}</h3>
+            <div class="grid grid-cols-2 gap-1">`;
+          sprite.variants.forEach(variant => {
+            const itemId = `${sprite.name}-${variant}`;
+            const isCollected = state.collected.includes(itemId);
+            const varColor = variantColors[variant];
+            html += `<div style="aspect-ratio: 1; border: 2px solid ${varColor}; background-color: ${isCollected ? varColor : 'transparent'}; border-radius: 0.25rem; opacity: ${isCollected ? 1 : 0.6};"></div>`;
+          });
+          html += `</div></div>`;
+        });
+ 
+        html += `</div></div></div>`;
+        document.getElementById('app').innerHTML = html;
+        return;
+      }
+ 
+      let html = `<div class="min-h-screen bg-gradient-to-br ${bgClass} p-8"><div class="max-w-6xl mx-auto">
+        <div class="${isDark ? 'bg-slate-800/30 border-slate-700/30' : 'bg-slate-200/50 border-slate-300/50'} mb-8 text-center text-sm p-3 rounded-lg border">
+          <p class="${isDark ? 'text-slate-300' : 'text-slate-700'}"><span class="font-semibold text-cyan-400">Tap</span> to collect • <span class="font-semibold text-amber-400">long press</span> to master</p>
+          <p class="${isDark ? 'text-slate-400' : 'text-slate-600'} mt-2">Screenshot your collection with <span class="font-semibold text-cyan-400">↑</span></p>
+        </div>
+        <div class="mb-12 flex items-center justify-between">
+          <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r ${showMythic ? 'from-amber-300 to-yellow-500' : 'from-cyan-400 to-pink-400'}">${showMythic ? '✨ MYTHIC ✨' : 'RUNNERS'}</h1>
+          <div class="flex gap-3">
+            ${isMythicUnlocked ? `<button onclick="state.mythicModeActive = !state.mythicModeActive; window.save(); window.render();" class="${state.mythicModeActive ? (isDark ? 'bg-amber-900/60 text-amber-400' : 'bg-amber-200/60 text-amber-700') : (isDark ? 'bg-slate-800/60 text-slate-400' : 'bg-slate-200/60 text-slate-600')} p-3 rounded-full transition-all">⭐</button>` : ''}
+            <button onclick="state.showShareView = true; window.render();" class="${isDark ? 'bg-slate-800/60 text-cyan-400' : 'bg-slate-200/60 text-cyan-600'} p-3 rounded-full transition-all">↑</button>
+            <button onclick="state.isDark = !state.isDark; window.save(); window.render();" class="${isDark ? 'bg-slate-800/60 text-yellow-400' : 'bg-slate-200/60 text-slate-700'} p-3 rounded-full transition-all">${isDark ? '☀️' : '🌙'}</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 p-8 rounded-2xl border ${cardBg}">
+          <div class="flex flex-col items-center gap-4"><div class="text-xl font-black ${textClass}">COLLECTED</div>${createPie(totalCollected, totalItems, isDark)}</div>
+          <div class="flex flex-col items-center gap-4"><div class="text-xl font-black ${textClass}">MASTERED</div>${createPie(totalMastered, totalItems, isDark)}</div>
+          <div class="flex flex-col items-center gap-4"><div class="text-xl font-black ${textClass}">PROGRESS</div>${createPie(totalCollected, totalItems, isDark, true)}</div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">`;
+ 
+      spriteTypes.forEach(sprite => {
+        html += `<div class="rounded-xl p-4 border ${cardBg} border-slate-700/50">
+          <h3 class="${isDark ? 'text-white' : 'text-slate-800'} font-bold text-lg mb-3">${sprite.name}</h3>
+          <div class="grid grid-cols-2 gap-2">`;
+ 
+        sprite.variants.forEach(variant => {
+          const itemId = `${sprite.name}-${variant}`;
+          const isCollected = state.collected.includes(itemId);
+          const isMastered = state.mastered.includes(itemId);
+          const varColor = variantColors[variant];
+ 
+          html += `<button class="variant-btn" style="border-color: ${varColor}; background-color: ${isCollected ? varColor : 'transparent'}; opacity: ${isCollected ? 1 : 0.4}; color: ${isCollected ? 'white' : isDark ? '#94a3b8' : '#666'};" onmousedown="window.startPress(this, '${sprite.name}', '${variant}')" ontouchstart="window.startPress(this, '${sprite.name}', '${variant}')" onmouseup="window.endPress()" ontouchend="window.endPress()" onmouseleave="window.endPress()" onclick="if(event.detail === 1) window.toggleVariant('${sprite.name}', '${variant}');">${variant}${isMastered ? ' ★' : ''}</button>`;
+        });
+ 
+        html += `</div></div>`;
+      });
+ 
+      html += `</div></div>`;
+ 
+      if (state.showMythicPopup) {
+        html += `<div class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div class="bg-gradient-to-br from-amber-500 to-yellow-500 p-12 rounded-3xl text-center">
+            <h2 class="text-5xl font-black text-white mb-4">✨ MYTHIC ✨</h2>
+            <p class="text-2xl text-white mb-8">All 61 Sprites Mastered!</p>
+            <button onclick="state.showMythicPopup = false; window.render();" class="px-8 py-3 bg-white text-amber-900 rounded-xl font-bold text-lg">Celebrate!</button>
+          </div>
+        </div>`;
+      }
+ 
+      html += `</div>`;
+      document.getElementById('app').innerHTML = html;
+    };
+ 
+    window.render = render;
+    window.save = save;
+    window.toggleVariant = toggleVariant;
+ 
+    render();
+  </script>
+</body>
+</html>
+ 
