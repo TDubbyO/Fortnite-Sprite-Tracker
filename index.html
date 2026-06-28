@@ -4,30 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fortnite RUNNERS Sprite Tracker</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <style>
-        @keyframes sparkle {
-            0% { opacity: 1; transform: scale(1) translateY(0); }
-            100% { opacity: 0; transform: scale(0) translateY(-20px); }
-        }
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        @keyframes sparkle { 0% { opacity: 1; transform: scale(1) translateY(0); } 100% { opacity: 0; transform: scale(0) translateY(-20px); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .dark-bg { background: linear-gradient(to bottom right, #0f172a, #1e1b4b, #0f172a); color: #e2e8f0; min-height: 100vh; }
+        .light-bg { background: linear-gradient(to bottom right, #f8fafc, #f1e5e4, #f8fafc); color: #1e293b; min-height: 100vh; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+        .header { margin-bottom: 3rem; }
+        .title { font-size: 3.5rem; font-weight: 900; background: linear-gradient(to right, #06b6d4, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+        .subtitle { font-size: 1.125rem; opacity: 0.7; margin-bottom: 2rem; }
+        .btn-group { display: flex; gap: 0.75rem; margin-bottom: 3rem; }
+        .btn { padding: 0.75rem; border-radius: 9999px; border: none; cursor: pointer; transition: all 0.3s; font-size: 1rem; }
+        .btn-dark { background: rgba(51, 65, 85, 0.6); color: #60a5fa; }
+        .btn-dark:hover { background: rgba(30, 41, 59, 0.8); }
+        .btn-light { background: rgba(203, 213, 225, 0.6); color: #3b82f6; }
+        .btn-light:hover { background: rgba(148, 163, 184, 0.6); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .stat-box { padding: 2rem; border-radius: 1rem; border: 1px solid rgba(100, 116, 139, 0.3); }
+        .dark-stat { background: rgba(30, 41, 59, 0.4); }
+        .light-stat { background: rgba(255, 255, 255, 0.6); }
+        .stat-label { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; opacity: 0.8; }
+        .sprite-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .sprite-card { padding: 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(100, 116, 139, 0.3); position: relative; }
+        .dark-card { background: rgba(30, 41, 59, 0.4); }
+        .light-card { background: rgba(255, 255, 255, 0.6); }
+        .sprite-name { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
+        .variant-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem; }
+        .variant-btn { padding: 0.75rem; border-radius: 0.5rem; border: 2px solid; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 0.9rem; color: white; }
+        .variant-btn:active { transform: scale(0.95); }
+        .instructions { padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; font-size: 0.875rem; border: 1px solid rgba(100, 116, 139, 0.3); }
+        .dark-instructions { background: rgba(30, 41, 59, 0.3); }
+        .light-instructions { background: rgba(203, 213, 225, 0.3); }
+        svg { max-width: 100%; height: auto; }
+        .progress-circle { width: 80px; height: 80px; }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .share-sprite { padding: 1rem; border-radius: 0.5rem; text-align: center; font-size: 0.75rem; }
+        .share-variants { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem; }
+        .share-variant { width: 20px; height: 20px; border-radius: 0.25rem; border: 2px solid; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        const { Moon, Sun, Star } = lucide;
         const spriteTypes = [
             { name: 'Water', color: '#3b82f6', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Earth', color: '#16a34a', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
@@ -46,224 +70,177 @@
             { name: 'Boss', color: '#dc2626', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Grim', color: '#312e81', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
         ];
-        const FilledPie = ({ collected, total, radius, color, name, isDark, showPercentage }) => {
+ 
+        const FilledPie = ({ collected, total, radius, color, isDark }) => {
             const percentage = total > 0 ? (collected / total) * 100 : 0;
             const circumference = 2 * Math.PI * radius;
             const strokeDashoffset = circumference * (1 - percentage / 100);
-            const clipPathId = `pieMask-${name}-${color}-${collected}-${total}-${radius}`;
+            const id = `pie-${Math.random()}`;
             return (
-                <svg width={radius * 2 + 10} height={radius * 2 + 10} viewBox={`0 0 ${radius * 2 + 10} ${radius * 2 + 10}`}>
-                    <defs>
-                        <clipPath id={clipPathId}>
-                            <circle cx={radius + 5} cy={radius + 5} r={radius} />
-                        </clipPath>
-                    </defs>
-                    <circle cx={radius + 5} cy={radius + 5} r={radius} fill={color} opacity="0.3" />
-                    <circle cx={radius + 5} cy={radius + 5} r={radius} fill="none" stroke={color} strokeWidth={radius * 0.4} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s ease' }} />
-                    <text x={radius + 5} y={radius + 7} textAnchor="middle" fontSize={radius * 0.6} fontWeight="bold" fill={color}>{showPercentage ? `${Math.round(percentage)}%` : `${collected}/${total}`}</text>
-                    {percentage > 0 && <text x={radius + 5} y={radius + 7} textAnchor="middle" fontSize={radius * 0.6} fontWeight="bold" fill={isDark ? 'white' : '#1e293b'} clipPath={`url(#${clipPathId})`}>{showPercentage ? `${Math.round(percentage)}%` : `${collected}/${total}`}</text>}
+                <svg width={radius * 2 + 20} height={radius * 2 + 20} viewBox={`0 0 ${radius * 2 + 20} ${radius * 2 + 20}`}>
+                    <defs><clipPath id={id}><circle cx={radius + 10} cy={radius + 10} r={radius} /></clipPath></defs>
+                    <circle cx={radius + 10} cy={radius + 10} r={radius} fill={color} opacity="0.2" />
+                    <circle cx={radius + 10} cy={radius + 10} r={radius} fill="none" stroke={color} strokeWidth={radius * 0.3} strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s' }} />
+                    <text x={radius + 10} y={radius + 13} textAnchor="middle" fontSize={radius * 0.7} fontWeight="bold" fill={color}>{Math.round(percentage)}%</text>
+                    {percentage > 0 && <text x={radius + 10} y={radius + 13} textAnchor="middle" fontSize={radius * 0.7} fontWeight="bold" fill={isDark ? 'white' : '#1e293b'} clipPath={`url(#${id})`}>{Math.round(percentage)}%</text>}
                 </svg>
             );
         };
-        const CircleProgress = ({ collected, total, radius, color, isDark }) => {
-            const percentage = (collected / total) * 100;
-            const circumference = 2 * Math.PI * radius;
-            const strokeDashoffset = circumference * (1 - percentage / 100);
-            return (
-                <svg width={radius * 2} height={radius * 2} viewBox={`0 0 ${radius * 2} ${radius * 2}`}>
-                    <circle cx={radius} cy={radius} r={radius - 4} fill="none" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="2" opacity="0.3" />
-                    <circle cx={radius} cy={radius} r={radius - 4} fill="none" stroke={color} strokeWidth="2" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s ease', transform: `rotate(-90deg)`, transformOrigin: `${radius}px ${radius}px` }} />
-                    <text x={radius} y={radius + 2} textAnchor="middle" fontSize={radius * 0.5} fontWeight="bold" fill={color}>{collected}/{total}</text>
-                </svg>
-            );
-        };
-        const Sparkles = () => {
-            const particles = Array.from({ length: 30 });
-            return (
-                <div className="absolute inset-0 pointer-events-none">
-                    {particles.map((_, i) => <div key={i} className="absolute w-1 h-1 bg-white rounded-full" style={{ left: Math.random() * 100 + '%', top: Math.random() * 100 + '%', animation: `sparkle ${Math.random() * 2 + 1}s ease-out forwards` }} />)}
-                </div>
-            );
-        };
+ 
         function SpriteTracker() {
-            const [collected, setCollected] = useState(() => {
-                const saved = localStorage.getItem('spriteCollected');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [mastered, setMastered] = useState(() => {
-                const saved = localStorage.getItem('spriteMastered');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [unlocks, setUnlocks] = useState(() => {
-                const saved = localStorage.getItem('spriteUnlocks');
-                return saved ? JSON.parse(saved) : { spriteMasteries: [], mythic: false };
-            });
-            const [isDark, setIsDark] = useState(() => {
-                const saved = localStorage.getItem('spriteTrackerTheme');
-                return saved ? JSON.parse(saved) : true;
-            });
-            const [mythicModeActive, setMythicModeActive] = useState(() => {
-                const saved = localStorage.getItem('mythicModeActive');
-                return saved ? JSON.parse(saved) : false;
-            });
-            const [showMythicPopup, setShowMythicPopup] = useState(false);
-            const [showShareView, setShowShareView] = useState(false);
-            const longPressTriggered = useRef(false);
+            const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('spriteCollected') || '[]'));
+            const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('spriteMastered') || '[]'));
+            const [isDark, setIsDark] = useState(() => JSON.parse(localStorage.getItem('isDark') || 'true'));
+            const [showShare, setShowShare] = useState(false);
+            const longPress = useRef(false);
+ 
             useEffect(() => { localStorage.setItem('spriteCollected', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('spriteMastered', JSON.stringify(mastered)); }, [mastered]);
-            useEffect(() => { localStorage.setItem('spriteTrackerTheme', JSON.stringify(isDark)); }, [isDark]);
-            useEffect(() => { localStorage.setItem('mythicModeActive', JSON.stringify(mythicModeActive)); }, [mythicModeActive]);
-            useEffect(() => {
-                const totalItems = spriteTypes.reduce((sum, s) => sum + s.variants.length, 0);
-                const isMythicUnlocked = mastered.length === totalItems && totalItems > 0;
-                if (isMythicUnlocked && !unlocks.mythic) {
-                    setShowMythicPopup(true);
-                    setUnlocks({ ...unlocks, mythic: true });
-                    localStorage.setItem('spriteUnlocks', JSON.stringify({ ...unlocks, mythic: true }));
-                    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-                }
-            }, [mastered]);
+            useEffect(() => { localStorage.setItem('isDark', JSON.stringify(isDark)); }, [isDark]);
+ 
             const totalItems = spriteTypes.reduce((sum, s) => sum + s.variants.length, 0);
             const totalCollected = collected.length;
             const totalMastered = mastered.length;
-            const isMythicUnlocked = unlocks.mythic;
-            const showMythicTheme = isMythicUnlocked && mythicModeActive;
-            const totalCollectionPercent = Math.round((totalCollected / totalItems) * 100);
+            const totalPercent = Math.round((totalCollected / totalItems) * 100);
+ 
             const toggleVariant = (spriteName, variant) => {
                 const id = `${spriteName}-${variant}`;
                 setCollected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
             };
+ 
             const handleLongPress = (spriteName, variant) => {
                 const id = `${spriteName}-${variant}`;
                 const isCollected = collected.includes(id);
                 const isMastered = mastered.includes(id);
+                
                 if (!isCollected) {
                     setCollected(prev => [...prev, id]);
                     setMastered(prev => [...prev, id]);
-                    if (navigator.vibrate) navigator.vibrate(60);
                 } else if (!isMastered) {
                     setMastered(prev => [...prev, id]);
-                    if (navigator.vibrate) navigator.vibrate(60);
                 } else {
                     setMastered(prev => prev.filter(s => s !== id));
-                    if (navigator.vibrate) navigator.vibrate(30);
                 }
             };
+ 
             const handleTouchStart = (e, spriteName, variant) => {
-                longPressTriggered.current = false;
+                longPress.current = false;
                 const timeout = setTimeout(() => {
-                    longPressTriggered.current = true;
+                    longPress.current = true;
                     handleLongPress(spriteName, variant);
                 }, 500);
                 e.currentTarget.pressTimeout = timeout;
             };
+ 
             const handleTouchEnd = (e, spriteName, variant) => {
                 clearTimeout(e.currentTarget.pressTimeout);
-                if (!longPressTriggered.current) toggleVariant(spriteName, variant);
+                if (!longPress.current) toggleVariant(spriteName, variant);
             };
-            const theme = isDark ? {
-                bg: showMythicTheme ? 'from-amber-950 via-purple-900 to-slate-900' : 'from-slate-950 via-purple-950 to-slate-950',
-                text: 'text-slate-200',
-                textMuted: 'text-slate-300',
-                spriteNameColor: 'text-white',
-                cardBg: 'bg-slate-800/40',
-                cardBorder: 'border-slate-700/50',
-                statsBg: showMythicTheme ? 'bg-gradient-to-r from-amber-500/10 to-yellow-500/10' : 'bg-slate-800/40',
-                statsBorder: showMythicTheme ? 'border-amber-500/30' : 'border-slate-700/50',
-                labelColor: 'text-slate-200',
-                instructionsBg: 'bg-slate-800/30',
-                instructionsBorder: 'border-slate-700/30',
-                instructionsText: 'text-slate-300',
-            } : {
-                bg: showMythicTheme ? 'from-amber-50 via-purple-100 to-slate-50' : 'from-slate-50 via-purple-50 to-slate-50',
-                text: 'text-slate-800',
-                textMuted: 'text-slate-700',
-                spriteNameColor: 'text-slate-800',
-                cardBg: 'bg-white/60',
-                cardBorder: 'border-slate-300/50',
-                statsBg: showMythicTheme ? 'bg-gradient-to-r from-amber-100/50 to-yellow-100/50' : 'bg-slate-100/60',
-                statsBorder: showMythicTheme ? 'border-amber-300/50' : 'border-slate-300/50',
-                labelColor: 'text-slate-700',
-                instructionsBg: 'bg-slate-200/50',
-                instructionsBorder: 'border-slate-300/50',
-                instructionsText: 'text-slate-700',
-            };
-            if (showShareView) {
+ 
+            const bgClass = isDark ? 'dark-bg' : 'light-bg';
+            const cardClass = isDark ? 'dark-card' : 'light-card';
+            const statClass = isDark ? 'dark-stat' : 'light-stat';
+            const instructClass = isDark ? 'dark-instructions' : 'light-instructions';
+ 
+            if (showShare) {
                 return (
-                    <div className={`min-h-screen bg-gradient-to-br ${theme.bg} p-2 transition-all duration-500 flex flex-col`}>
-                        <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full">
-                            <div className="mb-2">
-                                <button onClick={() => setShowShareView(false)} className={`mb-1 px-2 py-1 text-sm rounded-lg font-semibold transition-all ${isDark ? 'bg-slate-800/60 text-slate-300' : 'bg-slate-200/60 text-slate-700'}`}>← Back</button>
-                                <h1 className={`text-2xl md:text-3xl font-black mb-1 text-transparent bg-clip-text bg-gradient-to-r ${showMythicTheme ? 'from-amber-300 to-yellow-500' : 'from-cyan-400 to-pink-400'}`}>RUNNERS</h1>
-                                <p className={`text-xs md:text-sm ${showMythicTheme ? 'text-amber-200' : theme.textMuted}`}>{totalCollectionPercent}% • {totalCollected}/{totalItems}</p>
-                            </div>
-                            <div className="grid grid-cols-4 md:grid-cols-4 gap-1 flex-1">
+                    <div className={bgClass}>
+                        <div className="container">
+                            <button onClick={() => setShowShare(false)} style={{ background: 'rgba(100, 116, 139, 0.5)', color: isDark ? '#e2e8f0' : '#1e293b', padding: '0.5rem 1rem', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', marginBottom: '1rem' }}>← Back</button>
+                            <h1 style={{ fontSize: '2.25rem', fontWeight: 900, marginBottom: '0.5rem', background: 'linear-gradient(to right, #06b6d4, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RUNNERS</h1>
+                            <p style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1.5rem' }}>{totalPercent}% • {totalCollected}/{totalItems}</p>
+                            <div className="share-grid">
                                 {spriteTypes.map(sprite => (
-                                    <div key={sprite.name} className={`rounded-lg p-2 border text-center ${isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white/60 border-slate-300/50'}`}>
-                                        <h3 className={`font-bold text-xs mb-1 leading-tight ${theme.spriteNameColor}`}>{sprite.name}</h3>
-                                        <div className="grid grid-cols-2 gap-1">
-                                            {sprite.variants.map(variant => {
-                                                const itemId = `${sprite.name}-${variant}`;
-                                                const isCollected = collected.includes(itemId);
-                                                const variantColors = { 'Base': '#94a3b8', 'Gold': '#eab308', 'Gummy': '#ec4899', 'Galaxy': '#6366f1' };
-                                                const variantColor = variantColors[variant] || '#94a3b8';
-                                                return <div key={variant} className="p-1 rounded transition-all" style={{ aspectRatio: '1', border: `2px solid ${variantColor}`, backgroundColor: isCollected ? variantColor : 'transparent', opacity: isCollected ? 1 : 0.6 }} />;
+                                    <div key={sprite.name} className={`share-sprite ${cardClass}`}>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>{sprite.name}</div>
+                                        <div className="share-variants">
+                                            {sprite.variants.map(v => {
+                                                const id = `${sprite.name}-${v}`;
+                                                const isCol = collected.includes(id);
+                                                const colors = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                                return <div key={v} className="share-variant" style={{ borderColor: colors[v], backgroundColor: isCol ? colors[v] : 'transparent' }} />;
                                             })}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className={`text-center ${theme.textMuted} text-xs mt-1`}><p>Fortnite RUNNERS • {new Date().toLocaleDateString()}</p></div>
                         </div>
                     </div>
                 );
             }
+ 
             return (
-                <div className={`min-h-screen bg-gradient-to-br ${theme.bg} p-8 transition-all duration-500`}>
-                    <div className="max-w-6xl mx-auto">
-                        <div className={`mb-8 text-center ${theme.instructionsText} text-sm p-3 rounded-lg ${theme.instructionsBg} border ${theme.instructionsBorder} backdrop-blur-sm`}>
-                            <p><span className="font-semibold text-cyan-400">Tap</span> to collect • <span className="font-semibold text-amber-400"> long press</span> to master</p>
-                            <p className="mt-2">Screenshot your collection with <span className="font-semibold text-cyan-400">↑</span></p>
+                <div className={bgClass}>
+                    <div className="container">
+                        <div className={`instructions ${instructClass}`}>
+                            <strong style={{ color: '#06b6d4' }}>Tap</strong> to collect • <strong style={{ color: '#fbbf24' }}>long press</strong> to master
                         </div>
-                        <div className="mb-12 flex items-center justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-4 mb-4">
-                                    {showMythicTheme && <Star className="w-8 h-8 text-amber-400 fill="amber-400" animate-spin" />}
-                                    <h1 className={`text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r ${showMythicTheme ? 'from-amber-300 via-amber-400 to-yellow-500' : 'from-cyan-400 via-purple-400 to-pink-400'}`}>{showMythicTheme ? '✨ MYTHIC ✨' : 'RUNNERS'}</h1>
-                                </div>
-                                <p className={`text-lg ${showMythicTheme ? 'text-amber-200' : theme.textMuted}`}>{showMythicTheme ? 'Ultimate Collection Complete' : 'Sprite Collection Tracker'}</p>
-                            </div>
-                            <div className="flex gap-3">
-                                {isMythicUnlocked && <button onClick={() => setMythicModeActive(!mythicModeActive)} className={`p-3 rounded-full transition-all duration-300 ${mythicModeActive ? (isDark ? 'bg-amber-900/60 text-amber-400 hover:bg-amber-800/80' : 'bg-amber-200/60 text-amber-700 hover:bg-amber-300/60') : (isDark ? 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/80' : 'bg-slate-200/60 text-slate-600 hover:bg-slate-300/60')}`} title={mythicModeActive ? 'Disable Mythic Mode' : 'Enable Mythic Mode'}><Star className="w-6 h-6" fill="currentColor" /></button>}
-                                <button onClick={() => setShowShareView(true)} className={`p-3 rounded-full transition-all duration-300 ${isDark ? 'bg-slate-800/60 text-cyan-400 hover:bg-slate-700/80' : 'bg-slate-200/60 text-cyan-600 hover:bg-slate-300/60'}`} title="Screenshot your collection"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 0l-7 7m7-7l7 7M3 19h18" /></svg></button>
-                                <button onClick={() => setIsDark(!isDark)} className={`p-3 rounded-full transition-all duration-300 ${isDark ? 'bg-slate-800/60 text-yellow-400 hover:bg-slate-700/80' : 'bg-slate-200/60 text-slate-700 hover:bg-slate-300/60'}`} title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>{isDark ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}</button>
+ 
+                        <div className="header">
+                            <h1 className="title">RUNNERS</h1>
+                            <p className="subtitle">Sprite Collection Tracker</p>
+                            <div className="btn-group">
+                                <button className={`btn ${isDark ? 'btn-dark' : 'btn-light'}`} onClick={() => setShowShare(true)}>↑ Screenshot</button>
+                                <button className={`btn ${isDark ? 'btn-dark' : 'btn-light'}`} onClick={() => setIsDark(!isDark)}>{isDark ? '☀️' : '🌙'}</button>
                             </div>
                         </div>
-                        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 p-8 rounded-2xl border ${theme.statsBg} ${theme.statsBorder}`}>
-                            <div className="flex flex-col items-center gap-4"><div className={`text-xl font-black ${theme.labelColor} uppercase tracking-wider`}>Collected</div><FilledPie collected={totalCollected} total={totalItems} radius={35} color={showMythicTheme ? '#fbbf24' : '#06b6d4'} name="collected" isDark={isDark} /></div>
-                            <div className="flex flex-col items-center gap-4"><div className={`text-xl font-black ${theme.labelColor} uppercase tracking-wider`}>Mastered</div><FilledPie collected={totalMastered} total={totalItems} radius={35} color="#fbbf24" name="mastered" isDark={isDark} /></div>
-                            <div className="flex flex-col items-center gap-4"><div className={`text-xl font-black ${theme.labelColor} uppercase tracking-wider`}>Progress</div><FilledPie collected={totalCollected} total={totalItems} radius={35} color={showMythicTheme ? '#fbbf24' : '#06b6d4'} name="progress" isDark={isDark} showPercentage={true} /></div>
+ 
+                        <div className="stats-grid">
+                            <div className={`stat-box ${statClass}`}>
+                                <div className="stat-label">Collected</div>
+                                <FilledPie collected={totalCollected} total={totalItems} radius={40} color="#06b6d4" isDark={isDark} />
+                                <div style={{ marginTop: '1rem', fontSize: '0.875rem', opacity: 0.7 }}>{totalCollected}/{totalItems}</div>
+                            </div>
+                            <div className={`stat-box ${statClass}`}>
+                                <div className="stat-label">Mastered</div>
+                                <FilledPie collected={totalMastered} total={totalItems} radius={40} color="#fbbf24" isDark={isDark} />
+                                <div style={{ marginTop: '1rem', fontSize: '0.875rem', opacity: 0.7 }}>{totalMastered}/{totalItems}</div>
+                            </div>
+                            <div className={`stat-box ${statClass}`}>
+                                <div className="stat-label">Progress</div>
+                                <FilledPie collected={totalCollected} total={totalItems} radius={40} color="#06b6d4" isDark={isDark} />
+                                <div style={{ marginTop: '1rem', fontSize: '0.875rem', opacity: 0.7 }}>{totalPercent}%</div>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+ 
+                        <div className="sprite-grid">
                             {spriteTypes.map(sprite => {
                                 const stats = { collected: 0, mastered: 0, total: sprite.variants.length };
-                                sprite.variants.forEach(v => { const id = `${sprite.name}-${v}`; if (collected.includes(id)) stats.collected++; if (mastered.includes(id)) stats.mastered++; });
+                                sprite.variants.forEach(v => {
+                                    const id = `${sprite.name}-${v}`;
+                                    if (collected.includes(id)) stats.collected++;
+                                    if (mastered.includes(id)) stats.mastered++;
+                                });
+                                
                                 return (
-                                    <div key={sprite.name} className={`rounded-xl p-6 border ${theme.cardBg} ${theme.cardBorder} relative`}>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className={`font-bold text-lg ${theme.spriteNameColor}`}>{sprite.name}</h3>
-                                            {stats.mastered === stats.total && stats.total > 0 && <span className="text-lg">★</span>}
+                                    <div key={sprite.name} className={`sprite-card ${cardClass}`}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <h3 className="sprite-name">{sprite.name}</h3>
+                                            {stats.mastered === stats.total && stats.total > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
                                         </div>
-                                        <div className="absolute top-4 right-4 w-16 h-16"><CircleProgress collected={stats.collected} total={stats.total} radius={30} color={sprite.color} isDark={isDark} /></div>
-                                        <div className="grid grid-cols-2 gap-3 mt-8">
+                                        <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{stats.collected}/{stats.total}</div>
+                                        <div className="variant-grid">
                                             {sprite.variants.map(variant => {
-                                                const itemId = `${sprite.name}-${variant}`;
-                                                const isCollected = collected.includes(itemId);
-                                                const isMastered = mastered.includes(itemId);
-                                                const variantColors = { 'Base': '#94a3b8', 'Gold': '#eab308', 'Gummy': '#ec4899', 'Galaxy': '#6366f1' };
-                                                const variantColor = variantColors[variant] || '#94a3b8';
+                                                const id = `${sprite.name}-${variant}`;
+                                                const isCol = collected.includes(id);
+                                                const isMas = mastered.includes(id);
+                                                const colors = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                                const color = colors[variant];
                                                 return (
-                                                    <button key={variant} onTouchStart={(e) => handleTouchStart(e, sprite.name, variant)} onTouchEnd={(e) => handleTouchEnd(e, sprite.name, variant)} onClick={() => { if (!longPressTriggered.current) toggleVariant(sprite.name, variant); }} className="p-3 rounded-lg transition-all font-semibold text-white" style={{ backgroundColor: isCollected ? variantColor : 'transparent', border: `2px solid ${variantColor}`, opacity: isCollected ? 1 : 0.4 }} title={`${variant} - Tap to collect, long press to master`}>{variant}{isMastered && ' ★'}</button>
+                                                    <button
+                                                        key={variant}
+                                                        className="variant-btn"
+                                                        style={{
+                                                            borderColor: color,
+                                                            backgroundColor: isCol ? color : 'transparent',
+                                                            opacity: isCol ? 1 : 0.4
+                                                        }}
+                                                        onTouchStart={(e) => handleTouchStart(e, sprite.name, variant)}
+                                                        onTouchEnd={(e) => handleTouchEnd(e, sprite.name, variant)}
+                                                        onClick={() => !longPress.current && toggleVariant(sprite.name, variant)}
+                                                    >
+                                                        {variant}{isMas ? ' ★' : ''}
+                                                    </button>
                                                 );
                                             })}
                                         </div>
@@ -271,20 +248,11 @@
                                 );
                             })}
                         </div>
-                        {showMythicPopup && (
-                            <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-                                <div className="relative bg-gradient-to-br from-amber-500 to-yellow-500 p-12 rounded-3xl text-center animate-spin">
-                                    <Sparkles />
-                                    <h2 className="text-5xl font-black text-white mb-4">✨ MYTHIC ✨</h2>
-                                    <p className="text-2xl text-white mb-8">All 61 Sprites Mastered!</p>
-                                    <button onClick={() => setShowMythicPopup(false)} className="px-8 py-3 bg-white text-amber-900 rounded-xl font-bold text-lg">Celebrate!</button>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             );
         }
+ 
         ReactDOM.render(<SpriteTracker />, document.getElementById('root'));
     </script>
 </body>
