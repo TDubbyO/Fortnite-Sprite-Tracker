@@ -66,26 +66,31 @@ const Sparkles = () => {
 
 export default function SpriteTrackerUnified() {
   const [collected, setCollected] = useState(() => {
+    if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem('spriteCollected');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [mastered, setMastered] = useState(() => {
+    if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem('spriteMastered');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [unlocks, setUnlocks] = useState(() => {
+    if (typeof window === 'undefined') return { spriteMasteries: [], mythic: false };
     const saved = localStorage.getItem('spriteUnlocks');
     return saved ? JSON.parse(saved) : { spriteMasteries: [], mythic: false };
   });
 
   const [isDark, setIsDark] = useState(() => {
+    if (typeof window === 'undefined') return true;
     const saved = localStorage.getItem('spriteTrackerTheme');
     return saved ? JSON.parse(saved) : true;
   });
 
   const [mythicModeActive, setMythicModeActive] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('mythicModeActive');
     return saved ? JSON.parse(saved) : false;
   });
