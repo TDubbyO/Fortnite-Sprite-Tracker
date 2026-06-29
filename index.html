@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,166 +7,149 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
-        .container { max-width: 1280px; margin: 0 auto; padding: 2rem; }
-        h1 { font-size: 3.5rem; font-weight: 900; margin: 2rem 0 1rem; background: linear-gradient(90deg, #06b6d4, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .instructions { background: rgba(30,41,59,0.5); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem; border: 1px solid rgba(100,116,139,0.3); }
-        .btn-group { display: flex; gap: 1rem; margin-bottom: 2rem; }
-        button { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; background: rgba(30,41,59,0.6); color: #06b6d4; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-        button:hover { background: rgba(30,41,59,0.9); }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
-        .stat-box { background: rgba(30,41,59,0.4); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(100,116,139,0.3); text-align: center; }
-        .stat-title { font-size: 1.25rem; font-weight: 900; text-transform: uppercase; margin-bottom: 1rem; opacity: 0.8; }
-        .sprites { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-        .sprite-card { background: rgba(30,41,59,0.4); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(100,116,139,0.3); }
-        .sprite-name { font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem; }
-        .variants { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-        .variant-btn { width: 100%; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; font-weight: 600; color: white; transition: 0.3s; }
-        .variant-btn:active { transform: scale(0.95); }
-        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-        .share-item { background: rgba(30,41,59,0.4); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; }
-        svg { max-width: 100%; height: auto; }
-    </style>
 </head>
-<body>
+<body style="margin:0; padding:0; background:#0f172a; color:#e2e8f0; font-family:system-ui,sans-serif;">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
         const sprites = [
-            { name: 'Water', color: '#3b82f6', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Earth', color: '#16a34a', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Fire', color: '#ef4444', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Duck', color: '#facc15', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Ghost', color: '#cbd5e1', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Dream', color: '#a855f7', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Demon', color: '#b91c1c', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Punk', color: '#db2777', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'King', color: '#b45309', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Burnt Peanut', color: '#78350f', variants: ['Base'] },
-            { name: 'Zero Point', color: '#6d28d9', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Fishy', color: '#f97316', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Striker', color: '#000000', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Aura', color: '#ffffff', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Boss', color: '#dc2626', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Grim', color: '#312e81', variants: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Duck', color: '#facc15', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Ghost', color: '#cbd5e1', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Dream', color: '#a855f7', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Demon', color: '#b91c1c', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Punk', color: '#db2777', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'King', color: '#b45309', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Burnt Peanut', color: '#78350f', v: ['Base'] },
+            { name: 'Zero Point', color: '#6d28d9', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Aura', color: '#ffffff', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
         ];
-
+ 
         function App() {
-            const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('collected') || '[]'));
-            const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('mastered') || '[]'));
-            const [showShare, setShowShare] = useState(false);
-            const press = useRef(false);
-
-            useEffect(() => { localStorage.setItem('collected', JSON.stringify(collected)); }, [collected]);
-            useEffect(() => { localStorage.setItem('mastered', JSON.stringify(mastered)); }, [mastered]);
-
-            const total = sprites.reduce((s, sp) => s + sp.variants.length, 0);
-            const collCount = collected.length;
-            const mastCount = mastered.length;
-            const percent = Math.round((collCount / total) * 100);
-
-            const toggle = (name, var_) => {
-                const id = `${name}-${var_}`;
+            const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
+            const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
+            const [share, setShare] = useState(false);
+            const pr = useRef(false);
+ 
+            useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
+            useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
+ 
+            const tot = sprites.reduce((s, sp) => s + sp.v.length, 0);
+            const col = collected.length;
+            const mas = mastered.length;
+            const pct = Math.round((col / tot) * 100);
+ 
+            const toggle = (n, v) => {
+                const id = n + '-' + v;
                 setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
             };
-
-            const longPress = (name, var_) => {
-                const id = `${name}-${var_}`;
+ 
+            const longPress = (n, v) => {
+                const id = n + '-' + v;
                 const c = collected.includes(id);
                 const m = mastered.includes(id);
                 if (!c) { setCollected(p => [...p, id]); setMastered(p => [...p, id]); }
                 else if (!m) { setMastered(p => [...p, id]); }
                 else { setMastered(p => p.filter(x => x !== id)); }
             };
-
-            if (showShare) {
-                return (
-                    <div className="container">
-                        <button onClick={() => setShowShare(false)}>← Back</button>
-                        <h1>RUNNERS</h1>
-                        <p>{percent}% • {collCount}/{total}</p>
-                        <div className="share-grid">
-                            {sprites.map(sp => (
-                                <div key={sp.name} className="share-item">
-                                    <strong>{sp.name}</strong>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2px', marginTop: '0.25rem' }}>
-                                        {sp.variants.map(v => {
-                                            const id = `${sp.name}-${v}`;
-                                            const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
-                                            return <div key={v} style={{ width: '15px', height: '15px', border: `1px solid ${cols[v]}`, backgroundColor: collected.includes(id) ? cols[v] : 'transparent', borderRadius: '2px' }} />;
-                                        })}
-                                    </div>
+ 
+            if (share) {
+                return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
+                    <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(30,41,59,0.6)', color: '#06b6d4', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', color: '#06b6d4' }}>RUNNERS</h1>
+                    <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{pct}% • {col}/{tot}</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                        {sprites.map(sp => (
+                            <div key={sp.name} style={{ background: 'rgba(30,41,59,0.4)', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', border: '1px solid rgba(100,116,139,0.3)' }}>
+                                <strong>{sp.name}</strong>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2px', marginTop: '0.25rem' }}>
+                                    {sp.v.map(vv => {
+                                        const id = sp.name + '-' + vv;
+                                        const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                        return <div key={vv} style={{ width: '16px', height: '16px', border: '1px solid ' + cols[vv], backgroundColor: collected.includes(id) ? cols[vv] : 'transparent' }} />;
+                                    })}
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
                     </div>
-                );
+                </div>;
             }
-
-            return (
-                <div className="container">
-                    <div className="instructions">
-                        <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
+ 
+            return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
+                <div style={{ background: 'rgba(30,41,59,0.5)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(100,116,139,0.3)' }}>
+                    <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
+                </div>
+                <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RUNNERS</h1>
+                <button onClick={() => setShare(true)} style={{ padding: '0.75rem 1.5rem', background: 'rgba(30,41,59,0.6)', color: '#06b6d4', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem' }}>↑ Screenshot</button>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
+                        <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{col}/{tot}</div>
                     </div>
-                    <h1>RUNNERS</h1>
-                    <div className="btn-group">
-                        <button onClick={() => setShowShare(true)}>↑ Screenshot</button>
+                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
+                        <div style={{ fontSize: '2rem', color: '#fbbf24', fontWeight: 'bold' }}>{mas}/{tot}</div>
                     </div>
-                    <div className="stats">
-                        <div className="stat-box">
-                            <div className="stat-title">Collected</div>
-                            <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{collCount}/{total}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-title">Mastered</div>
-                            <div style={{ fontSize: '2rem', color: '#fbbf24', fontWeight: 'bold' }}>{mastCount}/{total}</div>
-                        </div>
-                        <div className="stat-box">
-                            <div className="stat-title">Progress</div>
-                            <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{percent}%</div>
-                        </div>
-                    </div>
-                    <div className="sprites">
-                        {sprites.map(sp => {
-                            const c = sp.variants.filter(v => collected.includes(`${sp.name}-${v}`)).length;
-                            const m = sp.variants.filter(v => mastered.includes(`${sp.name}-${v}`)).length;
-                            return (
-                                <div key={sp.name} className="sprite-card">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                        <div className="sprite-name">{sp.name}</div>
-                                        {m === sp.variants.length && sp.variants.length > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
-                                    </div>
-                                    <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{c}/{sp.variants.length}</div>
-                                    <div className="variants">
-                                        {sp.variants.map(v => {
-                                            const id = `${sp.name}-${v}`;
-                                            const isC = collected.includes(id);
-                                            const isM = mastered.includes(id);
-                                            const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
-                                            return (
-                                                <button
-                                                    key={v}
-                                                    className="variant-btn"
-                                                    style={{ borderColor: cols[v], backgroundColor: isC ? cols[v] : 'transparent', opacity: isC ? 1 : 0.4, color: isC && (cols[v] === '#ffffff' || cols[v] === '#facc15' || cols[v] === '#eab308') ? '#000' : 'white' }}
-                                                    onTouchStart={(e) => { press.current = false; const t = setTimeout(() => { press.current = true; longPress(sp.name, v); }, 500); e.currentTarget.t = t; }}
-                                                    onTouchEnd={(e) => { clearTimeout(e.currentTarget.t); !press.current && toggle(sp.name, v); }}
-                                                    onClick={() => !press.current && toggle(sp.name, v)}
-                                                >
-                                                    {v}{isM ? ' ★' : ''}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
+                        <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{pct}%</div>
                     </div>
                 </div>
-            );
+ 
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                    {sprites.map(sp => {
+                        const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
+                        const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                        return (
+                            <div key={sp.name} style={{ background: 'rgba(30,41,59,0.4)', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid rgba(100,116,139,0.3)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                    <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</div>
+                                    {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
+                                </div>
+                                <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{c}/{sp.v.length}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                                    {sp.v.map(vv => {
+                                        const id = sp.name + '-' + vv;
+                                        const isC = collected.includes(id);
+                                        const isM = mastered.includes(id);
+                                        const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                        return (
+                                            <button
+                                                key={vv}
+                                                style={{
+                                                    padding: '0.75rem',
+                                                    border: '2px solid ' + cols[vv],
+                                                    borderRadius: '0.5rem',
+                                                    backgroundColor: isC ? cols[vv] : 'transparent',
+                                                    color: isC && (cols[vv] === '#ffffff' || cols[vv] === '#facc15' || cols[vv] === '#eab308') ? '#000' : 'white',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 600,
+                                                    opacity: isC ? 1 : 0.4,
+                                                    transition: 'all 0.3s'
+                                                }}
+                                                onTouchStart={(e) => { pr.current = false; const t = setTimeout(() => { pr.current = true; longPress(sp.name, vv); }, 500); e.currentTarget.t = t; }}
+                                                onTouchEnd={(e) => { clearTimeout(e.currentTarget.t); !pr.current && toggle(sp.name, vv); }}
+                                                onClick={() => !pr.current && toggle(sp.name, vv)}
+                                            >
+                                                {vv}{isM ? ' ★' : ''}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>;
         }
-
+ 
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
