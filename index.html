@@ -30,40 +30,85 @@
             { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
         ];
- 
+
+        const Pie = ({ col, tot, r, col_val }) => {
+            const pct = tot > 0 ? (col / tot) * 100 : 0;
+            const circ = 2 * Math.PI * r;
+            const off = circ * (1 - pct / 100);
+            const id = `p${Math.random()}`;
+            return (
+                <svg width={r * 2 + 20} height={r * 2 + 20} viewBox={`0 0 ${r * 2 + 20} ${r * 2 + 20}`} style={{ maxWidth: '100%' }}>
+                    <defs>
+                        <clipPath id={id}>
+                            <circle cx={r + 10} cy={r + 10} r={r} />
+                        </clipPath>
+                    </defs>
+                    <circle cx={r + 10} cy={r + 10} r={r} fill={col_val} opacity="0.2" />
+                    <circle cx={r + 10} cy={r + 10} r={r} fill="none" stroke={col_val} strokeWidth={r * 0.3} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s' }} />
+                    <text x={r + 10} y={r + 13} textAnchor="middle" fontSize={r * 0.7} fontWeight="bold" fill={col_val}>{Math.round(pct)}%</text>
+                    {pct > 0 && <text x={r + 10} y={r + 13} textAnchor="middle" fontSize={r * 0.7} fontWeight="bold" fill="white" clipPath={`url(#${id})`}>{Math.round(pct)}%</text>}
+                </svg>
+            );
+        };
+
         function App() {
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
             const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
             const [share, setShare] = useState(false);
-            const pr = useRef(false);
- 
+            const longPressTimers = useRef({});
+
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
- 
+
             const tot = sprites.reduce((s, sp) => s + sp.v.length, 0);
             const col = collected.length;
             const mas = mastered.length;
-            const pct = Math.round((col / tot) * 100);
- 
+
             const toggle = (n, v) => {
                 const id = n + '-' + v;
                 setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+                setMastered(p => p.filter(x => x !== id));
             };
- 
+
             const longPress = (n, v) => {
                 const id = n + '-' + v;
                 const c = collected.includes(id);
                 const m = mastered.includes(id);
-                if (!c) { setCollected(p => [...p, id]); setMastered(p => [...p, id]); }
-                else if (!m) { setMastered(p => [...p, id]); }
-                else { setMastered(p => p.filter(x => x !== id)); }
+                if (!c) { 
+                    setCollected(p => [...p, id]); 
+                    setMastered(p => [...p, id]); 
+                }
+                else if (!m) { 
+                    setMastered(p => [...p, id]); 
+                }
+                else { 
+                    setMastered(p => p.filter(x => x !== id)); 
+                }
             };
- 
+
+            const handleTouchStart = (e, n, v) => {
+                e.preventDefault();
+                const id = n + '-' + v;
+                longPressTimers.current[id] = setTimeout(() => {
+                    longPress(n, v);
+                }, 500);
+            };
+
+            const handleTouchEnd = (e, n, v) => {
+                e.preventDefault();
+                const id = n + '-' + v;
+                if (longPressTimers.current[id]) {
+                    clearTimeout(longPressTimers.current[id]);
+                    delete longPressTimers.current[id];
+                    toggle(n, v);
+                }
+            };
+
             if (share) {
                 return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
                     <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(30,41,59,0.6)', color: '#06b6d4', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', color: '#06b6d4' }}>RUNNERS</h1>
-                    <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{pct}% • {col}/{tot}</p>
+                    <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{Math.round((col/tot)*100)}% • {col}/{tot}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
                         {sprites.map(sp => (
                             <div key={sp.name} style={{ background: 'rgba(30,41,59,0.4)', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', border: '1px solid rgba(100,116,139,0.3)' }}>
@@ -80,7 +125,7 @@
                     </div>
                 </div>;
             }
- 
+
             return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
                 <div style={{ background: 'rgba(30,41,59,0.5)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(100,116,139,0.3)' }}>
                     <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
@@ -91,18 +136,18 @@
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
                     <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                        <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{col}/{tot}</div>
+                        <Pie col={col} tot={tot} r={40} col_val="#06b6d4" />
                     </div>
                     <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                        <div style={{ fontSize: '2rem', color: '#fbbf24', fontWeight: 'bold' }}>{mas}/{tot}</div>
+                        <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" />
                     </div>
                     <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
-                        <div style={{ fontSize: '2rem', color: '#06b6d4', fontWeight: 'bold' }}>{pct}%</div>
+                        <Pie col={col} tot={tot} r={40} col_val="#06b6d4" />
                     </div>
                 </div>
- 
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                     {sprites.map(sp => {
                         const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
@@ -120,6 +165,7 @@
                                         const isC = collected.includes(id);
                                         const isM = mastered.includes(id);
                                         const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                        const txtCol = isC && (cols[vv] === '#ffffff' || cols[vv] === '#facc15' || cols[vv] === '#eab308') ? '#000' : 'white';
                                         return (
                                             <button
                                                 key={vv}
@@ -128,15 +174,16 @@
                                                     border: '2px solid ' + cols[vv],
                                                     borderRadius: '0.5rem',
                                                     backgroundColor: isC ? cols[vv] : 'transparent',
-                                                    color: isC && (cols[vv] === '#ffffff' || cols[vv] === '#facc15' || cols[vv] === '#eab308') ? '#000' : 'white',
+                                                    color: txtCol,
                                                     cursor: 'pointer',
                                                     fontWeight: 600,
                                                     opacity: isC ? 1 : 0.4,
-                                                    transition: 'all 0.3s'
+                                                    transition: 'all 0.3s',
+                                                    userSelect: 'none'
                                                 }}
-                                                onTouchStart={(e) => { pr.current = false; const t = setTimeout(() => { pr.current = true; longPress(sp.name, vv); }, 500); e.currentTarget.t = t; }}
-                                                onTouchEnd={(e) => { clearTimeout(e.currentTarget.t); !pr.current && toggle(sp.name, vv); }}
-                                                onClick={() => !pr.current && toggle(sp.name, vv)}
+                                                onTouchStart={(e) => handleTouchStart(e, sp.name, vv)}
+                                                onTouchEnd={(e) => handleTouchEnd(e, sp.name, vv)}
+                                                onTouchMove={() => { Object.values(longPressTimers.current).forEach(t => clearTimeout(t)); longPressTimers.current = {}; }}
                                             >
                                                 {vv}{isM ? ' ★' : ''}
                                             </button>
@@ -149,7 +196,7 @@
                 </div>
             </div>;
         }
- 
+
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
