@@ -222,7 +222,10 @@
                 {showMythicPopup && <MythicPopup onClose={() => setShowMythicPopup(false)} onEnable={() => setMythicActive(true)} />}
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <div />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={() => { console.log('TEST HAPTIC'); if(navigator.vibrate) navigator.vibrate(100); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: '#ff6b6b', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}>Vibrate</button>
+                            {mythicUnlocked && <button onClick={() => setShowMythicPopup(true)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}>Popup</button>}
+                        </div>
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                             <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>↑</button>
