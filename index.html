@@ -60,12 +60,11 @@
             );
         };
 
-        const SpriteWheel = ({ col, tot, dark }) => {
+        const SpriteWheel = ({ col, tot }) => {
             const r = 18;
             const pct = tot > 0 ? (col / tot) * 100 : 0;
             const circ = 2 * Math.PI * r;
             const off = circ * (1 - pct / 100);
-            const id = `sw${Math.random().toString(36).substr(2, 9)}`;
             const col_val = '#06b6d4';
             
             return (
@@ -82,7 +81,7 @@
                 <div style={{ background: 'linear-gradient(135deg, #1a0033, #330066)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #a855f7' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
                     <h2 style={{ color: '#a855f7', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>MYTHIC!</h2>
-                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All 61 sprites mastered. You've achieved perfection!</p>
+                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All 61 sprites mastered!</p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                         <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #a855f7', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
                         <button onClick={() => { onEnable(); onClose(); }} style={{ padding: '0.75rem 1.5rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Activate ✨</button>
@@ -116,10 +115,15 @@
 
             useEffect(() => {
                 if (mythicUnlocked && !mythicSeen) {
+                    console.log('🎉 MYTHIC ACHIEVED!');
                     setMythicSeen(true);
                     setShowMythicPopup(true);
-                    if (window.navigator && window.navigator.vibrate) {
-                        window.navigator.vibrate([100, 50, 100, 50, 200]);
+                    console.log('Attempting haptic...');
+                    if (navigator.vibrate) {
+                        navigator.vibrate([100, 50, 100, 50, 200]);
+                        console.log('✓ Haptic vibration triggered');
+                    } else {
+                        console.log('✗ Vibrate API not available');
                     }
                 }
             }, [mythicUnlocked, mythicSeen]);
@@ -135,9 +139,12 @@
                 const c = collected.includes(id);
                 const m = mastered.includes(id);
                 
-                // Haptic feedback
-                if (window.navigator && window.navigator.vibrate) {
-                    window.navigator.vibrate(60);
+                console.log('Long press triggered on', id);
+                if (navigator.vibrate) {
+                    navigator.vibrate(60);
+                    console.log('✓ Haptic on long press');
+                } else {
+                    console.log('✗ No vibrate API');
                 }
                 
                 if (!c) { 
@@ -179,19 +186,7 @@
                 longPressFlag.current[id] = false;
             };
 
-            const testHaptic = () => {
-                console.log('Testing haptic...');
-                console.log('navigator.vibrate exists:', !!navigator.vibrate);
-                console.log('window.navigator.vibrate exists:', !!window.navigator.vibrate);
-                try {
-                    navigator.vibrate(100);
-                    console.log('Vibrate call made');
-                } catch (e) {
-                    console.error('Vibrate error:', e);
-                }
-            }; 
-                ? 'linear-gradient(135deg, #1a0033 0%, #2d004d 50%, #1a0033 100%)' 
-                : (dark ? '#0f172a' : '#f8fafc');
+            const bgColor = isMythic ? '#2d1b4e' : (dark ? '#0f172a' : '#f8fafc');
             const textColor = dark ? '#e2e8f0' : '#1e293b';
             const cardBg = isMythic 
                 ? 'rgba(88, 28, 135, 0.3)' 
@@ -223,14 +218,11 @@
                 </div>;
             }
 
-            return <div style={{ background: typeof bgColor === 'string' && bgColor.includes('linear-gradient') ? bgColor : bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
+            return <div style={{ background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
                 {showMythicPopup && <MythicPopup onClose={() => setShowMythicPopup(false)} onEnable={() => setMythicActive(true)} />}
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={testHaptic} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: 'rgba(255,0,0,0.3)', color: '#ff6b6b', border: '1px solid #ff6b6b', borderRadius: '0.25rem', cursor: 'pointer' }}>Test Haptic</button>
-                            {mythicUnlocked && <button onClick={() => setShowMythicPopup(true)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', background: 'rgba(168,85,247,0.3)', color: '#a855f7', border: '1px solid #a855f7', borderRadius: '0.25rem', cursor: 'pointer' }}>Show Popup</button>}
-                        </div>
+                        <div />
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                             <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>↑</button>
@@ -267,7 +259,7 @@
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative' }}>
-                                    <SpriteWheel col={c} tot={sp.v.length} dark={dark} />
+                                    <SpriteWheel col={c} tot={sp.v.length} />
                                     <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem', height: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         {sp.name}
                                         {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>★</span>}
