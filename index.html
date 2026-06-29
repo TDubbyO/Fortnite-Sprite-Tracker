@@ -187,7 +187,7 @@
             };
 
             const bgColor = isMythic ? '#2d1b4e' : (dark ? '#0f172a' : '#f8fafc');
-            const textColor = dark ? '#e2e8f0' : '#1e293b';
+            const textColor = isMythic ? '#e2e8f0' : (dark ? '#e2e8f0' : '#1e293b');
             const cardBg = isMythic 
                 ? 'rgba(88, 28, 135, 0.3)' 
                 : (dark ? 'rgba(30,41,59,0.4)' : 'rgba(226,232,240,0.5)');
@@ -222,37 +222,36 @@
                 {showMythicPopup && <MythicPopup onClose={() => setShowMythicPopup(false)} onEnable={() => setMythicActive(true)} />}
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={() => { console.log('TEST HAPTIC'); if(navigator.vibrate) navigator.vibrate(100); }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: '#ff6b6b', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}>Vibrate</button>
-                            {mythicUnlocked && <button onClick={() => setShowMythicPopup(true)} style={{ padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}>Popup</button>}
-                        </div>
+                        <div />
                         <div style={{ display: 'flex', gap: '1rem' }}>
                             {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
-                            <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>↑</button>
+                            <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="Screenshot your collection">↑</button>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                         </div>
                     </div>
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
-                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
+                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot
                     </div>
 
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: isMythic ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         {isMythic ? 'MYTHIC' : 'RUNNERS'}
                     </h1>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                            <Pie col={col} tot={tot} r={40} col_val="#06b6d4" format="fraction" />
-                        </div>
-                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                            <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" format="fraction" />
-                        </div>
-                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
-                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
-                            <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
+                                <Pie col={col} tot={tot} r={40} col_val="#06b6d4" format="fraction" />
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
+                                <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" format="fraction" />
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
+                                <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                            </div>
                         </div>
                     </div>
 
