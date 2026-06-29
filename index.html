@@ -95,6 +95,7 @@
             const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
             const [mythicSeen, setMythicSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
             const [showMythicPopup, setShowMythicPopup] = useState(false);
+            const [mythicActive, setMythicActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
 
@@ -102,19 +103,25 @@
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(mythicSeen)); }, [mythicSeen]);
+            useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(mythicActive)); }, [mythicActive]);
 
             const tot = 61;
             const col = collected.length;
             const mas = mastered.length;
-            const isMythic = mas === tot && tot > 0;
+            const mythicUnlocked = mas === tot && tot > 0;
+            const isMythic = mythicUnlocked && mythicActive;
 
             useEffect(() => {
-                if (isMythic && !mythicSeen) {
+                if (mythicUnlocked && !mythicSeen) {
                     setMythicSeen(true);
                     setShowMythicPopup(true);
-                    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+                    try {
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+                    } catch (e) {
+                        console.log('Vibrate API not available');
+                    }
                 }
-            }, [isMythic, mythicSeen]);
+            }, [mythicUnlocked, mythicSeen]);
 
             const toggle = (n, v) => {
                 const id = n + '-' + v;
@@ -137,7 +144,13 @@
                 else { 
                     setMastered(p => p.filter(x => x !== id)); 
                 }
-                if (navigator.vibrate) navigator.vibrate(60);
+                try {
+                    if (navigator.vibrate) {
+                        navigator.vibrate(60);
+                    }
+                } catch (e) {
+                    console.log('Vibrate API not available');
+                }
             };
 
             const handleTouchStart = (e, n, v) => {
@@ -201,6 +214,7 @@
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                         <div />
                         <div style={{ display: 'flex', gap: '1rem' }}>
+                            {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                             <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>↑</button>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                         </div>
