@@ -186,13 +186,17 @@
                 longPressFlag.current[id] = false;
             };
 
-            const bgColor = isMythic ? '#2d1b4e' : (dark ? '#0f172a' : '#f8fafc');
-            const textColor = isMythic ? '#e2e8f0' : (dark ? '#e2e8f0' : '#1e293b');
+            const bgColor = isMythic 
+                ? (dark ? '#2d1b4e' : '#f3e8ff')
+                : (dark ? '#0f172a' : '#f8fafc');
+            const textColor = isMythic 
+                ? (dark ? '#e2e8f0' : '#5b21b6')
+                : (dark ? '#e2e8f0' : '#1e293b');
             const cardBg = isMythic 
-                ? 'rgba(88, 28, 135, 0.3)' 
+                ? (dark ? 'rgba(88, 28, 135, 0.3)' : 'rgba(192, 132, 250, 0.15)')
                 : (dark ? 'rgba(30,41,59,0.4)' : 'rgba(226,232,240,0.5)');
             const cardBorder = isMythic 
-                ? 'rgba(168, 85, 247, 0.5)' 
+                ? (dark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(168, 85, 247, 0.4)')
                 : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(148,163,184,0.3)');
             const accentColor = isMythic ? '#a855f7' : '#06b6d4';
 
@@ -221,12 +225,14 @@
             return <div style={{ background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
                 {showMythicPopup && <MythicPopup onClose={() => setShowMythicPopup(false)} onEnable={() => setMythicActive(true)} />}
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                         <div />
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                            {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
-                            <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="Screenshot your collection">↑</button>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="Screenshot your collection">↑</button>
+                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            </div>
+                            {mythicUnlocked && <button onClick={() => setMythicActive(!mythicActive)} style={{ padding: '0.5rem 1rem', background: mythicActive ? '#a855f7' : cardBg, color: mythicActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Mythic</button>}
                         </div>
                     </div>
 
