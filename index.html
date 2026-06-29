@@ -49,8 +49,8 @@
                 <svg width={r * 2 + 20} height={r * 2 + 20} viewBox={`0 0 ${r * 2 + 20} ${r * 2 + 20}`} style={{ maxWidth: '100%' }}>
                     <defs>
                         <mask id={id}>
-                            <rect width={r * 2 + 20} height={r * 2 + 20} fill="white" />
-                            <circle cx={r + 10} cy={r + 10} r={r * 0.55} fill="black" />
+                            <rect width={r * 2 + 20} height={r * 2 + 20} fill="black" />
+                            <path d={pathData} fill="white" />
                         </mask>
                     </defs>
                     <circle cx={r + 10} cy={r + 10} r={r} fill={col_val} opacity="0.15" />
@@ -62,30 +62,18 @@
         };
 
         const SpriteWheel = ({ col, tot, dark }) => {
-            const r = 20;
+            const r = 18;
             const pct = tot > 0 ? (col / tot) * 100 : 0;
-            const rad = (pct * 360) / 100;
-            const isLarge = pct > 50 ? 1 : 0;
-            const x1 = r + r * Math.cos(-Math.PI / 2);
-            const y1 = r + r * Math.sin(-Math.PI / 2);
-            const x2 = r + r * Math.cos(-Math.PI / 2 + (rad * Math.PI) / 180);
-            const y2 = r + r * Math.sin(-Math.PI / 2 + (rad * Math.PI) / 180);
-            const pathData = `M ${r} ${r} L ${x1} ${y1} A ${r} ${r} 0 ${isLarge} 1 ${x2} ${y2} Z`;
+            const circ = 2 * Math.PI * r;
+            const off = circ * (1 - pct / 100);
             const id = `sw${Math.random().toString(36).substr(2, 9)}`;
             const col_val = '#06b6d4';
             
             return (
-                <svg width="56" height="56" viewBox="0 0 56 56" style={{ position: 'absolute', top: 0, right: 0 }}>
-                    <defs>
-                        <mask id={id}>
-                            <rect width="56" height="56" fill="white" />
-                            <circle cx={r} cy={r} r={r * 0.55} fill="black" />
-                        </mask>
-                    </defs>
-                    <circle cx={r} cy={r} r={r} fill={col_val} opacity="0.15" />
-                    <path d={pathData} fill={col_val} />
-                    <text x={r} y={r + 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill={col_val}>{col}/{tot}</text>
-                    <text x={r} y={r + 8} textAnchor="middle" fontSize="10" fontWeight="bold" fill="white" mask={`url(#${id})`}>{col}/{tot}</text>
+                <svg width="50" height="50" viewBox="0 0 50 50" style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
+                    <circle cx="25" cy="25" r={r} fill="none" stroke={col_val} strokeWidth="2.5" opacity="0.2" />
+                    <circle cx="25" cy="25" r={r} fill="none" stroke={col_val} strokeWidth="2.5" strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s', transform: 'rotate(-90deg)', transformOrigin: '25px 25px' }} />
+                    <text x="25" y="30" textAnchor="middle" fontSize="11" fontWeight="bold" fill={col_val}>{col}/{tot}</text>
                 </svg>
             );
         };
@@ -235,11 +223,10 @@
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative' }}>
                                     <SpriteWheel col={c} tot={sp.v.length} dark={dark} />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', paddingRight: '3rem' }}>
-                                        <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</div>
-                                        {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
+                                    <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>
+                                        {sp.name}
+                                        {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem', marginLeft: '0.5rem' }}>★</span>}
                                     </div>
-                                    <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{c}/{sp.v.length}</div>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
                                         {sp.v.map(vv => {
                                             const id = sp.name + '-' + vv;
