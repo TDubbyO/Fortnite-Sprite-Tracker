@@ -8,7 +8,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body style="margin:0; padding:0; background:#0f172a; color:#e2e8f0; font-family:system-ui,sans-serif;">
+<body style="margin:0; padding:0; -webkit-user-select: none; user-select: none;">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
@@ -31,22 +31,24 @@
             { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
         ];
 
-        const Pie = ({ col, tot, r, col_val }) => {
+        const Pie = ({ col, tot, r, col_val, format }) => {
             const pct = tot > 0 ? (col / tot) * 100 : 0;
             const circ = 2 * Math.PI * r;
             const off = circ * (1 - pct / 100);
-            const id = `p${Math.random()}`;
+            const id = `m${Math.random().toString(36).substr(2, 9)}`;
+            const displayText = format === 'fraction' ? `${col}/${tot}` : `${Math.round(pct)}%`;
             return (
                 <svg width={r * 2 + 20} height={r * 2 + 20} viewBox={`0 0 ${r * 2 + 20} ${r * 2 + 20}`} style={{ maxWidth: '100%' }}>
                     <defs>
-                        <clipPath id={id}>
-                            <circle cx={r + 10} cy={r + 10} r={r} />
-                        </clipPath>
+                        <mask id={id}>
+                            <rect width={r * 2 + 20} height={r * 2 + 20} fill="white" />
+                            <circle cx={r + 10} cy={r + 10} r={r - 5} fill="black" />
+                        </mask>
                     </defs>
                     <circle cx={r + 10} cy={r + 10} r={r} fill={col_val} opacity="0.2" />
                     <circle cx={r + 10} cy={r + 10} r={r} fill="none" stroke={col_val} strokeWidth={r * 0.3} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s' }} />
-                    <text x={r + 10} y={r + 13} textAnchor="middle" fontSize={r * 0.7} fontWeight="bold" fill={col_val}>{Math.round(pct)}%</text>
-                    {pct > 0 && <text x={r + 10} y={r + 13} textAnchor="middle" fontSize={r * 0.7} fontWeight="bold" fill="white" clipPath={`url(#${id})`}>{Math.round(pct)}%</text>}
+                    <text x={r + 10} y={r + 14} textAnchor="middle" fontSize={r * 0.6} fontWeight="bold" fill={col_val}>{displayText}</text>
+                    <text x={r + 10} y={r + 14} textAnchor="middle" fontSize={r * 0.6} fontWeight="bold" fill="white" mask={`url(#${id})`}>{displayText}</text>
                 </svg>
             );
         };
@@ -55,14 +57,27 @@
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
             const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
             const [share, setShare] = useState(false);
+            const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
+            const [mythicSeen, setMythicSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
             const longPressTimers = useRef({});
+            const longPressFlag = useRef({});
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
+            useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
+            useEffect(() => { localStorage.setItem('mythic', JSON.stringify(mythicSeen)); }, [mythicSeen]);
 
-            const tot = sprites.reduce((s, sp) => s + sp.v.length, 0);
+            const tot = 61;
             const col = collected.length;
             const mas = mastered.length;
+            const isMythic = mas === tot && tot > 0;
+
+            useEffect(() => {
+                if (isMythic && !mythicSeen) {
+                    setMythicSeen(true);
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+                }
+            }, [isMythic, mythicSeen]);
 
             const toggle = (n, v) => {
                 const id = n + '-' + v;
@@ -74,6 +89,7 @@
                 const id = n + '-' + v;
                 const c = collected.includes(id);
                 const m = mastered.includes(id);
+                
                 if (!c) { 
                     setCollected(p => [...p, id]); 
                     setMastered(p => [...p, id]); 
@@ -84,12 +100,15 @@
                 else { 
                     setMastered(p => p.filter(x => x !== id)); 
                 }
+                if (navigator.vibrate) navigator.vibrate(60);
             };
 
             const handleTouchStart = (e, n, v) => {
                 e.preventDefault();
                 const id = n + '-' + v;
+                longPressFlag.current[id] = false;
                 longPressTimers.current[id] = setTimeout(() => {
+                    longPressFlag.current[id] = true;
                     longPress(n, v);
                 }, 500);
             };
@@ -97,27 +116,40 @@
             const handleTouchEnd = (e, n, v) => {
                 e.preventDefault();
                 const id = n + '-' + v;
+                const isLongPress = longPressFlag.current[id];
+                
                 if (longPressTimers.current[id]) {
                     clearTimeout(longPressTimers.current[id]);
                     delete longPressTimers.current[id];
+                }
+                
+                if (!isLongPress) {
                     toggle(n, v);
                 }
+                
+                longPressFlag.current[id] = false;
             };
 
+            const bgColor = dark ? '#0f172a' : '#f8fafc';
+            const textColor = dark ? '#e2e8f0' : '#1e293b';
+            const cardBg = dark ? 'rgba(30,41,59,0.4)' : 'rgba(226,232,240,0.5)';
+            const cardBorder = dark ? 'rgba(100,116,139,0.3)' : 'rgba(148,163,184,0.3)';
+            const accentColor = isMythic ? '#a855f7' : '#06b6d4';
+
             if (share) {
-                return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
-                    <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: 'rgba(30,41,59,0.6)', color: '#06b6d4', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
-                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', color: '#06b6d4' }}>RUNNERS</h1>
+                return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem', background: bgColor, color: textColor, minHeight: '100vh' }}>
+                    <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', color: accentColor }}>{isMythic ? '✨ MYTHIC ✨' : 'RUNNERS'}</h1>
                     <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{Math.round((col/tot)*100)}% • {col}/{tot}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
                         {sprites.map(sp => (
-                            <div key={sp.name} style={{ background: 'rgba(30,41,59,0.4)', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', border: '1px solid rgba(100,116,139,0.3)' }}>
+                            <div key={sp.name} style={{ background: cardBg, padding: '0.75rem', borderRadius: '0.5rem', fontSize: '0.75rem', border: `1px solid ${cardBorder}` }}>
                                 <strong>{sp.name}</strong>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2px', marginTop: '0.25rem' }}>
                                     {sp.v.map(vv => {
                                         const id = sp.name + '-' + vv;
                                         const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
-                                        return <div key={vv} style={{ width: '16px', height: '16px', border: '1px solid ' + cols[vv], backgroundColor: collected.includes(id) ? cols[vv] : 'transparent' }} />;
+                                        return <div key={vv} style={{ width: '16px', height: '16px', border: `1px solid ${cols[vv]}`, backgroundColor: collected.includes(id) ? cols[vv] : 'transparent' }} />;
                                     })}
                                 </div>
                             </div>
@@ -126,73 +158,86 @@
                 </div>;
             }
 
-            return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem' }}>
-                <div style={{ background: 'rgba(30,41,59,0.5)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: '1px solid rgba(100,116,139,0.3)' }}>
-                    <span style={{ color: '#06b6d4', fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
-                </div>
-                <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>RUNNERS</h1>
-                <button onClick={() => setShare(true)} style={{ padding: '0.75rem 1.5rem', background: 'rgba(30,41,59,0.6)', color: '#06b6d4', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', marginBottom: '2rem', fontSize: '1rem' }}>↑ Screenshot</button>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
-                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                        <Pie col={col} tot={tot} r={40} col_val="#06b6d4" />
+            return <div style={{ background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                        <div />
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>↑</button>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                        </div>
                     </div>
-                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                        <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" />
-                    </div>
-                    <div style={{ background: 'rgba(30,41,59,0.4)', padding: '2rem', borderRadius: '1rem', border: '1px solid rgba(100,116,139,0.3)', textAlign: 'center' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
-                        <Pie col={col} tot={tot} r={40} col_val="#06b6d4" />
-                    </div>
-                </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                    {sprites.map(sp => {
-                        const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
-                        const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
-                        return (
-                            <div key={sp.name} style={{ background: 'rgba(30,41,59,0.4)', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid rgba(100,116,139,0.3)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                    <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</div>
-                                    {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
+                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
+                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
+                    </div>
+
+                    <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: '1rem 0', background: isMythic ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        {isMythic ? '✨ MYTHIC ✨' : 'RUNNERS'}
+                    </h1>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
+                            <Pie col={col} tot={tot} r={40} col_val="#06b6d4" format="fraction" />
+                        </div>
+                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
+                            <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" format="fraction" />
+                        </div>
+                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
+                            <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                        {sprites.map(sp => {
+                            const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
+                            const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                            return (
+                                <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</div>
+                                        {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem' }}>★</span>}
+                                    </div>
+                                    <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{c}/{sp.v.length}</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                                        {sp.v.map(vv => {
+                                            const id = sp.name + '-' + vv;
+                                            const isC = collected.includes(id);
+                                            const isM = mastered.includes(id);
+                                            const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
+                                            const txtCol = isC && (cols[vv] === '#ffffff' || cols[vv] === '#facc15' || cols[vv] === '#eab308') ? '#000' : 'white';
+                                            return (
+                                                <button
+                                                    key={vv}
+                                                    style={{
+                                                        padding: '0.75rem',
+                                                        border: `2px solid ${cols[vv]}`,
+                                                        borderRadius: '0.5rem',
+                                                        backgroundColor: isC ? cols[vv] : 'transparent',
+                                                        color: txtCol,
+                                                        cursor: 'pointer',
+                                                        fontWeight: 600,
+                                                        opacity: isC ? 1 : 0.4,
+                                                        transition: 'all 0.3s',
+                                                        WebkitUserSelect: 'none',
+                                                        userSelect: 'none'
+                                                    }}
+                                                    onContextMenu={(e) => e.preventDefault()}
+                                                    onTouchStart={(e) => handleTouchStart(e, sp.name, vv)}
+                                                    onTouchEnd={(e) => handleTouchEnd(e, sp.name, vv)}
+                                                >
+                                                    {vv}{isM ? ' ★' : ''}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <div style={{ fontSize: '0.875rem', opacity: 0.7, marginBottom: '1rem' }}>{c}/{sp.v.length}</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-                                    {sp.v.map(vv => {
-                                        const id = sp.name + '-' + vv;
-                                        const isC = collected.includes(id);
-                                        const isM = mastered.includes(id);
-                                        const cols = { Base: '#94a3b8', Gold: '#eab308', Gummy: '#ec4899', Galaxy: '#6366f1' };
-                                        const txtCol = isC && (cols[vv] === '#ffffff' || cols[vv] === '#facc15' || cols[vv] === '#eab308') ? '#000' : 'white';
-                                        return (
-                                            <button
-                                                key={vv}
-                                                style={{
-                                                    padding: '0.75rem',
-                                                    border: '2px solid ' + cols[vv],
-                                                    borderRadius: '0.5rem',
-                                                    backgroundColor: isC ? cols[vv] : 'transparent',
-                                                    color: txtCol,
-                                                    cursor: 'pointer',
-                                                    fontWeight: 600,
-                                                    opacity: isC ? 1 : 0.4,
-                                                    transition: 'all 0.3s',
-                                                    userSelect: 'none'
-                                                }}
-                                                onTouchStart={(e) => handleTouchStart(e, sp.name, vv)}
-                                                onTouchEnd={(e) => handleTouchEnd(e, sp.name, vv)}
-                                                onTouchMove={() => { Object.values(longPressTimers.current).forEach(t => clearTimeout(t)); longPressTimers.current = {}; }}
-                                            >
-                                                {vv}{isM ? ' ★' : ''}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>;
         }
