@@ -36,7 +36,6 @@
             const id = `m${Math.random().toString(36).substr(2, 9)}`;
             const displayText = format === 'fraction' ? `${col}/${tot}` : `${Math.round(pct)}%`;
             
-            // Create pie path
             const rad = (pct * 360) / 100;
             const isLarge = pct > 50 ? 1 : 0;
             const x1 = r + 10 + r * Math.cos(-Math.PI / 2);
@@ -70,7 +69,7 @@
             const col_val = '#06b6d4';
             
             return (
-                <svg width="50" height="50" viewBox="0 0 50 50" style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
+                <svg width="50" height="50" viewBox="0 0 50 50" style={{ position: 'absolute', top: '8px', right: '8px' }}>
                     <circle cx="25" cy="25" r={r} fill="none" stroke={col_val} strokeWidth="2.5" opacity="0.2" />
                     <circle cx="25" cy="25" r={r} fill="none" stroke={col_val} strokeWidth="2.5" strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.3s', transform: 'rotate(-90deg)', transformOrigin: '25px 25px' }} />
                     <text x="25" y="30" textAnchor="middle" fontSize="11" fontWeight="bold" fill={col_val}>{col}/{tot}</text>
@@ -78,12 +77,24 @@
             );
         };
 
+        const MythicPopup = ({ onClose }) => (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ background: 'linear-gradient(135deg, #1a0033, #330066)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #a855f7' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
+                    <h2 style={{ color: '#a855f7', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>MYTHIC!</h2>
+                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All 61 sprites mastered. You've achieved perfection!</p>
+                    <button onClick={onClose} style={{ padding: '0.75rem 2rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' }}>✨ Celebrate ✨</button>
+                </div>
+            </div>
+        );
+
         function App() {
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
             const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
             const [share, setShare] = useState(false);
             const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
             const [mythicSeen, setMythicSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
+            const [showMythicPopup, setShowMythicPopup] = useState(false);
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
 
@@ -100,6 +111,7 @@
             useEffect(() => {
                 if (isMythic && !mythicSeen) {
                     setMythicSeen(true);
+                    setShowMythicPopup(true);
                     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
                 }
             }, [isMythic, mythicSeen]);
@@ -164,7 +176,7 @@
             if (share) {
                 return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem', background: bgColor, color: textColor, minHeight: '100vh' }}>
                     <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
-                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', color: accentColor }}>{isMythic ? '✨ MYTHIC ✨' : 'RUNNERS'}</h1>
+                    <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: '1rem 0', color: accentColor }}>{isMythic ? 'MYTHIC' : 'RUNNERS'}</h1>
                     <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{Math.round((col/tot)*100)}% • {col}/{tot}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
                         {sprites.map(sp => (
@@ -184,6 +196,7 @@
             }
 
             return <div style={{ background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
+                {showMythicPopup && <MythicPopup onClose={() => setShowMythicPopup(false)} />}
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                         <div />
@@ -197,8 +210,8 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master
                     </div>
 
-                    <h1 style={{ fontSize: '3.5rem', fontWeight: 900, margin: '1rem 0', background: isMythic ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        {isMythic ? '✨ MYTHIC ✨' : 'RUNNERS'}
+                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: isMythic ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        {isMythic ? 'MYTHIC' : 'RUNNERS'}
                     </h1>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
@@ -223,7 +236,7 @@
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative' }}>
                                     <SpriteWheel col={c} tot={sp.v.length} dark={dark} />
-                                    <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>
+                                    <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem', minHeight: '1.5rem' }}>
                                         {sp.name}
                                         {m === sp.v.length && sp.v.length > 0 && <span style={{ fontSize: '1.5rem', marginLeft: '0.5rem' }}>★</span>}
                                     </div>
