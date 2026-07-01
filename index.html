@@ -192,7 +192,7 @@
                                             height: '9px',
                                             borderRadius: '50%',
                                             background: isCollected ? color : '#4b5563',
-                                            border: isMastered ? `1px solid #fbbf24` : '1px solid transparent',
+                                            border: isMastered ? `1px solid ${masteredAccent}` : '1px solid transparent',
                                             boxShadow: isMastered ? 'inset 0 0 0 0.5px #000' : 'none',
                                             boxSizing: 'border-box'
                                         }}
@@ -289,6 +289,7 @@
                 ? (dark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(168, 85, 247, 0.6)')
                 : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(71,85,105,0.4)');
             const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
+            const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
 
             if (share) {
                 return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bgColor, color: textColor, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -341,7 +342,7 @@
                     </div>
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
-                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot
+                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot
                     </div>
 
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
@@ -356,7 +357,7 @@
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                                <Pie col={mas} tot={tot} r={40} col_val="#fbbf24" format="fraction" />
+                                <Pie col={mas} tot={tot} r={40} col_val={masteredAccent} format="fraction" />
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
@@ -370,7 +371,7 @@
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             return (
-                                <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative' }}>
+                                <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative', boxShadow: isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.4)' : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                         <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>
                                             {sp.name}
@@ -417,7 +418,7 @@
                                                             width: '90%', 
                                                             height: '90%', 
                                                             objectFit: 'contain',
-                                                            filter: isM ? 'drop-shadow(0 0 6px #fbbf24)' : 'none'
+                                                            filter: isM ? `drop-shadow(0 0 6px ${masteredAccent})` : 'none'
                                                         }} 
                                                         alt={vv}
                                                         onError={(e) => { e.target.style.display = 'none'; }}
