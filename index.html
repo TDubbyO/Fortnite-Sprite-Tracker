@@ -306,7 +306,8 @@
                         id, xPct: home.x, yPct: home.y,
                         wp: [jitter(), jitter(), jitter()],
                         roamDuration,
-                        hopDuration: clamp(roamDuration / 7, 0.55, 1.1),
+                        hopDuration: 0.6 + Math.random() * 0.55,
+                        hopDelay: Math.random() * 1.2,
                         roamDelay: Math.random() * 3,
                         gatherDelay: Math.random() * staggerStep * pool.length * 0.6
                     };
@@ -541,7 +542,7 @@
                                                 '--x3': `${item.wp[2].x}%`, '--y3': `${item.wp[2].y}%`
                                             }}
                                         >
-                                            <img src={getImagePath(info.name, info.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain', animation: !isGathering ? `spriteHop ${item.hopDuration}s ease-in-out infinite` : 'none' }} alt="" />
+                                            <img src={getImagePath(info.name, info.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain', animation: !isGathering ? `spriteHop ${item.hopDuration}s ease-in-out ${item.hopDelay}s infinite` : 'none' }} alt="" />
                                         </div>
                                     );
                                 })}
