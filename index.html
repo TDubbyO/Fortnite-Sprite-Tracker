@@ -270,7 +270,7 @@
 
             // Keep wander points clear of the chest itself (a disk around the
             // stage center) by pushing anything too close radially outward.
-            const CHEST_EXCLUDE_RADIUS = 30; // percent of stage size
+            const CHEST_EXCLUDE_RADIUS = 21; // percent of stage size
             const keepClearOfChest = (x, y) => {
                 const dx = x - 50, dy = y - 50;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -530,16 +530,18 @@
                                     );
                                 })}
 
-                                {/* Chest image, centered */}
+                                {/* Chest image, centered — shrinks and shifts back on open so the reveal isn't sitting directly on top of it */}
                                 <img
                                     src={chestSrc}
                                     {...noCalloutImgProps}
                                     style={{
                                         ...noCalloutImgProps.style,
-                                        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                                        width: '150px',
-                                        height: '150px',
+                                        position: 'absolute', top: '50%', left: '50%',
+                                        transform: roulettePhase === 'burst' ? 'translate(calc(-50% - 16px), calc(-50% - 16px))' : 'translate(-50%, -50%)',
+                                        width: roulettePhase === 'burst' ? '120px' : '150px',
+                                        height: roulettePhase === 'burst' ? '120px' : '150px',
                                         objectFit: 'contain',
+                                        transition: 'width 0.45s ease-out, height 0.45s ease-out, transform 0.45s ease-out',
                                         animation: roulettePhase === 'shake' ? 'chestShake 0.5s ease-in-out 2' : 'none',
                                         filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${masteredAccent})` : 'none'
                                     }}
