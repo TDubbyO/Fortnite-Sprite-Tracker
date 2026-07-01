@@ -504,17 +504,17 @@
             };
 
             const bgColor = isMasterCollector 
-                ? (dark ? '#2d1b4e' : '#faf5ff')
-                : (dark ? '#0f172a' : '#f1f5f9');
+                ? (dark ? '#2d1b4e' : '#fdf2f8')
+                : (dark ? '#0f172a' : '#faf5ff');
             const textColor = isMasterCollector 
-                ? (dark ? '#e2e8f0' : '#4c1d95')
-                : (dark ? '#e2e8f0' : '#0f172a');
+                ? (dark ? '#e2e8f0' : '#831843')
+                : (dark ? '#e2e8f0' : '#4c1d95');
             const cardBg = isMasterCollector 
-                ? (dark ? 'rgba(88, 28, 135, 0.3)' : 'rgba(192, 132, 250, 0.25)')
-                : (dark ? 'rgba(30,41,59,0.4)' : 'rgba(226,232,240,0.7)');
+                ? (dark ? 'rgba(88, 28, 135, 0.3)' : 'rgba(236, 72, 153, 0.18)')
+                : (dark ? 'rgba(30,41,59,0.4)' : 'rgba(192, 132, 250, 0.25)');
             const cardBorder = isMasterCollector 
-                ? (dark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(168, 85, 247, 0.6)')
-                : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(71,85,105,0.4)');
+                ? (dark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(236, 72, 153, 0.55)')
+                : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(168, 85, 247, 0.6)');
             const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
             const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
 
@@ -527,7 +527,10 @@
                 return <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: textColor, padding: '2rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                         <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
-                        <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                        </div>
                     </div>
 
                     <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
