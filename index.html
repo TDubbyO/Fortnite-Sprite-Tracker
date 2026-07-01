@@ -48,7 +48,7 @@
 
         // Shared style/props to stop the native long-press image menu (context menu,
         // "save image", callout) from appearing on iOS/Android while still allowing
-        // our own onTouchStart/onTouchEnd long-press logic to run.
+        // our own onPointerDown/onPointerUp long-press logic to run.
         const noCalloutImgProps = {
             draggable: false,
             onDragStart: (e) => e.preventDefault(),
@@ -223,30 +223,45 @@
                 }
             };
 
-            const handleStart = (e, n, v) => {
-                if (e.touches) e.preventDefault();
+            // Pointer Events fire exactly once per physical press across mouse,
+            // touch, and pen (no duplicate/"ghost" mouse events like touch
+            // handlers can trigger), which is what was causing a completed
+            // long-press to be immediately undone by a delayed synthetic tap.
+            const handlePointerDown = (e, n, v) => {
+                e.preventDefault();
                 const id = n + '-' + v;
                 longPressFlag.current[id] = false;
+                try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
                 longPressTimers.current[id] = setTimeout(() => {
                     longPressFlag.current[id] = true;
                     longPress(n, v);
                 }, 500);
             };
 
-            const handleEnd = (e, n, v) => {
-                if (e.touches) e.preventDefault();
+            const handlePointerUp = (e, n, v) => {
                 const id = n + '-' + v;
                 const isLongPress = longPressFlag.current[id];
-                
+
                 if (longPressTimers.current[id]) {
                     clearTimeout(longPressTimers.current[id]);
                     delete longPressTimers.current[id];
                 }
-                
+
                 if (!isLongPress) {
                     toggle(n, v);
                 }
-                
+
+                longPressFlag.current[id] = false;
+            };
+
+            // Pointer left the element or the gesture was cancelled (e.g. the OS
+            // took over for a system gesture) — just clean up, don't toggle.
+            const handlePointerCancel = (e, n, v) => {
+                const id = n + '-' + v;
+                if (longPressTimers.current[id]) {
+                    clearTimeout(longPressTimers.current[id]);
+                    delete longPressTimers.current[id];
+                }
                 longPressFlag.current[id] = false;
             };
 
@@ -265,7 +280,7 @@
             const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
 
             if (share) {
-                return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '2rem', background: bgColor, color: textColor, minHeight: '100vh' }}>
+                return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '2rem 1rem', background: bgColor, color: textColor, minHeight: '100vh', boxSizing: 'border-box' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                         <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -276,16 +291,16 @@
                     
                     <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Full collection</h2>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1.5rem' }}>
                         {sprites.map(sp => {
                             const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
                             const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
                             const c = collectedStatus.filter(Boolean).length;
                             
                             return (
-                                <div key={sp.name} style={{ textAlign: 'center' }}>
+                                <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
                                     <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
-                                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
+                                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem', overflowWrap: 'break-word' }}>
                                         {sp.name}
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: accentColor, fontWeight: 500 }}>
@@ -361,10 +376,10 @@
                                                 <div
                                                     key={vv}
                                                     onContextMenu={(e) => e.preventDefault()}
-                                                    onTouchStart={(e) => handleStart(e, sp.name, vv)}
-                                                    onTouchEnd={(e) => handleEnd(e, sp.name, vv)}
-                                                    onMouseDown={(e) => handleStart(e, sp.name, vv)}
-                                                    onMouseUp={(e) => handleEnd(e, sp.name, vv)}
+                                                    onPointerDown={(e) => handlePointerDown(e, sp.name, vv)}
+                                                    onPointerUp={(e) => handlePointerUp(e, sp.name, vv)}
+                                                    onPointerCancel={(e) => handlePointerCancel(e, sp.name, vv)}
+                                                    onPointerLeave={(e) => handlePointerCancel(e, sp.name, vv)}
                                                     style={{
                                                         width: '100%',
                                                         height: '120px',
@@ -376,7 +391,9 @@
                                                         background: 'rgba(0,0,0,0.1)',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        justifyContent: 'center'
+                                                        justifyContent: 'center',
+                                                        touchAction: 'manipulation',
+                                                        WebkitTouchCallout: 'none'
                                                     }}
                                                 >
                                                     <img 
