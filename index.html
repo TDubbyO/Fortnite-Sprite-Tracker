@@ -109,6 +109,7 @@
             const [mythicSeen, setMythicSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
             const [showMythicPopup, setShowMythicPopup] = useState(false);
             const [mythicActive, setMythicActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
+            const [currentVariant, setCurrentVariant] = useState({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
 
@@ -157,6 +158,23 @@
                 else { 
                     setMastered(p => p.filter(x => x !== id)); 
                 }
+            };
+
+            const cycleVariant = (spriteName, variants) => {
+                const collectedVariants = variants.filter(v => collected.includes(spriteName + '-' + v));
+                if (collectedVariants.length === 0) return;
+                
+                const currentIdx = currentVariant[spriteName] || 0;
+                const nextIdx = (currentIdx + 1) % collectedVariants.length;
+                setCurrentVariant(prev => ({ ...prev, [spriteName]: nextIdx }));
+            };
+
+            const getCurrentVariantImage = (spriteName, variants) => {
+                const collectedVariants = variants.filter(v => collected.includes(spriteName + '-' + v));
+                if (collectedVariants.length === 0) return variants[0];
+                
+                const currentIdx = currentVariant[spriteName] || 0;
+                return collectedVariants[currentIdx];
             };
 
             const handleStart = (e, n, v) => {
@@ -269,7 +287,42 @@
                                 <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative' }}>
                                     <SpriteWheel col={c} tot={sp.v.length} />
                                     
-                                    <img src={getImagePath(sp.name, sp.v[0])} style={{ width: '100%', height: '140px', objectFit: 'contain', marginBottom: '1rem', background: 'rgba(0,0,0,0.1)', borderRadius: '0.5rem' }} alt={sp.name} onError={(e) => { e.target.style.display = 'none'; }} />
+                                    <img 
+                                        src={getImagePath(sp.name, getCurrentVariantImage(sp.name, sp.v))} 
+                                        onClick={() => cycleVariant(sp.name, sp.v)}
+                                        style={{ width: '100%', height: '140px', objectFit: 'contain', marginBottom: '0.75rem', background: 'rgba(0,0,0,0.1)', borderRadius: '0.5rem', cursor: 'pointer' }} 
+                                        alt={sp.name} 
+                                        onError={(e) => { e.target.style.display = 'none'; }} 
+                                    />
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+                                        {sp.v.map(vv => {
+                                            const id = sp.name + '-' + vv;
+                                            const isC = collected.includes(id);
+                                            const isM = mastered.includes(id);
+                                            return (
+                                                <div 
+                                                    key={vv} 
+                                                    style={{ 
+                                                        width: '100%', 
+                                                        height: '60px', 
+                                                        borderRadius: '0.35rem',
+                                                        border: isM ? '2px solid #fbbf24' : '1px solid rgba(100,116,139,0.3)',
+                                                        overflow: 'hidden',
+                                                        opacity: isC ? 1 : 0.35,
+                                                        background: 'rgba(0,0,0,0.1)'
+                                                    }}
+                                                >
+                                                    <img 
+                                                        src={getImagePath(sp.name, vv)} 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                                                        alt={vv}
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                     
                                     <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem', height: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                         {sp.name}
