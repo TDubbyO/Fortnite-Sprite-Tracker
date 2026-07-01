@@ -140,19 +140,25 @@
                 }
             }, [mas, tot, mythicActive]);
 
-            const CompositeImage = ({ spriteName, variants }) => {
-                const sliceWidth = 25;
+            const CompositeImage = ({ spriteName, variants, collectedStatus }) => {
+                const clips = [
+                    'inset(0 75% 0 0)',
+                    'inset(0 50% 0 25%)',
+                    'inset(0 25% 0 50%)',
+                    'inset(0 0 0 75%)'
+                ];
+                
                 return (
                     <div style={{ display: 'flex', width: '100%', height: '100%', gap: 0 }}>
                         {variants.map((variant, idx) => (
-                            <div key={variant} style={{ flex: 1, overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
+                            <div key={variant} style={{ flex: 1, overflow: 'hidden', opacity: collectedStatus[idx] ? 1 : 0.25, transition: 'opacity 0.3s' }}>
                                 <img 
                                     src={getImagePath(spriteName, variant)} 
                                     style={{ 
-                                        width: '400%',
+                                        width: '100%',
                                         height: '100%',
-                                        objectFit: 'cover',
-                                        marginLeft: `-${idx * 100}%`
+                                        objectFit: 'contain',
+                                        clipPath: clips[idx]
                                     }} 
                                     alt={variant}
                                 />
@@ -237,19 +243,17 @@
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
-                            const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             const isC = c > 0;
-                            const isM = m === sp.v.length && sp.v.length > 0;
                             return (
                                 <div key={sp.name} style={{ textAlign: 'center' }}>
-                                    <div style={{ width: '100%', height: '100px', marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)', opacity: isC ? 1 : 0.25, filter: isM ? 'drop-shadow(0 0 6px #fbbf24)' : 'none', transition: 'all 0.3s' }}>
+                                    <div style={{ width: '100%', height: '100px', marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)', opacity: isC ? 1 : 0.25, transition: 'all 0.3s' }}>
                                         <CompositeImage spriteName={sp.name} variants={sp.v} />
                                     </div>
                                     <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                                         {sp.name}
                                     </div>
                                     <div style={{ fontSize: '0.8125rem', color: accentColor, fontWeight: 500 }}>
-                                        {c}/{sp.v.length}{isM ? ' · ✨' : ''}
+                                        {c}/{sp.v.length}
                                     </div>
                                 </div>
                             );
