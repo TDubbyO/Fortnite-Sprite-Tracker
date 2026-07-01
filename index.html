@@ -159,8 +159,8 @@
                 }
             };
 
-            const handleTouchStart = (e, n, v) => {
-                e.preventDefault();
+            const handleStart = (e, n, v) => {
+                if (e.touches) e.preventDefault();
                 const id = n + '-' + v;
                 longPressFlag.current[id] = false;
                 longPressTimers.current[id] = setTimeout(() => {
@@ -169,8 +169,8 @@
                 }, 500);
             };
 
-            const handleTouchEnd = (e, n, v) => {
-                e.preventDefault();
+            const handleEnd = (e, n, v) => {
+                if (e.touches) e.preventDefault();
                 const id = n + '-' + v;
                 const isLongPress = longPressFlag.current[id];
                 
@@ -300,8 +300,10 @@
                                                         userSelect: 'none'
                                                     }}
                                                     onContextMenu={(e) => e.preventDefault()}
-                                                    onTouchStart={(e) => handleTouchStart(e, sp.name, vv)}
-                                                    onTouchEnd={(e) => handleTouchEnd(e, sp.name, vv)}
+                                                    onTouchStart={(e) => handleStart(e, sp.name, vv)}
+                                                    onTouchEnd={(e) => handleEnd(e, sp.name, vv)}
+                                                    onMouseDown={(e) => handleStart(e, sp.name, vv)}
+                                                    onMouseUp={(e) => handleEnd(e, sp.name, vv)}
                                                 >
                                                     {vv}{isM ? ' ★' : ''}
                                                 </button>
