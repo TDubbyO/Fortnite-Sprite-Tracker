@@ -140,32 +140,52 @@
                 }
             }, [mas, tot, mythicActive]);
 
-            const CompositeImage = ({ spriteName, variants, collectedStatus }) => {
-                const [loaded, setLoaded] = React.useState({});
-                const positions = ['0% center', '33% center', '66% center', '100% center'];
+            const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus }) => {
+                const [loaded, setLoaded] = React.useState(false);
+                const variantColors = {
+                    'Base': '#94a3b8',
+                    'Gold': '#fbbf24',
+                    'Gummy': '#ec4899',
+                    'Galaxy': '#a855f7'
+                };
                 
                 return (
-                    <div style={{ display: 'flex', width: '100%', height: '100%', gap: 0 }}>
-                        {variants.map((variant, idx) => {
-                            const isCollected = collectedStatus ? collectedStatus[idx] : false;
-                            const key = `${spriteName}-${variant}`;
-                            return (
-                                <div key={variant} style={{ flex: 1, overflow: 'hidden', opacity: isCollected ? 1 : 0.25, transition: 'opacity 0.3s', background: loaded[key] ? 'transparent' : '#666' }}>
-                                    <img 
-                                        src={getImagePath(spriteName, variant)}
-                                        style={{ 
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                            objectPosition: positions[idx],
-                                            display: loaded[key] ? 'block' : 'none'
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '100%', height: '100px', marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
+                            <img 
+                                src={getImagePath(spriteName, 'Base')}
+                                style={{ 
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                }}
+                                alt="Base"
+                                onLoad={() => setLoaded(true)}
+                            />
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                            {variants.map((variant, idx) => {
+                                const isCollected = collectedStatus && collectedStatus[idx];
+                                const isMastered = masteredStatus && masteredStatus[idx];
+                                const color = variantColors[variant] || '#94a3b8';
+                                
+                                return (
+                                    <div 
+                                        key={variant}
+                                        style={{
+                                            width: '12px',
+                                            height: '12px',
+                                            borderRadius: '50%',
+                                            background: isCollected ? color : '#4b5563',
+                                            border: isMastered ? `2px solid #fbbf24` : `1px solid transparent`,
+                                            boxSizing: 'border-box'
                                         }}
-                                        alt={variant}
-                                        onLoad={() => setLoaded(p => ({...p, [key]: true}))}
+                                        title={variant}
                                     />
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 );
             };
@@ -242,19 +262,19 @@
                     
                     <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Full collection</h2>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
                         {sprites.map(sp => {
-                            const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
+                            const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
+                            const c = collectedStatus.filter(Boolean).length;
+                            
                             return (
                                 <div key={sp.name} style={{ textAlign: 'center' }}>
-                                    <div style={{ width: '100%', height: '100px', marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)', transition: 'all 0.3s' }}>
-                                        <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} />
-                                    </div>
-                                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                    <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
+                                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
                                         {sp.name}
                                     </div>
-                                    <div style={{ fontSize: '0.8125rem', color: accentColor, fontWeight: 500 }}>
+                                    <div style={{ fontSize: '0.75rem', color: accentColor, fontWeight: 500 }}>
                                         {c}/{sp.v.length}
                                     </div>
                                 </div>
@@ -313,7 +333,7 @@
                                         <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>
                                             {sp.name}
                                         </div>
-                                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: accentColor }}>
+                                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: `2px solid ${accentColor}` }}>
                                             {c}/{sp.v.length}
                                         </div>
                                     </div>
