@@ -148,7 +148,7 @@
                     if (!canvas) return;
 
                     const size = 100;
-                    const variantWidth = size / 4;
+                    const sliceWidth = size / 4;
                     canvas.width = size;
                     canvas.height = size;
                     const ctx = canvas.getContext('2d');
@@ -159,7 +159,8 @@
                         img.crossOrigin = 'anonymous';
                         img.src = getImagePath(spriteName, variant);
                         img.onload = () => {
-                            ctx.drawImage(img, idx * variantWidth, 0, variantWidth, size);
+                            // Draw only a vertical slice of the image at position idx * sliceWidth
+                            ctx.drawImage(img, idx * sliceWidth, 0, sliceWidth, size, idx * sliceWidth, 0, sliceWidth, size);
                             loaded++;
                         };
                         img.onerror = () => {
