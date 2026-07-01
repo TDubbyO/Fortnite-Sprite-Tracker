@@ -42,7 +42,56 @@
             return `/images/${mappedName}-${variant.toLowerCase()}.webp`;
         };
 
-        const Pie = ({ col, tot, r, col_val, format }) => {
+        const CompositeImage = ({ spriteName, variants, isCollected, isMastered }) => {
+            const canvasRef = useRef(null);
+            const [loaded, setLoaded] = useState(false);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+
+                const size = 140;
+                const quadSize = size / 2;
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                let imagesLoaded = 0;
+                const positions = [
+                    { x: 0, y: 0, variant: variants[0] },
+                    { x: quadSize, y: 0, variant: variants[1] },
+                    { x: 0, y: quadSize, variant: variants[2] },
+                    { x: quadSize, y: quadSize, variant: variants[3] }
+                ];
+
+                positions.forEach(pos => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.src = getImagePath(spriteName, pos.variant);
+                    img.onload = () => {
+                        ctx.drawImage(img, pos.x, pos.y, quadSize, quadSize);
+                        imagesLoaded++;
+                        if (imagesLoaded === 4) {
+                            setLoaded(true);
+                        }
+                    };
+                });
+            }, [spriteName, variants]);
+
+            return (
+                <canvas
+                    ref={canvasRef}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        opacity: isCollected ? 1 : 0.25,
+                        filter: isMastered ? 'drop-shadow(0 0 6px #fbbf24)' : 'none',
+                        transition: 'all 0.3s'
+                    }}
+                />
+            );
+        };
             const pct = tot > 0 ? (col / tot) * 100 : 0;
             const id = `m${Math.random().toString(36).substr(2, 9)}`;
             const displayText = format === 'fraction' ? `${col}/${tot}` : `${Math.round(pct)}%`;
@@ -220,49 +269,25 @@
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
+                            const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                            const isC = c > 0;
+                            const isM = m === sp.v.length && sp.v.length > 0;
                             return (
-                                <div key={sp.name} style={{ background: cardBg, padding: '1rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
-                                        <strong>{sp.name}</strong>
-                                        <span style={{ color: accentColor, fontWeight: 600 }}>{c}/{sp.v.length}</span>
+                                <div key={sp.name} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <div style={{ width: '140px', height: '140px', flexShrink: 0, borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
+                                        <CompositeImage spriteName={sp.name} variants={sp.v} isCollected={isC} isMastered={isM} />
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                        {sp.v.map(vv => {
-                                            const id = sp.name + '-' + vv;
-                                            const isC = collected.includes(id);
-                                            const isM = mastered.includes(id);
-                                            return (
-                                                <div
-                                                    key={vv}
-                                                    style={{
-                                                        flex: 1,
-                                                        height: '50px',
-                                                        borderRadius: '0.35rem',
-                                                        overflow: 'hidden',
-                                                        opacity: isC ? 1 : 0.25,
-                                                        background: 'rgba(0,0,0,0.1)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <img 
-                                                        src={getImagePath(sp.name, vv)} 
-                                                        style={{ 
-                                                            width: '85%', 
-                                                            height: '85%', 
-                                                            objectFit: 'contain',
-                                                            filter: isM ? 'drop-shadow(0 0 5px #fbbf24)' : 'none'
-                                                        }} 
-                                                        alt={vv}
-                                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                                            {sp.name}
+                                        </div>
+                                        <div style={{ color: accentColor, fontWeight: 600 }}>
+                                            {c}/{sp.v.length} collected
+                                        </div>
+                                        {isM && <div style={{ color: '#fbbf24', fontWeight: 600, marginTop: '0.25rem' }}>✨ All mastered</div>}
                                     </div>
                                 </div>
                             );
