@@ -11,25 +11,30 @@
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
         @keyframes chestShake {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            20% { transform: translateX(-6px) rotate(-3deg); }
-            40% { transform: translateX(6px) rotate(3deg); }
-            60% { transform: translateX(-4px) rotate(-2deg); }
-            80% { transform: translateX(4px) rotate(2deg); }
+            0%, 100% { transform: translate(-50%, -50%) translateX(0) rotate(0deg); }
+            20% { transform: translate(-50%, -50%) translateX(-6px) rotate(-3deg); }
+            40% { transform: translate(-50%, -50%) translateX(6px) rotate(3deg); }
+            60% { transform: translate(-50%, -50%) translateX(-4px) rotate(-2deg); }
+            80% { transform: translate(-50%, -50%) translateX(4px) rotate(2deg); }
         }
         @keyframes lidOpen {
             from { transform: rotate(0deg); }
             to { transform: rotate(-108deg); }
         }
         @keyframes burstFlash {
-            0% { opacity: 0; transform: scale(0.4); }
-            35% { opacity: 1; transform: scale(1.3); }
-            100% { opacity: 0; transform: scale(1.9); }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+            35% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.9); }
         }
         @keyframes popIn {
             0% { opacity: 0; transform: translateY(24px) scale(0.5); }
             60% { opacity: 1; transform: translateY(-8px) scale(1.08); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes popInCentered {
+            0% { opacity: 0; transform: translate(-50%, -50%) translateY(24px) scale(0.5); }
+            60% { opacity: 1; transform: translate(-50%, -50%) translateY(-8px) scale(1.08); }
+            100% { opacity: 1; transform: translate(-50%, -50%) translateY(0) scale(1); }
         }
         @keyframes sparkleFloat {
             0% { opacity: 0; transform: rotate(var(--rot, 0deg)) translate(36px) scale(0.3); }
@@ -173,6 +178,9 @@
             const [scatterItems, setScatterItems] = useState([]); // [{id, xPct, yPct, wp:[{x,y}x3], roamDuration, roamDelay, gatherDelay}]
             const [rouletteResult, setRouletteResult] = useState(null);
             const rouletteTimeoutRef = useRef(null);
+            const [frozenPositions, setFrozenPositions] = useState({}); // id -> {x, y} snapshot taken at click time
+            const stageRef = useRef(null);
+            const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
 
@@ -260,20 +268,34 @@
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
+            // Keep wander points clear of the chest itself (a disk around the
+            // stage center) by pushing anything too close radially outward.
+            const CHEST_EXCLUDE_RADIUS = 30; // percent of stage size
+            const keepClearOfChest = (x, y) => {
+                const dx = x - 50, dy = y - 50;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist >= CHEST_EXCLUDE_RADIUS) return { x, y };
+                const angle = dist === 0 ? Math.random() * Math.PI * 2 : Math.atan2(dy, dx);
+                const pushed = CHEST_EXCLUDE_RADIUS + Math.random() * 6;
+                return {
+                    x: clamp(50 + Math.cos(angle) * pushed, 4, 96),
+                    y: clamp(50 + Math.sin(angle) * pushed, 4, 92)
+                };
+            };
+
             // Each sprite gets a home spot plus 3 nearby waypoints (for a gentle
-            // infinite wander loop) and a random stagger delay for the "sucked
-            // into the chest" moment once Roll is pressed.
+            // infinite wander loop, kept clear of the chest) and a random stagger
+            // delay for the "sucked into the chest" moment once Roll is pressed.
             const generateScatterItems = (pool) => {
                 const staggerStep = Math.max(6, Math.min(30, Math.floor(360 / pool.length)));
                 return pool.map(id => {
-                    const xPct = 10 + Math.random() * 80;
-                    const yPct = 10 + Math.random() * 75;
-                    const jitter = () => ({
-                        x: clamp(xPct + (Math.random() * 26 - 13), 4, 96),
-                        y: clamp(yPct + (Math.random() * 26 - 13), 4, 92)
-                    });
+                    const home = keepClearOfChest(10 + Math.random() * 80, 10 + Math.random() * 75);
+                    const jitter = () => keepClearOfChest(
+                        clamp(home.x + (Math.random() * 26 - 13), 4, 96),
+                        clamp(home.y + (Math.random() * 26 - 13), 4, 92)
+                    );
                     return {
-                        id, xPct, yPct,
+                        id, xPct: home.x, yPct: home.y,
                         wp: [jitter(), jitter(), jitter()],
                         roamDuration: 4 + Math.random() * 4,
                         roamDelay: Math.random() * 3,
@@ -288,6 +310,7 @@
                     rouletteTimeoutRef.current = null;
                 }
                 setRouletteResult(null);
+                setFrozenPositions({});
                 setRoulettePhase('idle');
                 if (collected.length > 0) setScatterItems(generateScatterItems(collected));
             };
@@ -299,6 +322,7 @@
                 }
                 setRoulettePhase('idle');
                 setScatterItems([]);
+                setFrozenPositions({});
                 setRouletteResult(null);
             };
 
@@ -313,21 +337,52 @@
                 if (pool.length === 0 || scatterItems.length === 0) return;
                 if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
                 setRouletteResult(null);
-                setRoulettePhase('gather');
 
-                const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
-                const gatherDuration = maxDelay + 700; // stagger spread + fly-in transition
+                // Snapshot exactly where each sprite is on screen right now (mid
+                // wander) and lock it in as a static position, so the very next
+                // step has a real, stable starting point to transition from —
+                // rather than snapping straight to wherever the CSS animation's
+                // "home" value happened to be.
+                const container = stageRef.current;
+                const frozen = {};
+                if (container) {
+                    const rect = container.getBoundingClientRect();
+                    scatterItems.forEach(item => {
+                        const el = rouletteItemRefs.current[item.id];
+                        if (el) {
+                            const r = el.getBoundingClientRect();
+                            const cx = r.left + r.width / 2 - rect.left;
+                            const cy = r.top + r.height / 2 - rect.top;
+                            frozen[item.id] = {
+                                x: clamp((cx / rect.width) * 100, 0, 100),
+                                y: clamp((cy / rect.height) * 100, 0, 100)
+                            };
+                        }
+                    });
+                }
+                setFrozenPositions(frozen);
 
-                rouletteTimeoutRef.current = setTimeout(() => {
-                    setRoulettePhase('shake');
-                    if (navigator.vibrate) navigator.vibrate(40);
-                    rouletteTimeoutRef.current = setTimeout(() => {
-                        const finalId = pool[Math.floor(Math.random() * pool.length)];
-                        setRoulettePhase('burst');
-                        setRouletteResult(finalId);
-                        if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
-                    }, 650);
-                }, gatherDuration);
+                // Wait two paints: one to commit the frozen (non-animated, non-
+                // transitioning) position, then start the transition to the
+                // chest from that now-stable starting point.
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        setRoulettePhase('gather');
+                        const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
+                        const gatherDuration = maxDelay + 700;
+
+                        rouletteTimeoutRef.current = setTimeout(() => {
+                            setRoulettePhase('shake');
+                            if (navigator.vibrate) navigator.vibrate(40);
+                            rouletteTimeoutRef.current = setTimeout(() => {
+                                const finalId = pool[Math.floor(Math.random() * pool.length)];
+                                setRoulettePhase('burst');
+                                setRouletteResult(finalId);
+                                if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+                            }, 650);
+                        }, gatherDuration);
+                    });
+                });
             };
 
             useEffect(() => {
@@ -442,23 +497,27 @@
                         </div>
                     ) : (
                         <>
-                            <div style={{ position: 'relative', width: 'min(90vw, 460px)', height: 'min(90vw, 460px)', marginBottom: '2rem' }}>
+                            <div ref={stageRef} style={{ position: 'relative', width: 'min(90vw, 460px)', height: 'min(90vw, 460px)', marginBottom: '2rem' }}>
                                 {/* Every collected sprite wanders the stage until Roll is pressed, then flies into the chest */}
                                 {(roulettePhase === 'idle' || roulettePhase === 'gather') && scatterItems.map((item) => {
                                     const info = splitId(item.id);
                                     const isGathering = roulettePhase === 'gather';
+                                    const frozen = frozenPositions[item.id];
+                                    const baseX = frozen ? frozen.x : item.xPct;
+                                    const baseY = frozen ? frozen.y : item.yPct;
                                     return (
                                         <div
                                             key={item.id}
+                                            ref={el => { rouletteItemRefs.current[item.id] = el; }}
                                             style={{
                                                 position: 'absolute',
                                                 width: '42px',
                                                 height: '42px',
-                                                left: isGathering ? '50%' : `${item.xPct}%`,
-                                                top: isGathering ? '50%' : `${item.yPct}%`,
+                                                left: isGathering ? '50%' : `${baseX}%`,
+                                                top: isGathering ? '50%' : `${baseY}%`,
                                                 transform: `translate(-50%, -50%) scale(${isGathering ? 0.15 : 1})`,
                                                 opacity: isGathering ? 0 : 1,
-                                                animation: isGathering ? 'none' : `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite`,
+                                                animation: (!frozen && !isGathering) ? `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite` : 'none',
                                                 transition: isGathering ? `left 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, top 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, transform 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, opacity 0.35s ease-in ${item.gatherDelay + 300}ms` : 'none',
                                                 '--x0': `${item.xPct}%`, '--y0': `${item.yPct}%`,
                                                 '--x1': `${item.wp[0].x}%`, '--y1': `${item.wp[0].y}%`,
@@ -495,7 +554,7 @@
                                         {[0, 1, 2, 3, 4, 5].map(i => (
                                             <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent} 0%, transparent 75%)`, filter: 'blur(1.5px)', '--rot': `${i * 60}deg`, animation: `sparkleFloat 1s ease-out ${i * 0.05}s forwards` }} />
                                         ))}
-                                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100px', height: '100px', animation: 'popIn 0.5s ease-out 0.15s both', filter: `drop-shadow(0 0 12px ${masteredAccent})` }}>
+                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: '100px', height: '100px', animation: 'popInCentered 0.5s ease-out 0.15s both', filter: `drop-shadow(0 0 12px ${masteredAccent})` }}>
                                             <img src={getImagePath(resultInfo.name, resultInfo.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
                                         </div>
                                     </>
@@ -583,7 +642,7 @@
                     </div>
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
-                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot
+                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
