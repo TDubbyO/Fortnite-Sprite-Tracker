@@ -42,56 +42,7 @@
             return `/images/${mappedName}-${variant.toLowerCase()}.webp`;
         };
 
-        const CompositeImage = ({ spriteName, variants, isCollected, isMastered }) => {
-            const canvasRef = useRef(null);
-            const [loaded, setLoaded] = useState(false);
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-
-                const size = 140;
-                const quadSize = size / 2;
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-
-                let imagesLoaded = 0;
-                const positions = [
-                    { x: 0, y: 0, variant: variants[0] },
-                    { x: quadSize, y: 0, variant: variants[1] },
-                    { x: 0, y: quadSize, variant: variants[2] },
-                    { x: quadSize, y: quadSize, variant: variants[3] }
-                ];
-
-                positions.forEach(pos => {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.src = getImagePath(spriteName, pos.variant);
-                    img.onload = () => {
-                        ctx.drawImage(img, pos.x, pos.y, quadSize, quadSize);
-                        imagesLoaded++;
-                        if (imagesLoaded === 4) {
-                            setLoaded(true);
-                        }
-                    };
-                });
-            }, [spriteName, variants]);
-
-            return (
-                <canvas
-                    ref={canvasRef}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        opacity: isCollected ? 1 : 0.25,
-                        filter: isMastered ? 'drop-shadow(0 0 6px #fbbf24)' : 'none',
-                        transition: 'all 0.3s'
-                    }}
-                />
-            );
-        };
+        const Pie = ({ col, tot, r, col_val, format }) => {
             const pct = tot > 0 ? (col / tot) * 100 : 0;
             const id = `m${Math.random().toString(36).substr(2, 9)}`;
             const displayText = format === 'fraction' ? `${col}/${tot}` : `${Math.round(pct)}%`;
@@ -174,10 +125,66 @@
             const isMythic = mythicUnlocked && mythicActive;
 
             useEffect(() => {
+                if (mythicUnlocked && !mythicSeen) {
+                    setMythicSeen(true);
+                    setShowMythicPopup(true);
+                    if (navigator.vibrate) {
+                        navigator.vibrate([100, 50, 100, 50, 200]);
+                    }
+                }
+            }, [mythicUnlocked, mythicSeen]);
+
+            useEffect(() => {
                 if (mythicActive && mas < tot) {
                     setMythicActive(false);
                 }
             }, [mas, tot, mythicActive]);
+
+            const CompositeImage = ({ spriteName, variants, isCollected, isMastered }) => {
+                const canvasRef = useRef(null);
+
+                useEffect(() => {
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+
+                    const size = 140;
+                    const quadSize = size / 2;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+
+                    let imagesLoaded = 0;
+                    const positions = [
+                        { x: 0, y: 0, variant: variants[0] },
+                        { x: quadSize, y: 0, variant: variants[1] },
+                        { x: 0, y: quadSize, variant: variants[2] },
+                        { x: quadSize, y: quadSize, variant: variants[3] }
+                    ];
+
+                    positions.forEach(pos => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.src = getImagePath(spriteName, pos.variant);
+                        img.onload = () => {
+                            ctx.drawImage(img, pos.x, pos.y, quadSize, quadSize);
+                            imagesLoaded++;
+                        };
+                    });
+                }, [spriteName, variants]);
+
+                return (
+                    <canvas
+                        ref={canvasRef}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            opacity: isCollected ? 1 : 0.25,
+                            filter: isMastered ? 'drop-shadow(0 0 6px #fbbf24)' : 'none',
+                            transition: 'all 0.3s'
+                        }}
+                    />
+                );
+            };
 
             const toggle = (n, v) => {
                 const id = n + '-' + v;
