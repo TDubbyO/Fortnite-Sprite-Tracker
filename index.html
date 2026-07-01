@@ -32,9 +32,16 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes sparkleFloat {
-            0% { opacity: 0; transform: translateY(0) scale(0.3); }
-            30% { opacity: 1; }
-            100% { opacity: 0; transform: translateY(-36px) scale(1); }
+            0% { opacity: 0; transform: rotate(var(--rot, 0deg)) translate(36px) scale(0.3); }
+            30% { opacity: 0.8; }
+            100% { opacity: 0; transform: rotate(var(--rot, 0deg)) translate(66px) scale(1); }
+        }
+        @keyframes roam {
+            0% { left: var(--x0); top: var(--y0); }
+            25% { left: var(--x1); top: var(--y1); }
+            50% { left: var(--x2); top: var(--y2); }
+            75% { left: var(--x3); top: var(--y3); }
+            100% { left: var(--x0); top: var(--y0); }
         }
         @keyframes shuffleBob {
             0%, 100% { transform: translateY(0); }
@@ -82,8 +89,8 @@
         // Sprite names never contain a hyphen, so the LAST hyphen always
         // separates the variant (Base/Gold/Gummy/Galaxy) from the name.
         // Update these two filenames if your uploaded chest images use different names.
-        const CHEST_CLOSED = '/images/chest-closed.webp';
-        const CHEST_OPEN = '/images/chest-open.webp';
+        const CHEST_CLOSED = '/images/Chest-closed.png';
+        const CHEST_OPEN = '/images/Chest-open.png';
 
         const splitId = (id) => {
             const idx = id.lastIndexOf('-');
@@ -162,9 +169,8 @@
             const [showMasterCollectorPopup, setShowMasterCollectorPopup] = useState(false);
             const [masterCollectorActive, setMasterCollectorActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
             const [roulette, setRoulette] = useState(false);
-            const [roulettePhase, setRoulettePhase] = useState('idle'); // idle | gather | shake | burst
-            const [scatterItems, setScatterItems] = useState([]); // [{id, x, y, delay}]
-            const [gathered, setGathered] = useState(false);
+            const [roulettePhase, setRoulettePhase] = useState('idle'); // idle (roaming) | gather | shake | burst
+            const [scatterItems, setScatterItems] = useState([]); // [{id, xPct, yPct, wp:[{x,y}x3], roamDuration, roamDelay, gatherDelay}]
             const [rouletteResult, setRouletteResult] = useState(null);
             const rouletteTimeoutRef = useRef(null);
             const longPressTimers = useRef({});
@@ -252,6 +258,40 @@
                 );
             };
 
+            const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+            // Each sprite gets a home spot plus 3 nearby waypoints (for a gentle
+            // infinite wander loop) and a random stagger delay for the "sucked
+            // into the chest" moment once Roll is pressed.
+            const generateScatterItems = (pool) => {
+                const staggerStep = Math.max(6, Math.min(30, Math.floor(360 / pool.length)));
+                return pool.map(id => {
+                    const xPct = 10 + Math.random() * 80;
+                    const yPct = 10 + Math.random() * 75;
+                    const jitter = () => ({
+                        x: clamp(xPct + (Math.random() * 26 - 13), 4, 96),
+                        y: clamp(yPct + (Math.random() * 26 - 13), 4, 92)
+                    });
+                    return {
+                        id, xPct, yPct,
+                        wp: [jitter(), jitter(), jitter()],
+                        roamDuration: 4 + Math.random() * 4,
+                        roamDelay: Math.random() * 3,
+                        gatherDelay: Math.random() * staggerStep * pool.length * 0.6
+                    };
+                });
+            };
+
+            const resetToIdle = () => {
+                if (rouletteTimeoutRef.current) {
+                    clearTimeout(rouletteTimeoutRef.current);
+                    rouletteTimeoutRef.current = null;
+                }
+                setRouletteResult(null);
+                setRoulettePhase('idle');
+                if (collected.length > 0) setScatterItems(generateScatterItems(collected));
+            };
+
             const resetRoulette = () => {
                 if (rouletteTimeoutRef.current) {
                     clearTimeout(rouletteTimeoutRef.current);
@@ -259,39 +299,24 @@
                 }
                 setRoulettePhase('idle');
                 setScatterItems([]);
-                setGathered(false);
                 setRouletteResult(null);
+            };
+
+            const openRoulette = () => {
+                resetRoulette();
+                if (collected.length > 0) setScatterItems(generateScatterItems(collected));
+                setRoulette(true);
             };
 
             const startRoll = () => {
                 const pool = collected;
-                if (pool.length === 0) return;
+                if (pool.length === 0 || scatterItems.length === 0) return;
                 if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
                 setRouletteResult(null);
-                setGathered(false);
-
-                // Scatter every collected sprite around the chest with a random
-                // position and stagger delay, so they "jump in" at slightly
-                // different times rather than all moving at once.
-                const staggerStep = Math.max(6, Math.min(30, Math.floor(360 / pool.length)));
-                const items = pool.map(id => {
-                    const angle = Math.random() * Math.PI * 2;
-                    const radius = 70 + Math.random() * 110;
-                    return {
-                        id,
-                        x: Math.cos(angle) * radius,
-                        y: Math.sin(angle) * radius * 0.7,
-                        delay: Math.random() * staggerStep * pool.length * 0.6
-                    };
-                });
-                setScatterItems(items);
                 setRoulettePhase('gather');
 
-                const maxDelay = Math.max(0, ...items.map(it => it.delay));
+                const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
                 const gatherDuration = maxDelay + 700; // stagger spread + fly-in transition
-
-                // Flip to "gathered" a beat after mount so the CSS transition animates in.
-                rouletteTimeoutRef.current = setTimeout(() => setGathered(true), 50);
 
                 rouletteTimeoutRef.current = setTimeout(() => {
                     setRoulettePhase('shake');
@@ -417,23 +442,28 @@
                         </div>
                     ) : (
                         <>
-                            <div style={{ position: 'relative', width: '320px', height: '320px', maxWidth: '90vw', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-                                {/* Every collected sprite scatters around the chest, then jumps in */}
-                                {roulettePhase === 'gather' && scatterItems.map((item, i) => {
+                            <div style={{ position: 'relative', width: 'min(90vw, 460px)', height: 'min(90vw, 460px)', marginBottom: '2rem' }}>
+                                {/* Every collected sprite wanders the stage until Roll is pressed, then flies into the chest */}
+                                {(roulettePhase === 'idle' || roulettePhase === 'gather') && scatterItems.map((item) => {
                                     const info = splitId(item.id);
+                                    const isGathering = roulettePhase === 'gather';
                                     return (
                                         <div
                                             key={item.id}
                                             style={{
                                                 position: 'absolute',
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '0.4rem',
-                                                overflow: 'hidden',
-                                                background: 'rgba(0,0,0,0.15)',
-                                                transform: gathered ? 'translate(0px, 10px) scale(0.15)' : `translate(${item.x}px, ${item.y}px) scale(1)`,
-                                                opacity: gathered ? 0 : 1,
-                                                transition: `transform 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.delay}ms, opacity 0.35s ease-in ${item.delay + 300}ms`
+                                                width: '42px',
+                                                height: '42px',
+                                                left: isGathering ? '50%' : `${item.xPct}%`,
+                                                top: isGathering ? '50%' : `${item.yPct}%`,
+                                                transform: `translate(-50%, -50%) scale(${isGathering ? 0.15 : 1})`,
+                                                opacity: isGathering ? 0 : 1,
+                                                animation: isGathering ? 'none' : `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite`,
+                                                transition: isGathering ? `left 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, top 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, transform 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, opacity 0.35s ease-in ${item.gatherDelay + 300}ms` : 'none',
+                                                '--x0': `${item.xPct}%`, '--y0': `${item.yPct}%`,
+                                                '--x1': `${item.wp[0].x}%`, '--y1': `${item.wp[0].y}%`,
+                                                '--x2': `${item.wp[1].x}%`, '--y2': `${item.wp[1].y}%`,
+                                                '--x3': `${item.wp[2].x}%`, '--y3': `${item.wp[2].y}%`
                                             }}
                                         >
                                             <img src={getImagePath(info.name, info.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
@@ -441,41 +471,31 @@
                                     );
                                 })}
 
-                                {/* Chest image */}
-                                {(roulettePhase === 'shake' || roulettePhase === 'burst' || roulettePhase === 'gather') && (
-                                    <img
-                                        src={chestSrc}
-                                        {...noCalloutImgProps}
-                                        style={{
-                                            ...noCalloutImgProps.style,
-                                            width: '180px',
-                                            height: '180px',
-                                            objectFit: 'contain',
-                                            animation: roulettePhase === 'shake' ? 'chestShake 0.5s ease-in-out 2' : 'none',
-                                            filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${masteredAccent})` : 'none'
-                                        }}
-                                        alt="Loot chest"
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                )}
-                                {roulettePhase === 'idle' && (
-                                    <img
-                                        src={CHEST_CLOSED}
-                                        {...noCalloutImgProps}
-                                        style={{ ...noCalloutImgProps.style, width: '180px', height: '180px', objectFit: 'contain' }}
-                                        alt="Loot chest"
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                )}
+                                {/* Chest image, centered */}
+                                <img
+                                    src={chestSrc}
+                                    {...noCalloutImgProps}
+                                    style={{
+                                        ...noCalloutImgProps.style,
+                                        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                                        width: '150px',
+                                        height: '150px',
+                                        objectFit: 'contain',
+                                        animation: roulettePhase === 'shake' ? 'chestShake 0.5s ease-in-out 2' : 'none',
+                                        filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${masteredAccent})` : 'none'
+                                    }}
+                                    alt="Loot chest"
+                                    onError={(e) => { e.target.style.display = 'none'; }}
+                                />
 
-                                {/* Burst flash + sparkles + final reveal */}
+                                {/* Burst flash + soft star sparkles + final reveal */}
                                 {roulettePhase === 'burst' && resultInfo && (
                                     <>
-                                        <div style={{ position: 'absolute', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out' }} />
+                                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out forwards' }} />
                                         {[0, 1, 2, 3, 4, 5].map(i => (
-                                            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '6px', height: '6px', borderRadius: '50%', background: masteredAccent, transform: `rotate(${i * 60}deg) translate(60px)`, animation: `sparkleFloat 0.9s ease-out ${i * 0.05}s` }} />
+                                            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent} 0%, transparent 75%)`, filter: 'blur(1.5px)', '--rot': `${i * 60}deg`, animation: `sparkleFloat 1s ease-out ${i * 0.05}s forwards` }} />
                                         ))}
-                                        <div style={{ position: 'absolute', width: '100px', height: '100px', borderRadius: '0.75rem', overflow: 'hidden', background: 'rgba(0,0,0,0.15)', animation: 'popIn 0.5s ease-out 0.15s both', boxShadow: `0 0 16px ${masteredAccent}` }}>
+                                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100px', height: '100px', animation: 'popIn 0.5s ease-out 0.15s both', filter: `drop-shadow(0 0 12px ${masteredAccent})` }}>
                                             <img src={getImagePath(resultInfo.name, resultInfo.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
                                         </div>
                                     </>
@@ -490,7 +510,7 @@
                             )}
 
                             <button
-                                onClick={startRoll}
+                                onClick={roulettePhase === 'burst' ? resetToIdle : startRoll}
                                 disabled={isBusy}
                                 style={{
                                     padding: '0.75rem 2rem',
@@ -555,7 +575,7 @@
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
-                                <button onClick={() => { resetRoulette(); setRoulette(true); }} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
+                                <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             </div>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
