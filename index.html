@@ -376,9 +376,17 @@
                             if (navigator.vibrate) navigator.vibrate(40);
                             rouletteTimeoutRef.current = setTimeout(() => {
                                 const finalId = pool[Math.floor(Math.random() * pool.length)];
-                                setRoulettePhase('burst');
-                                setRouletteResult(finalId);
-                                if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+                                // Settle at rest (animation off, normal size) for one clean
+                                // frame first, so the shrink/shift into "burst" has a stable
+                                // starting point to transition from instead of snapping.
+                                setRoulettePhase('settle');
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        setRoulettePhase('burst');
+                                        setRouletteResult(finalId);
+                                        if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+                                    });
+                                });
                             }, 650);
                         }, gatherDuration);
                     });
@@ -478,7 +486,7 @@
             if (roulette) {
                 const pool = collected;
                 const resultInfo = rouletteResult ? splitId(rouletteResult) : null;
-                const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake';
+                const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake' || roulettePhase === 'settle';
                 const goBack = () => { resetRoulette(); setRoulette(false); };
 
                 return <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: textColor, padding: '2rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
