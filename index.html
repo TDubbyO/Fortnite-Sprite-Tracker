@@ -348,11 +348,11 @@
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
                     
-                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem' }}>
+                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem', boxShadow: isMasterCollector ? '0 0 24px rgba(168, 85, 247, 0.5)' : 'none' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                                <Pie col={col} tot={tot} r={40} col_val="#06b6d4" format="fraction" />
+                                <Pie col={col} tot={tot} r={40} col_val={accentColor} format="fraction" />
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
