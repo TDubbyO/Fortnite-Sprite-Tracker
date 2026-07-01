@@ -52,8 +52,18 @@
             100% { left: var(--x0); top: var(--y0); }
         }
         @keyframes spriteHop {
-            0%, 100% { transform: translateY(0) scaleY(1); }
-            50% { transform: translateY(-6px) scaleY(0.92); }
+            0% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            9% { transform: translate(-50%, -50%) translateY(-6px) scaleY(0.92); }
+            18% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            32% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            41% { transform: translate(-50%, -50%) translateY(-6px) scaleY(0.92); }
+            50% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            64% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            73% { transform: translate(-50%, -50%) translateY(-6px) scaleY(0.92); }
+            82% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            92% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
+            96% { transform: translate(-50%, -50%) translateY(-6px) scaleY(0.92); }
+            100% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
         }
         @keyframes shuffleBob {
             0%, 100% { transform: translateY(0); }
@@ -306,8 +316,6 @@
                         id, xPct: home.x, yPct: home.y,
                         wp: [jitter(), jitter(), jitter()],
                         roamDuration,
-                        hopDuration: 0.6 + Math.random() * 0.55,
-                        hopDelay: Math.random() * 1.2,
                         roamDelay: Math.random() * 3,
                         gatherDelay: Math.random() * staggerStep * pool.length * 0.6
                     };
@@ -534,7 +542,7 @@
                                                 top: isGathering ? '50%' : `${baseY}%`,
                                                 transform: `translate(-50%, -50%) scale(${isGathering ? 0.15 : 1})`,
                                                 opacity: isGathering ? 0 : 1,
-                                                animation: (!frozen && !isGathering) ? `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite` : 'none',
+                                                animation: (!frozen && !isGathering) ? `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite, spriteHop ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite` : 'none',
                                                 transition: isGathering ? `left 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, top 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, transform 0.6s cubic-bezier(0.55,0,0.85,0.4) ${item.gatherDelay}ms, opacity 0.35s ease-in ${item.gatherDelay + 300}ms` : 'none',
                                                 '--x0': `${item.xPct}%`, '--y0': `${item.yPct}%`,
                                                 '--x1': `${item.wp[0].x}%`, '--y1': `${item.wp[0].y}%`,
@@ -542,7 +550,7 @@
                                                 '--x3': `${item.wp[2].x}%`, '--y3': `${item.wp[2].y}%`
                                             }}
                                         >
-                                            <img src={getImagePath(info.name, info.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain', animation: !isGathering ? `spriteHop ${item.hopDuration}s ease-in-out ${item.hopDelay}s infinite` : 'none' }} alt="" />
+                                            <img src={getImagePath(info.name, info.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
                                         </div>
                                     );
                                 })}
