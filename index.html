@@ -193,6 +193,7 @@
                                             borderRadius: '50%',
                                             background: isCollected ? color : '#4b5563',
                                             border: isMastered ? `1px solid #fbbf24` : '1px solid transparent',
+                                            boxShadow: isMastered ? 'inset 0 0 0 0.5px #000' : 'none',
                                             boxSizing: 'border-box'
                                         }}
                                         title={variant}
@@ -236,6 +237,10 @@
             const handlePointerDown = (e, n, v) => {
                 e.preventDefault();
                 const id = n + '-' + v;
+                if (longPressTimers.current[id]) {
+                    clearTimeout(longPressTimers.current[id]);
+                    delete longPressTimers.current[id];
+                }
                 longPressFlag.current[id] = false;
                 try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
                 longPressTimers.current[id] = setTimeout(() => {
