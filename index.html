@@ -140,16 +140,35 @@
                 }
             }, [mas, tot, mythicActive]);
 
-            const CompositeImage = ({ spriteName, variants, isCollected, isMastered }) => {
-                return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2px', width: '100%', height: '100%', opacity: isCollected ? 1 : 0.25, filter: isMastered ? 'drop-shadow(0 0 6px #fbbf24)' : 'none', transition: 'all 0.3s' }}>
-                        {variants.map(vv => (
-                            <div key={vv} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.05)' }}>
-                                <img src={getImagePath(spriteName, vv)} style={{ maxWidth: '95%', maxHeight: '95%', objectFit: 'contain' }} alt={vv} onError={(e) => { e.target.style.display = 'none'; }} />
-                            </div>
-                        ))}
-                    </div>
-                );
+            const CompositeImage = ({ spriteName, variants }) => {
+                const canvasRef = useRef(null);
+
+                useEffect(() => {
+                    const canvas = canvasRef.current;
+                    if (!canvas) return;
+
+                    const size = 100;
+                    const variantWidth = size / 4;
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+
+                    let loaded = 0;
+                    variants.forEach((variant, idx) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.src = getImagePath(spriteName, variant);
+                        img.onload = () => {
+                            ctx.drawImage(img, idx * variantWidth, 0, variantWidth, size);
+                            loaded++;
+                        };
+                        img.onerror = () => {
+                            loaded++;
+                        };
+                    });
+                }, [spriteName, variants]);
+
+                return <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
             };
 
             const toggle = (n, v) => {
@@ -222,45 +241,24 @@
                 return <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem', background: bgColor, color: textColor, minHeight: '100vh' }}>
                     <button onClick={() => setShare(false)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', marginBottom: '2rem' }}>← Back</button>
                     
-                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem' }}>
-                        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, margin: '0 0 1.5rem 0', background: isMythic ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            {isMythic ? 'MYTHIC' : 'RUNNERS'}
-                        </h1>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem', opacity: 0.8 }}>Collected</div>
-                                <Pie col={col} tot={tot} r={35} col_val="#06b6d4" format="fraction" />
-                            </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem', opacity: 0.8 }}>Mastered</div>
-                                <Pie col={mas} tot={tot} r={35} col_val="#fbbf24" format="fraction" />
-                            </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '0.75rem', opacity: 0.8 }}>Progress</div>
-                                <Pie col={col} tot={tot} r={35} col_val={accentColor} format="percentage" />
-                            </div>
-                        </div>
-                    </div>
+                    <h2 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 1.5rem 0' }}>Full collection</h2>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             const isC = c > 0;
                             const isM = m === sp.v.length && sp.v.length > 0;
                             return (
-                                <div key={sp.name} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                                    <div style={{ width: '140px', height: '140px', flexShrink: 0, borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
-                                        <CompositeImage spriteName={sp.name} variants={sp.v} isCollected={isC} isMastered={isM} />
+                                <div key={sp.name} style={{ textAlign: 'center' }}>
+                                    <div style={{ width: '100%', height: '100px', marginBottom: '0.75rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)', opacity: isC ? 1 : 0.25, filter: isM ? 'drop-shadow(0 0 6px #fbbf24)' : 'none', transition: 'all 0.3s' }}>
+                                        <CompositeImage spriteName={sp.name} variants={sp.v} />
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                                            {sp.name}
-                                        </div>
-                                        <div style={{ color: accentColor, fontWeight: 600 }}>
-                                            {c}/{sp.v.length} collected
-                                        </div>
-                                        {isM && <div style={{ color: '#fbbf24', fontWeight: 600, marginTop: '0.25rem' }}>✨ All mastered</div>}
+                                    <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                        {sp.name}
+                                    </div>
+                                    <div style={{ fontSize: '0.8125rem', color: accentColor, fontWeight: 500 }}>
+                                        {c}/{sp.v.length}{isM ? ' · ✨' : ''}
                                     </div>
                                 </div>
                             );
