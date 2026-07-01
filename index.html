@@ -141,35 +141,25 @@
             }, [mas, tot, mythicActive]);
 
             const CompositeImage = ({ spriteName, variants }) => {
-                const canvasRef = useRef(null);
-
-                useEffect(() => {
-                    const canvas = canvasRef.current;
-                    if (!canvas) return;
-
-                    const size = 100;
-                    const sliceWidth = size / 4;
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-
-                    let loaded = 0;
-                    variants.forEach((variant, idx) => {
-                        const img = new Image();
-                        img.crossOrigin = 'anonymous';
-                        img.src = getImagePath(spriteName, variant);
-                        img.onload = () => {
-                            // Draw only a vertical slice of the image at position idx * sliceWidth
-                            ctx.drawImage(img, idx * sliceWidth, 0, sliceWidth, size, idx * sliceWidth, 0, sliceWidth, size);
-                            loaded++;
-                        };
-                        img.onerror = () => {
-                            loaded++;
-                        };
-                    });
-                }, [spriteName, variants]);
-
-                return <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />;
+                const sliceWidth = 25;
+                return (
+                    <div style={{ display: 'flex', width: '100%', height: '100%', gap: 0 }}>
+                        {variants.map((variant, idx) => (
+                            <div key={variant} style={{ flex: 1, overflow: 'hidden', background: 'rgba(0,0,0,0.05)' }}>
+                                <img 
+                                    src={getImagePath(spriteName, variant)} 
+                                    style={{ 
+                                        width: '400%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        marginLeft: `-${idx * 100}%`
+                                    }} 
+                                    alt={variant}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                );
             };
 
             const toggle = (n, v) => {
