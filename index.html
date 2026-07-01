@@ -107,6 +107,13 @@
 
         function App() {
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
+            const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+            useEffect(() => {
+                const onResize = () => setViewportWidth(window.innerWidth);
+                window.addEventListener('resize', onResize);
+                return () => window.removeEventListener('resize', onResize);
+            }, []);
+            const shareColumns = viewportWidth >= 700 ? 6 : 4;
             const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
             const [share, setShare] = useState(false);
             const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
@@ -153,10 +160,10 @@
                 };
                 
                 return (
-                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                    <div style={{ textAlign: 'center' }}>
                         <div
                             onContextMenu={(e) => e.preventDefault()}
-                            style={{ flex: 1, minHeight: 0, borderRadius: '0.4rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
+                            style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
                         >
                             <img 
                                 src={getImagePath(spriteName, 'Base')}
@@ -171,7 +178,7 @@
                             />
                         </div>
                         
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.2rem', marginTop: '0.15rem', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.35rem', marginTop: '0.3rem' }}>
                             {variants.map((variant, idx) => {
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
@@ -181,8 +188,8 @@
                                     <div 
                                         key={variant}
                                         style={{
-                                            width: '7px',
-                                            height: '7px',
+                                            width: '9px',
+                                            height: '9px',
                                             borderRadius: '50%',
                                             background: isCollected ? color : '#4b5563',
                                             border: isMastered ? `1px solid #fbbf24` : '1px solid transparent',
@@ -290,24 +297,26 @@
                     
                     <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem 0', flexShrink: 0 }}>Full collection</h2>
 
-                    <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gridAutoRows: '1fr', gap: '0.5rem' }}>
-                        {sprites.map(sp => {
-                            const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
-                            const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
-                            const c = collectedStatus.filter(Boolean).length;
-                            
-                            return (
-                                <div key={sp.name} style={{ textAlign: 'center', minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                                    <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
-                                    <div style={{ fontSize: '0.6rem', fontWeight: 600, marginTop: '0.15rem', overflowWrap: 'break-word', lineHeight: 1.1 }}>
-                                        {sp.name}
+                    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
+                            {sprites.map(sp => {
+                                const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
+                                const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
+                                const c = collectedStatus.filter(Boolean).length;
+                                
+                                return (
+                                    <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
+                                        <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
+                                            {sp.name}
+                                        </div>
+                                        <div style={{ fontSize: '0.65rem', color: accentColor, fontWeight: 500 }}>
+                                            {c}/{sp.v.length}
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '0.55rem', color: accentColor, fontWeight: 500 }}>
-                                        {c}/{sp.v.length}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>;
             }
