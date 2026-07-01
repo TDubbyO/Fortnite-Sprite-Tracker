@@ -174,12 +174,12 @@
                                     <div 
                                         key={variant}
                                         style={{
-                                            width: '12px',
-                                            height: '12px',
+                                            width: '14px',
+                                            height: '14px',
                                             borderRadius: '50%',
                                             background: isCollected ? color : '#4b5563',
-                                            border: isMastered ? `3px solid #fbbf24` : `1px solid transparent`,
-                                            boxShadow: isMastered ? 'inset 0 0 0 1px #000' : 'none',
+                                            border: isMastered ? `1.5px solid #fbbf24` : `1px solid transparent`,
+                                            boxShadow: isMastered ? 'inset 0 0 0 0.5px #000' : 'none',
                                             boxSizing: 'border-box'
                                         }}
                                         title={variant}
@@ -309,7 +309,7 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot
                     </div>
 
-                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: isMasterCollector ? 'linear-gradient(90deg, #a855f7, #ec4899, #a855f7)' : 'linear-gradient(90deg, #06b6d4, #a855f7, #ec4899)', backgroundSize: '200% 100%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: isMasterCollector ? '#a855f7' : '#06b6d4' }}>
+                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
                     
