@@ -10,6 +10,36 @@
     <style>
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        @keyframes chestShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            20% { transform: translateX(-6px) rotate(-3deg); }
+            40% { transform: translateX(6px) rotate(3deg); }
+            60% { transform: translateX(-4px) rotate(-2deg); }
+            80% { transform: translateX(4px) rotate(2deg); }
+        }
+        @keyframes lidOpen {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-108deg); }
+        }
+        @keyframes burstFlash {
+            0% { opacity: 0; transform: scale(0.4); }
+            35% { opacity: 1; transform: scale(1.3); }
+            100% { opacity: 0; transform: scale(1.9); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(24px) scale(0.5); }
+            60% { opacity: 1; transform: translateY(-8px) scale(1.08); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes sparkleFloat {
+            0% { opacity: 0; transform: translateY(0) scale(0.3); }
+            30% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-36px) scale(1); }
+        }
+        @keyframes shuffleBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
     </style>
 </head>
 <body style="margin:0; padding:0; -webkit-user-select: none; user-select: none;">
@@ -49,6 +79,13 @@
         // Shared style/props to stop the native long-press image menu (context menu,
         // "save image", callout) from appearing on iOS/Android while still allowing
         // our own onPointerDown/onPointerUp long-press logic to run.
+        // Sprite names never contain a hyphen, so the LAST hyphen always
+        // separates the variant (Base/Gold/Gummy/Galaxy) from the name.
+        const splitId = (id) => {
+            const idx = id.lastIndexOf('-');
+            return { name: id.slice(0, idx), variant: id.slice(idx + 1) };
+        };
+
         const noCalloutImgProps = {
             draggable: false,
             onDragStart: (e) => e.preventDefault(),
@@ -120,6 +157,11 @@
             const [masterCollectorSeen, setMasterCollectorSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
             const [showMasterCollectorPopup, setShowMasterCollectorPopup] = useState(false);
             const [masterCollectorActive, setMasterCollectorActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
+            const [roulette, setRoulette] = useState(false);
+            const [roulettePhase, setRoulettePhase] = useState('idle'); // idle | shuffle | shake | burst
+            const [shuffleDisplay, setShuffleDisplay] = useState(null);
+            const [rouletteResult, setRouletteResult] = useState(null);
+            const rouletteTimeoutRef = useRef(null);
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
 
@@ -204,6 +246,52 @@
                     </div>
                 );
             };
+
+            const resetRoulette = () => {
+                if (rouletteTimeoutRef.current) {
+                    clearTimeout(rouletteTimeoutRef.current);
+                    rouletteTimeoutRef.current = null;
+                }
+                setRoulettePhase('idle');
+                setShuffleDisplay(null);
+                setRouletteResult(null);
+            };
+
+            // Decelerating shuffle: quick flickers that slow down, then a
+            // shake, then the chest bursts open on the final pick.
+            const shuffleDelays = [70, 70, 70, 80, 80, 90, 90, 100, 110, 120, 140, 160, 190, 220, 260, 320];
+
+            const startRoll = () => {
+                const pool = collected;
+                if (pool.length === 0) return;
+                if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
+                setRouletteResult(null);
+                setRoulettePhase('shuffle');
+
+                let i = 0;
+                const step = () => {
+                    setShuffleDisplay(pool[Math.floor(Math.random() * pool.length)]);
+                    i++;
+                    if (i < shuffleDelays.length) {
+                        rouletteTimeoutRef.current = setTimeout(step, shuffleDelays[i]);
+                    } else {
+                        const finalId = pool[Math.floor(Math.random() * pool.length)];
+                        setShuffleDisplay(finalId);
+                        setRoulettePhase('shake');
+                        if (navigator.vibrate) navigator.vibrate(40);
+                        rouletteTimeoutRef.current = setTimeout(() => {
+                            setRoulettePhase('burst');
+                            setRouletteResult(finalId);
+                            if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+                        }, 550);
+                    }
+                };
+                step();
+            };
+
+            useEffect(() => {
+                return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
+            }, []);
 
             const toggle = (n, v) => {
                 const id = n + '-' + v;
@@ -291,6 +379,91 @@
             const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
             const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
 
+            if (roulette) {
+                const pool = collected;
+                const shufflePreview = shuffleDisplay ? splitId(shuffleDisplay) : null;
+                const resultInfo = rouletteResult ? splitId(rouletteResult) : null;
+                const isBusy = roulettePhase === 'shuffle' || roulettePhase === 'shake';
+                const goBack = () => { resetRoulette(); setRoulette(false); };
+
+                return <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: textColor, padding: '2rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                        <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                    </div>
+
+                    <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
+                    <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} collected sprite{pool.length === 1 ? '' : 's'} in the pool</div>
+
+                    {pool.length === 0 ? (
+                        <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center', maxWidth: '320px' }}>
+                            Collect a few sprites first, then come back to roll!
+                        </div>
+                    ) : (
+                        <>
+                            <div style={{ position: 'relative', width: '220px', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+                                {/* Shuffle preview flickers above the chest */}
+                                {roulettePhase === 'shuffle' && shufflePreview && (
+                                    <div key={shuffleDisplay} style={{ position: 'absolute', top: '-10px', width: '64px', height: '64px', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.15)', animation: 'shuffleBob 0.3s ease-in-out infinite' }}>
+                                        <img src={getImagePath(shufflePreview.name, shufflePreview.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                    </div>
+                                )}
+
+                                {/* Chest */}
+                                <svg width="180" height="160" viewBox="0 0 180 160" style={{ animation: roulettePhase === 'shake' ? 'chestShake 0.5s ease-in-out' : 'none', filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${masteredAccent})` : 'none' }}>
+                                    <rect x="15" y="75" width="150" height="70" rx="10" fill={dark ? '#78350f' : '#92400e'} stroke={masteredAccent} strokeWidth="3" />
+                                    <rect x="15" y="105" width="150" height="10" fill={masteredAccent} opacity="0.8" />
+                                    <circle cx="90" cy="112" r="9" fill={masteredAccent} />
+                                    <rect x="86" y="112" width="8" height="12" fill={dark ? '#451a03' : '#451a03'} />
+                                    <g style={{ transformOrigin: '90px 75px', animation: (roulettePhase === 'shake' || roulettePhase === 'burst') ? 'lidOpen 0.5s ease-out forwards' : 'none', animationDelay: roulettePhase === 'shake' ? '0.4s' : '0s' }}>
+                                        <path d="M 15 75 Q 15 35 90 30 Q 165 35 165 75 Z" fill={dark ? '#92400e' : '#b45309'} stroke={masteredAccent} strokeWidth="3" />
+                                        <rect x="15" y="66" width="150" height="9" fill={masteredAccent} opacity="0.8" />
+                                    </g>
+                                </svg>
+
+                                {/* Burst flash + sparkles + final reveal */}
+                                {roulettePhase === 'burst' && resultInfo && (
+                                    <>
+                                        <div style={{ position: 'absolute', width: '160px', height: '160px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out' }} />
+                                        {[0, 1, 2, 3, 4, 5].map(i => (
+                                            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '6px', height: '6px', borderRadius: '50%', background: masteredAccent, transform: `rotate(${i * 60}deg) translate(50px)`, animation: `sparkleFloat 0.9s ease-out ${i * 0.05}s` }} />
+                                        ))}
+                                        <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '0.75rem', overflow: 'hidden', background: 'rgba(0,0,0,0.15)', animation: 'popIn 0.5s ease-out 0.15s both', boxShadow: `0 0 16px ${masteredAccent}` }}>
+                                            <img src={getImagePath(resultInfo.name, resultInfo.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {roulettePhase === 'burst' && resultInfo && (
+                                <div style={{ textAlign: 'center', marginBottom: '1.5rem', animation: 'popIn 0.4s ease-out 0.3s both' }}>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo.name}</div>
+                                    <div style={{ fontSize: '0.9rem', color: accentColor }}>{resultInfo.variant}</div>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={roulettePhase === 'burst' ? startRoll : startRoll}
+                                disabled={isBusy}
+                                style={{
+                                    padding: '0.75rem 2rem',
+                                    background: isBusy ? cardBg : masteredAccent,
+                                    color: isBusy ? accentColor : 'white',
+                                    border: 'none',
+                                    borderRadius: '0.5rem',
+                                    cursor: isBusy ? 'default' : 'pointer',
+                                    fontWeight: 'bold',
+                                    fontSize: '1rem',
+                                    opacity: isBusy ? 0.7 : 1
+                                }}
+                            >
+                                {roulettePhase === 'idle' ? 'Open Chest' : roulettePhase === 'burst' ? 'Roll Again' : 'Opening...'}
+                            </button>
+                        </>
+                    )}
+                </div>;
+            }
+
             if (share) {
                 return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bgColor, color: textColor, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
@@ -335,6 +508,7 @@
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
+                                <button onClick={() => { resetRoulette(); setRoulette(true); }} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             </div>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
