@@ -776,47 +776,36 @@
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
                         <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
 
-                        {/* Collected: word toggles on/off independently. I/O each set direction independently, and are inert until the word is on. */}
+                        {/* Collected: word toggles on/off independently. I/O is a single tap target that flips direction, inert until the word is on. */}
                         <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${collectedEnabled ? accentColor : cardBorder}` }}>
                             <button
                                 onClick={() => setCollectedEnabled(e => !e)}
                                 title="Turn this filter on/off"
                                 style={{
-                                    padding: '0.4rem 0.7rem', width: '108px', boxSizing: 'border-box', whiteSpace: 'nowrap', textAlign: 'center', border: 'none', cursor: 'pointer',
+                                    padding: '0.4rem 0.7rem', border: 'none', cursor: 'pointer',
                                     fontWeight: 'bold', fontSize: '0.85rem',
                                     background: collectedEnabled ? accentColor : 'transparent',
                                     color: collectedEnabled ? 'white' : textColor,
                                     opacity: collectedEnabled ? 1 : 0.55
                                 }}
                             >
-                                {collectedDirection === 'uncollected' ? 'Uncollected' : 'Collected'}
+                                Collected
                             </button>
-                            <div style={{ display: 'flex', borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}` }}>
-                                <button
-                                    onClick={() => setCollectedDirection('collected')}
-                                    disabled={!collectedEnabled}
-                                    title="Show only collected"
-                                    style={{
-                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
-                                        cursor: collectedEnabled ? 'pointer' : 'default',
-                                        background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent',
-                                        color: collectedEnabled ? 'white' : textColor,
-                                        opacity: collectedEnabled ? 1 : 0.55
-                                    }}
-                                >I</button>
-                                <button
-                                    onClick={() => setCollectedDirection('uncollected')}
-                                    disabled={!collectedEnabled}
-                                    title="Show only uncollected"
-                                    style={{
-                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
-                                        cursor: collectedEnabled ? 'pointer' : 'default',
-                                        background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent',
-                                        color: collectedEnabled ? 'white' : textColor,
-                                        opacity: collectedEnabled ? 1 : 0.55
-                                    }}
-                                >O</button>
-                            </div>
+                            <button
+                                onClick={() => setCollectedDirection(d => d === 'collected' ? 'uncollected' : 'collected')}
+                                disabled={!collectedEnabled}
+                                title="Tap to flip between Collected and Uncollected"
+                                style={{
+                                    display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
+                                    cursor: collectedEnabled ? 'pointer' : 'default',
+                                    borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
+                                    color: collectedEnabled ? 'white' : textColor,
+                                    opacity: collectedEnabled ? 1 : 0.55
+                                }}
+                            >
+                                <span style={{ padding: '0.4rem 0.5rem', background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
+                                <span style={{ padding: '0.4rem 0.5rem', background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
+                            </button>
                         </div>
 
                         {/* Mastered: same pattern */}
@@ -825,41 +814,30 @@
                                 onClick={() => setMasteredEnabled(e => !e)}
                                 title="Turn this filter on/off"
                                 style={{
-                                    padding: '0.4rem 0.7rem', width: '104px', boxSizing: 'border-box', whiteSpace: 'nowrap', textAlign: 'center', border: 'none', cursor: 'pointer',
+                                    padding: '0.4rem 0.7rem', border: 'none', cursor: 'pointer',
                                     fontWeight: 'bold', fontSize: '0.85rem',
                                     background: masteredEnabled ? masteredAccent : 'transparent',
                                     color: masteredEnabled ? 'white' : textColor,
                                     opacity: masteredEnabled ? 1 : 0.55
                                 }}
                             >
-                                {masteredDirection === 'unmastered' ? 'Unmastered' : 'Mastered'}
+                                Mastered
                             </button>
-                            <div style={{ display: 'flex', borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}` }}>
-                                <button
-                                    onClick={() => setMasteredDirection('mastered')}
-                                    disabled={!masteredEnabled}
-                                    title="Show only mastered"
-                                    style={{
-                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
-                                        cursor: masteredEnabled ? 'pointer' : 'default',
-                                        background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent',
-                                        color: masteredEnabled ? 'white' : textColor,
-                                        opacity: masteredEnabled ? 1 : 0.55
-                                    }}
-                                >I</button>
-                                <button
-                                    onClick={() => setMasteredDirection('unmastered')}
-                                    disabled={!masteredEnabled}
-                                    title="Show only unmastered"
-                                    style={{
-                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
-                                        cursor: masteredEnabled ? 'pointer' : 'default',
-                                        background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent',
-                                        color: masteredEnabled ? 'white' : textColor,
-                                        opacity: masteredEnabled ? 1 : 0.55
-                                    }}
-                                >O</button>
-                            </div>
+                            <button
+                                onClick={() => setMasteredDirection(d => d === 'mastered' ? 'unmastered' : 'mastered')}
+                                disabled={!masteredEnabled}
+                                title="Tap to flip between Mastered and Unmastered"
+                                style={{
+                                    display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
+                                    cursor: masteredEnabled ? 'pointer' : 'default',
+                                    borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
+                                    color: masteredEnabled ? 'white' : textColor,
+                                    opacity: masteredEnabled ? 1 : 0.55
+                                }}
+                            >
+                                <span style={{ padding: '0.4rem 0.5rem', background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
+                                <span style={{ padding: '0.4rem 0.5rem', background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
+                            </button>
                         </div>
 
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
