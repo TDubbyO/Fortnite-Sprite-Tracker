@@ -591,7 +591,12 @@
             // Emoji glyphs (☀️🌙🎲✨) have their own fixed bright colors, so the
             // pale tinted cardBg (especially in light mode) washes them out.
             // This neutral gray tint keeps contrast consistent everywhere.
-            const iconBg = dark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.1)';
+            // Emoji glyphs (☀️🌙🎲✨) have their own fixed bright colors, so a pale
+            // translucent tint (especially in light mode) washes them out. Solid,
+            // in-theme pastels keep the accent-color identity while giving real contrast.
+            const iconBg = isMasterCollector
+                ? (dark ? 'rgba(168, 85, 247, 0.3)' : '#e9d5ff')
+                : (dark ? 'rgba(6, 182, 212, 0.25)' : '#a5f3fc');
 
             if (roulette) {
                 const pool = getRoulettePool();
@@ -601,10 +606,10 @@
 
                 return <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: textColor, padding: '2rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                        <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
 
@@ -743,10 +748,10 @@
             if (share) {
                 return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bgColor, color: textColor, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
-                        <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
                     
@@ -794,12 +799,12 @@
                                         compactToggleLock.current = now;
                                         setCompactView(v => !v);
                                     }}
-                                    style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                    style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}
                                 >
                                     {compactView ? 'Compact' : 'Cozy'}
                                 </button>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
+                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
                             </div>
                         </div>
                     </div>
