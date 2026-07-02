@@ -263,13 +263,6 @@
             }, [mas, tot, masterCollectorActive]);
 
             const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus }) => {
-                const variantColors = {
-                    'Base': '#94a3b8',
-                    'Gold': '#fbbf24',
-                    'Gummy': '#ec4899',
-                    'Galaxy': '#a855f7'
-                };
-                
                 return (
                     <div style={{ textAlign: 'center' }}>
                         <div
@@ -293,7 +286,7 @@
                             {variants.map((variant, idx) => {
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
-                                const color = variantColors[variant] || '#94a3b8';
+                                const color = VARIANT_COLORS[variant] || '#94a3b8';
                                 
                                 return (
                                     <div 
@@ -317,6 +310,7 @@
             };
 
             const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy'];
+            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7' };
 
             // A single sprite-variant tile passes the current filters if it
             // satisfies the variant-type selection AND the collected toggle
@@ -765,7 +759,7 @@
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
                                 <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
-                                <button onClick={() => setCompactView(v => !v)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title={compactView ? 'Switch to cozy view' : 'Switch to compact view'}>{compactView ? '▦' : '☰'}</button>
+                                <button onClick={() => setCompactView(v => !v)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>{compactView ? 'Compact' : 'Cozy'}</button>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             </div>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
@@ -779,70 +773,71 @@
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
                         <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
 
-                        {/* Collected: word toggles on/off independently. I/O is a single tap target that flips direction, inert until the word is on. */}
-                        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${collectedEnabled ? accentColor : cardBorder}` }}>
-                            <button
-                                onClick={() => setCollectedEnabled(e => !e)}
-                                title="Turn this filter on/off"
-                                style={{
-                                    padding: '0.4rem 0.7rem', border: 'none', cursor: 'pointer',
-                                    fontWeight: 'bold', fontSize: '0.85rem',
-                                    background: collectedEnabled ? accentColor : 'transparent',
-                                    color: collectedEnabled ? 'white' : textColor,
-                                    opacity: collectedEnabled ? 1 : 0.55
-                                }}
-                            >
-                                Collected
-                            </button>
-                            <button
-                                onClick={() => setCollectedDirection(d => d === 'collected' ? 'uncollected' : 'collected')}
-                                disabled={!collectedEnabled}
-                                title="Tap to flip between Collected and Uncollected"
-                                style={{
-                                    display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
-                                    cursor: collectedEnabled ? 'pointer' : 'default',
-                                    background: collectedEnabled ? accentColor : 'transparent',
-                                    borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
-                                    color: collectedEnabled ? 'white' : textColor,
-                                    opacity: collectedEnabled ? 1 : 0.55
-                                }}
-                            >
-                                <span style={{ padding: '0.4rem 0.5rem', background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
-                                <span style={{ padding: '0.4rem 0.5rem', background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
-                            </button>
-                        </div>
+                        {/* Collected + Mastered grouped so they stay on the same line together */}
+                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${collectedEnabled ? accentColor : cardBorder}` }}>
+                                <button
+                                    onClick={() => setCollectedEnabled(e => !e)}
+                                    title="Turn this filter on/off"
+                                    style={{
+                                        padding: '0.3rem 0.5rem', border: 'none', cursor: 'pointer',
+                                        fontWeight: 'bold', fontSize: '0.75rem',
+                                        background: collectedEnabled ? accentColor : 'transparent',
+                                        color: collectedEnabled ? 'white' : textColor,
+                                        opacity: collectedEnabled ? 1 : 0.55
+                                    }}
+                                >
+                                    Collected
+                                </button>
+                                <button
+                                    onClick={() => setCollectedDirection(d => d === 'collected' ? 'uncollected' : 'collected')}
+                                    disabled={!collectedEnabled}
+                                    title="Tap to flip between Collected and Uncollected"
+                                    style={{
+                                        display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.65rem',
+                                        cursor: collectedEnabled ? 'pointer' : 'default',
+                                        background: collectedEnabled ? accentColor : 'transparent',
+                                        borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
+                                        color: collectedEnabled ? 'white' : textColor,
+                                        opacity: collectedEnabled ? 1 : 0.55
+                                    }}
+                                >
+                                    <span style={{ padding: '0.3rem 0.4rem', background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
+                                    <span style={{ padding: '0.3rem 0.4rem', background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
+                                </button>
+                            </div>
 
-                        {/* Mastered: same pattern */}
-                        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${masteredEnabled ? masteredAccent : cardBorder}` }}>
-                            <button
-                                onClick={() => setMasteredEnabled(e => !e)}
-                                title="Turn this filter on/off"
-                                style={{
-                                    padding: '0.4rem 0.7rem', border: 'none', cursor: 'pointer',
-                                    fontWeight: 'bold', fontSize: '0.85rem',
-                                    background: masteredEnabled ? masteredAccent : 'transparent',
-                                    color: masteredEnabled ? 'white' : textColor,
-                                    opacity: masteredEnabled ? 1 : 0.55
-                                }}
-                            >
-                                Mastered
-                            </button>
-                            <button
-                                onClick={() => setMasteredDirection(d => d === 'mastered' ? 'unmastered' : 'mastered')}
-                                disabled={!masteredEnabled}
-                                title="Tap to flip between Mastered and Unmastered"
-                                style={{
-                                    display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
-                                    cursor: masteredEnabled ? 'pointer' : 'default',
-                                    background: masteredEnabled ? masteredAccent : 'transparent',
-                                    borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
-                                    color: masteredEnabled ? 'white' : textColor,
-                                    opacity: masteredEnabled ? 1 : 0.55
-                                }}
-                            >
-                                <span style={{ padding: '0.4rem 0.5rem', background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
-                                <span style={{ padding: '0.4rem 0.5rem', background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${masteredEnabled ? masteredAccent : cardBorder}` }}>
+                                <button
+                                    onClick={() => setMasteredEnabled(e => !e)}
+                                    title="Turn this filter on/off"
+                                    style={{
+                                        padding: '0.3rem 0.5rem', border: 'none', cursor: 'pointer',
+                                        fontWeight: 'bold', fontSize: '0.75rem',
+                                        background: masteredEnabled ? masteredAccent : 'transparent',
+                                        color: masteredEnabled ? 'white' : textColor,
+                                        opacity: masteredEnabled ? 1 : 0.55
+                                    }}
+                                >
+                                    Mastered
+                                </button>
+                                <button
+                                    onClick={() => setMasteredDirection(d => d === 'mastered' ? 'unmastered' : 'mastered')}
+                                    disabled={!masteredEnabled}
+                                    title="Tap to flip between Mastered and Unmastered"
+                                    style={{
+                                        display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.65rem',
+                                        cursor: masteredEnabled ? 'pointer' : 'default',
+                                        background: masteredEnabled ? masteredAccent : 'transparent',
+                                        borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
+                                        color: masteredEnabled ? 'white' : textColor,
+                                        opacity: masteredEnabled ? 1 : 0.55
+                                    }}
+                                >
+                                    <span style={{ padding: '0.3rem 0.4rem', background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
+                                    <span style={{ padding: '0.3rem 0.4rem', background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
@@ -878,31 +873,30 @@
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
                                 <Pie col={col} tot={tot} r={40} col_val={accentColor} format="fraction" />
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
+                                    {ALL_VARIANTS.map(v => (
+                                        <Pie key={v} col={collected.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="fraction" />
+                                    ))}
+                                </div>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
                                 <Pie col={mas} tot={tot} r={40} col_val={masteredAccent} format="fraction" />
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
+                                    {ALL_VARIANTS.map(v => (
+                                        <Pie key={v} col={mastered.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="fraction" />
+                                    ))}
+                                </div>
                             </div>
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
                                 <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
+                                    {ALL_VARIANTS.map(v => (
+                                        <Pie key={v} col={collected.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="percentage" />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem' }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.6, marginBottom: '1rem', textAlign: 'center' }}>By Variant</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '1.5rem' }}>
-                            {ALL_VARIANTS.map(v => {
-                                const vTotal = sprites.filter(sp => sp.v.includes(v)).length;
-                                const vCollected = collected.filter(id => splitId(id).variant === v).length;
-                                return (
-                                    <div key={v} style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.5rem' }}>{v}</div>
-                                        <Pie col={vCollected} tot={vTotal} r={28} col_val={accentColor} format="fraction" />
-                                    </div>
-                                );
-                            })}
                         </div>
                     </div>
 
