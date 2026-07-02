@@ -217,9 +217,12 @@
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
-            // 'all' | 'collected' | 'uncollected' and 'all' | 'mastered' | 'unmastered'
-            const [filterCollected, setFilterCollected] = useState(() => localStorage.getItem('filterCollected') || 'all');
-            const [filterMastered, setFilterMastered] = useState(() => localStorage.getItem('filterMastered') || 'all');
+            // Enable/disable is fully independent from direction — direction is
+            // remembered even while disabled, so re-enabling restores it.
+            const [collectedEnabled, setCollectedEnabled] = useState(() => JSON.parse(localStorage.getItem('filterCollectedEnabled') || 'false'));
+            const [collectedDirection, setCollectedDirection] = useState(() => localStorage.getItem('filterCollectedDirection') || 'collected');
+            const [masteredEnabled, setMasteredEnabled] = useState(() => JSON.parse(localStorage.getItem('filterMasteredEnabled') || 'false'));
+            const [masteredDirection, setMasteredDirection] = useState(() => localStorage.getItem('filterMasteredDirection') || 'mastered');
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
 
@@ -228,8 +231,10 @@
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(masterCollectorSeen)); }, [masterCollectorSeen]);
             useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(masterCollectorActive)); }, [masterCollectorActive]);
-            useEffect(() => { localStorage.setItem('filterCollected', filterCollected); }, [filterCollected]);
-            useEffect(() => { localStorage.setItem('filterMastered', filterMastered); }, [filterMastered]);
+            useEffect(() => { localStorage.setItem('filterCollectedEnabled', JSON.stringify(collectedEnabled)); }, [collectedEnabled]);
+            useEffect(() => { localStorage.setItem('filterCollectedDirection', collectedDirection); }, [collectedDirection]);
+            useEffect(() => { localStorage.setItem('filterMasteredEnabled', JSON.stringify(masteredEnabled)); }, [masteredEnabled]);
+            useEffect(() => { localStorage.setItem('filterMasteredDirection', masteredDirection); }, [masteredDirection]);
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
@@ -316,21 +321,25 @@
             // AND the mastered toggle (each independently, all must hold).
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
-                if (filterCollected === 'collected' && !isCollected) return false;
-                if (filterCollected === 'uncollected' && isCollected) return false;
-                if (filterMastered === 'mastered' && !isMastered) return false;
-                if (filterMastered === 'unmastered' && isMastered) return false;
+                if (collectedEnabled) {
+                    if (collectedDirection === 'collected' && !isCollected) return false;
+                    if (collectedDirection === 'uncollected' && isCollected) return false;
+                }
+                if (masteredEnabled) {
+                    if (masteredDirection === 'mastered' && !isMastered) return false;
+                    if (masteredDirection === 'unmastered' && isMastered) return false;
+                }
                 return true;
             };
 
-            const hasActiveFilters = filterCollected !== 'all' || filterMastered !== 'all' || filterVariants.length > 0;
+            const hasActiveFilters = collectedEnabled || masteredEnabled || filterVariants.length > 0;
 
             const toggleVariantFilter = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
             const clearFilters = () => {
-                setFilterCollected('all');
-                setFilterMastered('all');
+                setCollectedEnabled(false);
+                setMasteredEnabled(false);
                 setFilterVariants([]);
             };
 
@@ -767,47 +776,91 @@
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
                         <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
 
-                        {/* Collected: one pill, label + built-in I/O switch. Tap cycles All → Collected → Uncollected → All. I = In (Collected), O = Out (Uncollected). */}
-                        <button
-                            onClick={() => setFilterCollected(f => f === 'all' ? 'collected' : f === 'collected' ? 'uncollected' : 'all')}
-                            title="Tap to cycle: All → Collected → Uncollected"
-                            style={{
-                                display: 'flex', alignItems: 'stretch', padding: 0, overflow: 'hidden', cursor: 'pointer',
-                                borderRadius: '0.5rem', fontWeight: 'bold', fontSize: '0.85rem',
-                                border: `1.5px solid ${filterCollected === 'all' ? cardBorder : accentColor}`,
-                                background: filterCollected === 'all' ? 'transparent' : accentColor,
-                                opacity: filterCollected === 'all' ? 0.55 : 1
-                            }}
-                        >
-                            <span style={{ padding: '0.4rem 0.7rem', color: filterCollected === 'all' ? textColor : 'white' }}>
-                                {filterCollected === 'uncollected' ? 'Uncollected' : 'Collected'}
-                            </span>
-                            <span style={{ display: 'flex', borderLeft: `1px solid ${filterCollected === 'all' ? cardBorder : 'rgba(255,255,255,0.4)'}` }}>
-                                <span style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', background: filterCollected === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent', color: filterCollected === 'all' ? textColor : 'white' }}>I</span>
-                                <span style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', background: filterCollected === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent', color: filterCollected === 'all' ? textColor : 'white' }}>O</span>
-                            </span>
-                        </button>
+                        {/* Collected: word toggles on/off independently. I/O each set direction independently, and are inert until the word is on. */}
+                        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${collectedEnabled ? accentColor : cardBorder}` }}>
+                            <button
+                                onClick={() => setCollectedEnabled(e => !e)}
+                                title="Turn this filter on/off"
+                                style={{
+                                    padding: '0.4rem 0.7rem', minWidth: '86px', textAlign: 'center', border: 'none', cursor: 'pointer',
+                                    fontWeight: 'bold', fontSize: '0.85rem',
+                                    background: collectedEnabled ? accentColor : 'transparent',
+                                    color: collectedEnabled ? 'white' : textColor,
+                                    opacity: collectedEnabled ? 1 : 0.55
+                                }}
+                            >
+                                {collectedDirection === 'uncollected' ? 'Uncollected' : 'Collected'}
+                            </button>
+                            <div style={{ display: 'flex', borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}` }}>
+                                <button
+                                    onClick={() => setCollectedDirection('collected')}
+                                    disabled={!collectedEnabled}
+                                    title="Show only collected"
+                                    style={{
+                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
+                                        cursor: collectedEnabled ? 'pointer' : 'default',
+                                        background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent',
+                                        color: collectedEnabled ? 'white' : textColor,
+                                        opacity: collectedEnabled ? 1 : 0.55
+                                    }}
+                                >I</button>
+                                <button
+                                    onClick={() => setCollectedDirection('uncollected')}
+                                    disabled={!collectedEnabled}
+                                    title="Show only uncollected"
+                                    style={{
+                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
+                                        cursor: collectedEnabled ? 'pointer' : 'default',
+                                        background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent',
+                                        color: collectedEnabled ? 'white' : textColor,
+                                        opacity: collectedEnabled ? 1 : 0.55
+                                    }}
+                                >O</button>
+                            </div>
+                        </div>
 
                         {/* Mastered: same pattern */}
-                        <button
-                            onClick={() => setFilterMastered(f => f === 'all' ? 'mastered' : f === 'mastered' ? 'unmastered' : 'all')}
-                            title="Tap to cycle: All → Mastered → Unmastered"
-                            style={{
-                                display: 'flex', alignItems: 'stretch', padding: 0, overflow: 'hidden', cursor: 'pointer',
-                                borderRadius: '0.5rem', fontWeight: 'bold', fontSize: '0.85rem',
-                                border: `1.5px solid ${filterMastered === 'all' ? cardBorder : masteredAccent}`,
-                                background: filterMastered === 'all' ? 'transparent' : masteredAccent,
-                                opacity: filterMastered === 'all' ? 0.55 : 1
-                            }}
-                        >
-                            <span style={{ padding: '0.4rem 0.7rem', color: filterMastered === 'all' ? textColor : 'white' }}>
-                                {filterMastered === 'unmastered' ? 'Unmastered' : 'Mastered'}
-                            </span>
-                            <span style={{ display: 'flex', borderLeft: `1px solid ${filterMastered === 'all' ? cardBorder : 'rgba(255,255,255,0.4)'}` }}>
-                                <span style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', background: filterMastered === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent', color: filterMastered === 'all' ? textColor : 'white' }}>I</span>
-                                <span style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', background: filterMastered === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent', color: filterMastered === 'all' ? textColor : 'white' }}>O</span>
-                            </span>
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${masteredEnabled ? masteredAccent : cardBorder}` }}>
+                            <button
+                                onClick={() => setMasteredEnabled(e => !e)}
+                                title="Turn this filter on/off"
+                                style={{
+                                    padding: '0.4rem 0.7rem', minWidth: '84px', textAlign: 'center', border: 'none', cursor: 'pointer',
+                                    fontWeight: 'bold', fontSize: '0.85rem',
+                                    background: masteredEnabled ? masteredAccent : 'transparent',
+                                    color: masteredEnabled ? 'white' : textColor,
+                                    opacity: masteredEnabled ? 1 : 0.55
+                                }}
+                            >
+                                {masteredDirection === 'unmastered' ? 'Unmastered' : 'Mastered'}
+                            </button>
+                            <div style={{ display: 'flex', borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}` }}>
+                                <button
+                                    onClick={() => setMasteredDirection('mastered')}
+                                    disabled={!masteredEnabled}
+                                    title="Show only mastered"
+                                    style={{
+                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
+                                        cursor: masteredEnabled ? 'pointer' : 'default',
+                                        background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent',
+                                        color: masteredEnabled ? 'white' : textColor,
+                                        opacity: masteredEnabled ? 1 : 0.55
+                                    }}
+                                >I</button>
+                                <button
+                                    onClick={() => setMasteredDirection('unmastered')}
+                                    disabled={!masteredEnabled}
+                                    title="Show only unmastered"
+                                    style={{
+                                        padding: '0.4rem 0.5rem', fontSize: '0.75rem', border: 'none', fontWeight: 'bold',
+                                        cursor: masteredEnabled ? 'pointer' : 'default',
+                                        background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent',
+                                        color: masteredEnabled ? 'white' : textColor,
+                                        opacity: masteredEnabled ? 1 : 0.55
+                                    }}
+                                >O</button>
+                            </div>
+                        </div>
 
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
