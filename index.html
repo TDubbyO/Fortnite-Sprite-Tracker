@@ -172,8 +172,8 @@
                     </defs>
                     <circle cx={r + 10} cy={r + 10} r={r} fill={col_val} opacity="0.15" />
                     <path d={pathData} fill={col_val} />
-                    <text x={r + 10} y={r + 16} textAnchor="middle" fontSize={r * 0.55} fontWeight="bold" fill={col_val}>{displayText}</text>
-                    <text x={r + 10} y={r + 16} textAnchor="middle" fontSize={r * 0.55} fontWeight="bold" fill="white" mask={`url(#${id})`}>{displayText}</text>
+                    <text x={r + 10} y={r + 10} dominantBaseline="central" textAnchor="middle" fontSize={r * 0.55} fontWeight="bold" fill={col_val}>{displayText}</text>
+                    <text x={r + 10} y={r + 10} dominantBaseline="central" textAnchor="middle" fontSize={r * 0.55} fontWeight="bold" fill="white" mask={`url(#${id})`}>{displayText}</text>
                 </svg>
             );
         };
@@ -221,6 +221,7 @@
             // remembered even while disabled, so re-enabling restores it.
             const [collectedEnabled, setCollectedEnabled] = useState(() => JSON.parse(localStorage.getItem('filterCollectedEnabled') || 'false'));
             const [compactView, setCompactView] = useState(() => JSON.parse(localStorage.getItem('compactView') || 'false'));
+            const [statsExpanded, setStatsExpanded] = useState(() => JSON.parse(localStorage.getItem('statsExpanded') || 'false'));
             const [collectedDirection, setCollectedDirection] = useState(() => localStorage.getItem('filterCollectedDirection') || 'collected');
             const [masteredEnabled, setMasteredEnabled] = useState(() => JSON.parse(localStorage.getItem('filterMasteredEnabled') || 'false'));
             const [masteredDirection, setMasteredDirection] = useState(() => localStorage.getItem('filterMasteredDirection') || 'mastered');
@@ -238,6 +239,7 @@
             useEffect(() => { localStorage.setItem('filterMasteredDirection', masteredDirection); }, [masteredDirection]);
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
             useEffect(() => { localStorage.setItem('compactView', JSON.stringify(compactView)); }, [compactView]);
+            useEffect(() => { localStorage.setItem('statsExpanded', JSON.stringify(statsExpanded)); }, [statsExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
             const tot = 61;
@@ -329,6 +331,25 @@
             };
 
             const hasActiveFilters = collectedEnabled || masteredEnabled || filterVariants.length > 0;
+
+            // Small colored dot + fraction/percentage chips, one per variant type.
+            // Wraps to additional lines as more variants get added, instead of
+            // squeezing or overflowing a fixed-width row.
+            const renderVariantChips = (numeratorFn, format) => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.35rem', marginTop: '0.6rem' }}>
+                    {ALL_VARIANTS.map(v => {
+                        const t = sprites.filter(sp => sp.v.includes(v)).length;
+                        const n = numeratorFn(v);
+                        const label = format === 'percentage' ? `${t > 0 ? Math.round((n / t) * 100) : 0}%` : `${n}/${t}`;
+                        return (
+                            <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.15rem 0.45rem' }}>
+                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: VARIANT_COLORS[v] || '#94a3b8', flexShrink: 0 }} />
+                                <span>{label}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            );
 
             const toggleVariantFilter = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
@@ -759,10 +780,12 @@
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
                                 <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
-                                <button onClick={() => setCompactView(v => !v)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>{compactView ? 'Compact' : 'Cozy'}</button>
-                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             </div>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                                <button onClick={() => setCompactView(v => !v)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>{compactView ? 'Compact' : 'Cozy'}</button>
+                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
+                            </div>
                         </div>
                     </div>
 
@@ -840,7 +863,6 @@
                             </div>
                         </div>
 
-                        <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                         {ALL_VARIANTS.map(v => (
                             <button
@@ -868,36 +890,39 @@
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
                     
-                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem', boxShadow: isMasterCollector ? '0 0 24px rgba(168, 85, 247, 0.5)' : 'none' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                                <Pie col={col} tot={tot} r={40} col_val={accentColor} format="fraction" />
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
-                                    {ALL_VARIANTS.map(v => (
-                                        <Pie key={v} col={collected.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="fraction" />
-                                    ))}
+                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: isMasterCollector ? '0 0 24px rgba(168, 85, 247, 0.5)' : 'none', overflow: 'hidden' }}>
+                        <button
+                            onClick={() => setStatsExpanded(e => !e)}
+                            style={{
+                                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
+                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                            }}
+                        >
+                            <span>Collection Status <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>({col}/{tot} collected, {mas}/{tot} mastered)</span></span>
+                            <span style={{ fontSize: '1.2rem', transform: statsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+                        </button>
+                        {statsExpanded && (
+                            <div style={{ padding: '0 2rem 2rem 2rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
+                                        <Pie col={col} tot={tot} r={40} col_val={accentColor} format="fraction" />
+                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'fraction')}
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
+                                        <Pie col={mas} tot={tot} r={40} col_val={masteredAccent} format="fraction" />
+                                        {renderVariantChips(v => mastered.filter(id => splitId(id).variant === v).length, 'fraction')}
+                                    </div>
+                                    <div style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
+                                        <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
+                                    </div>
                                 </div>
                             </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                                <Pie col={mas} tot={tot} r={40} col_val={masteredAccent} format="fraction" />
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
-                                    {ALL_VARIANTS.map(v => (
-                                        <Pie key={v} col={mastered.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="fraction" />
-                                    ))}
-                                </div>
-                            </div>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
-                                <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', marginTop: '0.75rem' }}>
-                                    {ALL_VARIANTS.map(v => (
-                                        <Pie key={v} col={collected.filter(id => splitId(id).variant === v).length} tot={sprites.filter(sp => sp.v.includes(v)).length} r={15} col_val={VARIANT_COLORS[v]} format="percentage" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
