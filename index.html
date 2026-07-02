@@ -220,6 +220,7 @@
             // Enable/disable is fully independent from direction — direction is
             // remembered even while disabled, so re-enabling restores it.
             const [collectedEnabled, setCollectedEnabled] = useState(() => JSON.parse(localStorage.getItem('filterCollectedEnabled') || 'false'));
+            const [compactView, setCompactView] = useState(() => JSON.parse(localStorage.getItem('compactView') || 'false'));
             const [collectedDirection, setCollectedDirection] = useState(() => localStorage.getItem('filterCollectedDirection') || 'collected');
             const [masteredEnabled, setMasteredEnabled] = useState(() => JSON.parse(localStorage.getItem('filterMasteredEnabled') || 'false'));
             const [masteredDirection, setMasteredDirection] = useState(() => localStorage.getItem('filterMasteredDirection') || 'mastered');
@@ -236,6 +237,7 @@
             useEffect(() => { localStorage.setItem('filterMasteredEnabled', JSON.stringify(masteredEnabled)); }, [masteredEnabled]);
             useEffect(() => { localStorage.setItem('filterMasteredDirection', masteredDirection); }, [masteredDirection]);
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
+            useEffect(() => { localStorage.setItem('compactView', JSON.stringify(compactView)); }, [compactView]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
             const tot = 61;
@@ -763,6 +765,7 @@
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
                                 <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
+                                <button onClick={() => setCompactView(v => !v)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title={compactView ? 'Switch to cozy view' : 'Switch to compact view'}>{compactView ? '▦' : '☰'}</button>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: cardBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             </div>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : cardBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
@@ -887,24 +890,40 @@
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '3rem' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.6, marginBottom: '1rem', textAlign: 'center' }}>By Variant</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '1.5rem' }}>
+                            {ALL_VARIANTS.map(v => {
+                                const vTotal = sprites.filter(sp => sp.v.includes(v)).length;
+                                const vCollected = collected.filter(id => splitId(id).variant === v).length;
+                                return (
+                                    <div key={v} style={{ textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.5rem' }}>{v}</div>
+                                        <Pie col={vCollected} tot={vTotal} r={28} col_val={accentColor} format="fraction" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                             if (!anyVariantMatches) return null;
                             return (
-                                <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative', boxShadow: isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.4)' : 'none' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                        <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>
+                                <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative', boxShadow: isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.4)' : 'none' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
+                                        <div style={{ fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
                                             {sp.name}
                                         </div>
-                                        <div style={{ fontSize: '0.875rem', fontWeight: 600, color: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', border: `2px solid ${accentColor}` }}>
+                                        <div style={{ fontSize: compactView ? '0.7rem' : '0.875rem', fontWeight: 600, color: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px', borderRadius: '50%', border: `2px solid ${accentColor}`, flexShrink: 0 }}>
                                             {c}/{sp.v.length}
                                         </div>
                                     </div>
                                     
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: compactView ? '0.4rem' : '0.75rem' }}>
                                         {sp.v.map(vv => {
                                             const id = sp.name + '-' + vv;
                                             const isC = collected.includes(id);
@@ -920,7 +939,7 @@
                                                     onPointerLeave={(e) => handlePointerCancel(e, sp.name, vv)}
                                                     style={{
                                                         width: '100%',
-                                                        height: '120px',
+                                                        height: compactView ? '62px' : '120px',
                                                         borderRadius: '0.5rem',
                                                         overflow: 'hidden',
                                                         opacity: isFilteredOut ? 0.08 : (isC ? 1 : 0.3),
