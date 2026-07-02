@@ -798,6 +798,7 @@
                                 style={{
                                     display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
                                     cursor: collectedEnabled ? 'pointer' : 'default',
+                                    background: collectedEnabled ? accentColor : 'transparent',
                                     borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
                                     color: collectedEnabled ? 'white' : textColor,
                                     opacity: collectedEnabled ? 1 : 0.55
@@ -830,6 +831,7 @@
                                 style={{
                                     display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.75rem',
                                     cursor: masteredEnabled ? 'pointer' : 'default',
+                                    background: masteredEnabled ? masteredAccent : 'transparent',
                                     borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
                                     color: masteredEnabled ? 'white' : textColor,
                                     opacity: masteredEnabled ? 1 : 0.55
