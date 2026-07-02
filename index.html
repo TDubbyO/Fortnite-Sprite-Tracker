@@ -325,12 +325,6 @@
 
             const hasActiveFilters = filterCollected !== 'all' || filterMastered !== 'all' || filterVariants.length > 0;
 
-            const cycleCollectedFilter = () => {
-                setFilterCollected(f => f === 'all' ? 'collected' : f === 'collected' ? 'uncollected' : 'all');
-            };
-            const cycleMasteredFilter = () => {
-                setFilterMastered(f => f === 'all' ? 'mastered' : f === 'mastered' ? 'unmastered' : 'all');
-            };
             const toggleVariantFilter = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
@@ -339,6 +333,20 @@
                 setFilterMastered('all');
                 setFilterVariants([]);
             };
+
+            // Small iOS-style switch track + knob, reused for both the
+            // enable/disable switch and the direction switch.
+            const switchTrack = (isOn, onColor, offColor) => ({
+                width: '34px', height: '18px', borderRadius: '9px', border: 'none', padding: 0,
+                cursor: 'pointer', position: 'relative', flexShrink: 0,
+                background: isOn ? onColor : offColor,
+                transition: 'background 0.2s'
+            });
+            const switchKnob = (isRight) => ({
+                width: '14px', height: '14px', borderRadius: '50%', background: 'white',
+                position: 'absolute', top: '2px', left: isRight ? '18px' : '2px',
+                transition: 'left 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.35)'
+            });
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -770,37 +778,58 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
-                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6, marginRight: '0.25rem' }}>Filter by:</div>
-                        <button
-                            onClick={cycleCollectedFilter}
-                            title="Unplugged = all sprites · filled = only collected · outlined = only uncollected"
-                            style={{
-                                padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
-                                background: filterCollected === 'collected' ? accentColor : 'transparent',
-                                color: filterCollected === 'collected' ? 'white' : (filterCollected === 'all' ? textColor : accentColor),
-                                opacity: filterCollected === 'all' ? 0.45 : 1,
-                                border: filterCollected === 'collected' ? `1.5px solid ${accentColor}` : `1.5px solid ${filterCollected === 'uncollected' ? accentColor : cardBorder}`,
-                                boxShadow: filterCollected === 'collected' ? `0 0 8px ${accentColor}` : 'none'
-                            }}
-                        >
-                            {filterCollected === 'collected' ? '● Collected' : filterCollected === 'uncollected' ? '○ Uncollected' : 'Collected'}
-                        </button>
-                        <button
-                            onClick={cycleMasteredFilter}
-                            title="Unplugged = all sprites · filled = only mastered · outlined = only unmastered"
-                            style={{
-                                padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
-                                background: filterMastered === 'mastered' ? masteredAccent : 'transparent',
-                                color: filterMastered === 'mastered' ? 'white' : (filterMastered === 'all' ? textColor : masteredAccent),
-                                opacity: filterMastered === 'all' ? 0.45 : 1,
-                                border: filterMastered === 'mastered' ? `1.5px solid ${masteredAccent}` : `1.5px solid ${filterMastered === 'unmastered' ? masteredAccent : cardBorder}`,
-                                boxShadow: filterMastered === 'mastered' ? `0 0 8px ${masteredAccent}` : 'none'
-                            }}
-                        >
-                            {filterMastered === 'mastered' ? '● Mastered' : filterMastered === 'unmastered' ? '○ Unmastered' : 'Mastered'}
-                        </button>
-                        <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder, margin: '0 0.25rem' }} />
+                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
+
+                        {/* Collected: enable switch, then (if enabled) a Collected/Uncollected direction switch */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: filterCollected === 'all' ? 0.5 : 1 }}>Collected</span>
+                            <button
+                                onClick={() => setFilterCollected(f => f === 'all' ? 'collected' : 'all')}
+                                title={filterCollected === 'all' ? 'Filter off — showing all sprites' : 'Filter on'}
+                                style={switchTrack(filterCollected !== 'all', accentColor, cardBorder)}
+                            >
+                                <div style={switchKnob(filterCollected !== 'all')} />
+                            </button>
+                            {filterCollected !== 'all' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}>
+                                    <span style={{ fontWeight: 700, opacity: filterCollected === 'collected' ? 1 : 0.4 }}>Collected</span>
+                                    <button
+                                        onClick={() => setFilterCollected(f => f === 'collected' ? 'uncollected' : 'collected')}
+                                        style={switchTrack(true, accentColor, accentColor)}
+                                    >
+                                        <div style={switchKnob(filterCollected === 'uncollected')} />
+                                    </button>
+                                    <span style={{ fontWeight: 700, opacity: filterCollected === 'uncollected' ? 1 : 0.4 }}>Uncollected</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Mastered: same pattern */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: filterMastered === 'all' ? 0.5 : 1 }}>Mastered</span>
+                            <button
+                                onClick={() => setFilterMastered(f => f === 'all' ? 'mastered' : 'all')}
+                                title={filterMastered === 'all' ? 'Filter off — showing all sprites' : 'Filter on'}
+                                style={switchTrack(filterMastered !== 'all', masteredAccent, cardBorder)}
+                            >
+                                <div style={switchKnob(filterMastered !== 'all')} />
+                            </button>
+                            {filterMastered !== 'all' && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}>
+                                    <span style={{ fontWeight: 700, opacity: filterMastered === 'mastered' ? 1 : 0.4 }}>Mastered</span>
+                                    <button
+                                        onClick={() => setFilterMastered(f => f === 'mastered' ? 'unmastered' : 'mastered')}
+                                        style={switchTrack(true, masteredAccent, masteredAccent)}
+                                    >
+                                        <div style={switchKnob(filterMastered === 'unmastered')} />
+                                    </button>
+                                    <span style={{ fontWeight: 700, opacity: filterMastered === 'unmastered' ? 1 : 0.4 }}>Unmastered</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
                         {ALL_VARIANTS.map(v => (
                             <button
                                 key={v}
