@@ -217,12 +217,21 @@
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
+            // 'all' | 'collected' | 'uncollected' and 'all' | 'mastered' | 'unmastered'
+            const [filterCollected, setFilterCollected] = useState(() => localStorage.getItem('filterCollected') || 'all');
+            const [filterMastered, setFilterMastered] = useState(() => localStorage.getItem('filterMastered') || 'all');
+            const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
+            const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(masterCollectorSeen)); }, [masterCollectorSeen]);
             useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(masterCollectorActive)); }, [masterCollectorActive]);
+            useEffect(() => { localStorage.setItem('filterCollected', filterCollected); }, [filterCollected]);
+            useEffect(() => { localStorage.setItem('filterMastered', filterMastered); }, [filterMastered]);
+            useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
+            useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
             const tot = 61;
             const col = collected.length;
@@ -300,6 +309,37 @@
                 );
             };
 
+            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy'];
+
+            // A single sprite-variant tile passes the current filters if it
+            // satisfies the variant-type selection AND the collected toggle
+            // AND the mastered toggle (each independently, all must hold).
+            const matchesFilters = (variant, isCollected, isMastered) => {
+                if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
+                if (filterCollected === 'collected' && !isCollected) return false;
+                if (filterCollected === 'uncollected' && isCollected) return false;
+                if (filterMastered === 'mastered' && !isMastered) return false;
+                if (filterMastered === 'unmastered' && isMastered) return false;
+                return true;
+            };
+
+            const hasActiveFilters = filterCollected !== 'all' || filterMastered !== 'all' || filterVariants.length > 0;
+
+            const cycleCollectedFilter = () => {
+                setFilterCollected(f => f === 'all' ? 'collected' : f === 'collected' ? 'uncollected' : 'all');
+            };
+            const cycleMasteredFilter = () => {
+                setFilterMastered(f => f === 'all' ? 'mastered' : f === 'mastered' ? 'unmastered' : 'all');
+            };
+            const toggleVariantFilter = (variant) => {
+                setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
+            };
+            const clearFilters = () => {
+                setFilterCollected('all');
+                setFilterMastered('all');
+                setFilterVariants([]);
+            };
+
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
             // Keep wander points clear of the chest itself (a disk around the
@@ -339,6 +379,13 @@
                 });
             };
 
+            // The roulette only ever draws from sprites you actually have, filtered
+            // by whatever Collected/Mastered/Variant filters are currently active.
+            const getRoulettePool = () => collected.filter(id => {
+                const { variant } = splitId(id);
+                return matchesFilters(variant, true, mastered.includes(id));
+            });
+
             const resetToIdle = () => {
                 if (rouletteTimeoutRef.current) {
                     clearTimeout(rouletteTimeoutRef.current);
@@ -347,7 +394,8 @@
                 setRouletteResult(null);
                 setFrozenPositions({});
                 setRoulettePhase('idle');
-                if (collected.length > 0) setScatterItems(generateScatterItems(collected));
+                const pool = getRoulettePool();
+                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
             };
 
             const resetRoulette = () => {
@@ -363,12 +411,13 @@
 
             const openRoulette = () => {
                 resetRoulette();
-                if (collected.length > 0) setScatterItems(generateScatterItems(collected));
+                const pool = getRoulettePool();
+                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
                 setRoulette(true);
             };
 
             const startRoll = () => {
-                const pool = collected;
+                const pool = getRoulettePool();
                 if (pool.length === 0 || scatterItems.length === 0) return;
                 if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
                 setRouletteResult(null);
@@ -419,6 +468,7 @@
                                     requestAnimationFrame(() => {
                                         setRoulettePhase('burst');
                                         setRouletteResult(finalId);
+                                        setRollHistory(prev => [finalId, ...prev].slice(0, 5));
                                         if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
                                     });
                                 });
@@ -519,7 +569,7 @@
             const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
 
             if (roulette) {
-                const pool = collected;
+                const pool = getRoulettePool();
                 const resultInfo = rouletteResult ? splitId(rouletteResult) : null;
                 const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake' || roulettePhase === 'settle';
                 const goBack = () => { resetRoulette(); setRoulette(false); };
@@ -534,11 +584,11 @@
                     </div>
 
                     <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
-                    <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} collected sprite{pool.length === 1 ? '' : 's'} in the pool</div>
+                    <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
                         <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center', maxWidth: '320px' }}>
-                            Collect a few sprites first, then come back to roll!
+                            {collected.length === 0 ? 'Collect a few sprites first, then come back to roll!' : 'No collected sprites match your current filters. Adjust filters on the home screen to roll.'}
                         </div>
                     ) : (
                         <>
@@ -643,6 +693,25 @@
                             </button>
                         </>
                     )}
+
+                    {rollHistory.length > 0 && (
+                        <div style={{ marginTop: '2.5rem', width: '100%', maxWidth: '420px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.7, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last {rollHistory.length} roll{rollHistory.length === 1 ? '' : 's'}</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                {rollHistory.map((id, i) => {
+                                    const h = splitId(id);
+                                    return (
+                                        <div key={i} style={{ width: '52px', textAlign: 'center' }}>
+                                            <div style={{ width: '52px', height: '52px', borderRadius: '0.5rem', overflow: 'hidden', background: cardBg, border: `1px solid ${cardBorder}` }}>
+                                                <img src={getImagePath(h.name, h.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                            </div>
+                                            <div style={{ fontSize: '0.6rem', marginTop: '0.25rem', opacity: 0.7, overflowWrap: 'break-word' }}>{h.name}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>;
             }
 
@@ -701,6 +770,51 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
+                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                        <button
+                            onClick={cycleCollectedFilter}
+                            style={{
+                                padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                background: filterCollected !== 'all' ? accentColor : 'transparent',
+                                color: filterCollected !== 'all' ? 'white' : accentColor,
+                                border: `1.5px solid ${accentColor}`
+                            }}
+                        >
+                            {filterCollected === 'all' ? 'Collected' : filterCollected === 'collected' ? '✓ Collected' : '✗ Uncollected'}
+                        </button>
+                        <button
+                            onClick={cycleMasteredFilter}
+                            style={{
+                                padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                background: filterMastered !== 'all' ? masteredAccent : 'transparent',
+                                color: filterMastered !== 'all' ? 'white' : masteredAccent,
+                                border: `1.5px solid ${masteredAccent}`
+                            }}
+                        >
+                            {filterMastered === 'all' ? 'Mastered' : filterMastered === 'mastered' ? '✓ Mastered' : '✗ Unmastered'}
+                        </button>
+                        <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder, margin: '0 0.25rem' }} />
+                        {ALL_VARIANTS.map(v => (
+                            <button
+                                key={v}
+                                onClick={() => toggleVariantFilter(v)}
+                                style={{
+                                    padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                    background: filterVariants.includes(v) ? accentColor : 'transparent',
+                                    color: filterVariants.includes(v) ? 'white' : accentColor,
+                                    border: `1.5px solid ${accentColor}`
+                                }}
+                            >
+                                {v}
+                            </button>
+                        ))}
+                        {hasActiveFilters && (
+                            <button onClick={clearFilters} style={{ padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', background: 'transparent', color: textColor, border: `1.5px dashed ${cardBorder}`, opacity: 0.75 }}>
+                                ✕ Clear filters
+                            </button>
+                        )}
+                    </div>
+
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
@@ -726,6 +840,8 @@
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                            const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                            if (!anyVariantMatches) return null;
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative', boxShadow: isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.4)' : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -742,6 +858,7 @@
                                             const id = sp.name + '-' + vv;
                                             const isC = collected.includes(id);
                                             const isM = mastered.includes(id);
+                                            const isFilteredOut = !matchesFilters(vv, isC, isM);
                                             return (
                                                 <div
                                                     key={vv}
@@ -755,7 +872,8 @@
                                                         height: '120px',
                                                         borderRadius: '0.5rem',
                                                         overflow: 'hidden',
-                                                        opacity: isC ? 1 : 0.3,
+                                                        opacity: isFilteredOut ? 0.08 : (isC ? 1 : 0.3),
+                                                        filter: isFilteredOut ? 'grayscale(1)' : 'none',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.3s',
                                                         background: 'rgba(0,0,0,0.1)',
