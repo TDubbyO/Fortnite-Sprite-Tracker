@@ -778,13 +778,13 @@
                             style={{
                                 padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
                                 background: filterCollected === 'collected' ? accentColor : 'transparent',
-                                color: filterCollected === 'all' ? textColor : accentColor,
+                                color: filterCollected === 'collected' ? 'white' : (filterCollected === 'all' ? textColor : accentColor),
                                 opacity: filterCollected === 'all' ? 0.45 : 1,
                                 border: filterCollected === 'collected' ? `1.5px solid ${accentColor}` : `1.5px solid ${filterCollected === 'uncollected' ? accentColor : cardBorder}`,
                                 boxShadow: filterCollected === 'collected' ? `0 0 8px ${accentColor}` : 'none'
                             }}
                         >
-                            {filterCollected === 'collected' ? '● ' : filterCollected === 'uncollected' ? '○ ' : ''}Collected
+                            {filterCollected === 'collected' ? '● Collected' : filterCollected === 'uncollected' ? '○ Uncollected' : 'Collected'}
                         </button>
                         <button
                             onClick={cycleMasteredFilter}
@@ -792,13 +792,13 @@
                             style={{
                                 padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
                                 background: filterMastered === 'mastered' ? masteredAccent : 'transparent',
-                                color: filterMastered === 'all' ? textColor : masteredAccent,
+                                color: filterMastered === 'mastered' ? 'white' : (filterMastered === 'all' ? textColor : masteredAccent),
                                 opacity: filterMastered === 'all' ? 0.45 : 1,
                                 border: filterMastered === 'mastered' ? `1.5px solid ${masteredAccent}` : `1.5px solid ${filterMastered === 'unmastered' ? masteredAccent : cardBorder}`,
                                 boxShadow: filterMastered === 'mastered' ? `0 0 8px ${masteredAccent}` : 'none'
                             }}
                         >
-                            {filterMastered === 'mastered' ? '● ' : filterMastered === 'unmastered' ? '○ ' : ''}Mastered
+                            {filterMastered === 'mastered' ? '● Mastered' : filterMastered === 'unmastered' ? '○ Unmastered' : 'Mastered'}
                         </button>
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder, margin: '0 0.25rem' }} />
                         {ALL_VARIANTS.map(v => (
