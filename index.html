@@ -795,18 +795,16 @@
                             >
                                 Collected
                             </button>
-                            {filterCollected !== 'all' && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem' }}>
-                                    <span style={{ fontWeight: 700, opacity: filterCollected === 'collected' ? 1 : 0.4 }}>Collected</span>
-                                    <button
-                                        onClick={() => setFilterCollected(f => f === 'collected' ? 'uncollected' : 'collected')}
-                                        style={switchTrack(true, accentColor, accentColor)}
-                                    >
-                                        <div style={switchKnob(filterCollected === 'uncollected')} />
-                                    </button>
-                                    <span style={{ fontWeight: 700, opacity: filterCollected === 'uncollected' ? 1 : 0.4 }}>Uncollected</span>
-                                </div>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem', visibility: filterCollected === 'all' ? 'hidden' : 'visible', opacity: filterCollected === 'all' ? 0 : 1, pointerEvents: filterCollected === 'all' ? 'none' : 'auto' }}>
+                                <span style={{ fontWeight: 700, opacity: filterCollected === 'collected' ? 1 : 0.4 }}>Collected</span>
+                                <button
+                                    onClick={() => setFilterCollected(f => f === 'collected' ? 'uncollected' : 'collected')}
+                                    style={switchTrack(true, accentColor, accentColor)}
+                                >
+                                    <div style={switchKnob(filterCollected === 'uncollected')} />
+                                </button>
+                                <span style={{ fontWeight: 700, opacity: filterCollected === 'uncollected' ? 1 : 0.4 }}>Uncollected</span>
+                            </div>
                         </div>
 
                         {/* Mastered: same pattern */}
@@ -823,18 +821,16 @@
                             >
                                 Mastered
                             </button>
-                            {filterMastered !== 'all' && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem' }}>
-                                    <span style={{ fontWeight: 700, opacity: filterMastered === 'mastered' ? 1 : 0.4 }}>Mastered</span>
-                                    <button
-                                        onClick={() => setFilterMastered(f => f === 'mastered' ? 'unmastered' : 'mastered')}
-                                        style={switchTrack(true, masteredAccent, masteredAccent)}
-                                    >
-                                        <div style={switchKnob(filterMastered === 'unmastered')} />
-                                    </button>
-                                    <span style={{ fontWeight: 700, opacity: filterMastered === 'unmastered' ? 1 : 0.4 }}>Unmastered</span>
-                                </div>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem', visibility: filterMastered === 'all' ? 'hidden' : 'visible', opacity: filterMastered === 'all' ? 0 : 1, pointerEvents: filterMastered === 'all' ? 'none' : 'auto' }}>
+                                <span style={{ fontWeight: 700, opacity: filterMastered === 'mastered' ? 1 : 0.4 }}>Mastered</span>
+                                <button
+                                    onClick={() => setFilterMastered(f => f === 'mastered' ? 'unmastered' : 'mastered')}
+                                    style={switchTrack(true, masteredAccent, masteredAccent)}
+                                >
+                                    <div style={switchKnob(filterMastered === 'unmastered')} />
+                                </button>
+                                <span style={{ fontWeight: 700, opacity: filterMastered === 'unmastered' ? 1 : 0.4 }}>Unmastered</span>
+                            </div>
                         </div>
 
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
