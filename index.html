@@ -778,21 +778,25 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
-                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
+                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6, paddingTop: '0.4rem' }}>Filter by:</div>
 
-                        {/* Collected: enable switch, then (if enabled) a Collected/Uncollected direction switch */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: filterCollected === 'all' ? 0.5 : 1 }}>Collected</span>
+                        {/* Collected: button toggles the filter on/off; direction switch drops below when on */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}>
                             <button
                                 onClick={() => setFilterCollected(f => f === 'all' ? 'collected' : 'all')}
-                                title={filterCollected === 'all' ? 'Filter off — showing all sprites' : 'Filter on'}
-                                style={switchTrack(filterCollected !== 'all', accentColor, cardBorder)}
+                                style={{
+                                    padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                    background: filterCollected !== 'all' ? accentColor : 'transparent',
+                                    color: filterCollected !== 'all' ? 'white' : textColor,
+                                    opacity: filterCollected === 'all' ? 0.5 : 1,
+                                    border: `1.5px solid ${filterCollected !== 'all' ? accentColor : cardBorder}`
+                                }}
                             >
-                                <div style={switchKnob(filterCollected !== 'all')} />
+                                Collected
                             </button>
                             {filterCollected !== 'all' && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem' }}>
                                     <span style={{ fontWeight: 700, opacity: filterCollected === 'collected' ? 1 : 0.4 }}>Collected</span>
                                     <button
                                         onClick={() => setFilterCollected(f => f === 'collected' ? 'uncollected' : 'collected')}
@@ -806,17 +810,21 @@
                         </div>
 
                         {/* Mastered: same pattern */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: filterMastered === 'all' ? 0.5 : 1 }}>Mastered</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.4rem' }}>
                             <button
                                 onClick={() => setFilterMastered(f => f === 'all' ? 'mastered' : 'all')}
-                                title={filterMastered === 'all' ? 'Filter off — showing all sprites' : 'Filter on'}
-                                style={switchTrack(filterMastered !== 'all', masteredAccent, cardBorder)}
+                                style={{
+                                    padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                    background: filterMastered !== 'all' ? masteredAccent : 'transparent',
+                                    color: filterMastered !== 'all' ? 'white' : textColor,
+                                    opacity: filterMastered === 'all' ? 0.5 : 1,
+                                    border: `1.5px solid ${filterMastered !== 'all' ? masteredAccent : cardBorder}`
+                                }}
                             >
-                                <div style={switchKnob(filterMastered !== 'all')} />
+                                Mastered
                             </button>
                             {filterMastered !== 'all' && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', paddingLeft: '0.15rem' }}>
                                     <span style={{ fontWeight: 700, opacity: filterMastered === 'mastered' ? 1 : 0.4 }}>Mastered</span>
                                     <button
                                         onClick={() => setFilterMastered(f => f === 'mastered' ? 'unmastered' : 'mastered')}
@@ -830,6 +838,7 @@
                         </div>
 
                         <div style={{ width: '1px', alignSelf: 'stretch', background: cardBorder }} />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                         {ALL_VARIANTS.map(v => (
                             <button
                                 key={v}
@@ -849,6 +858,7 @@
                                 ✕ Clear filters
                             </button>
                         )}
+                        </div>
                     </div>
 
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
