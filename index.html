@@ -7,6 +7,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
@@ -215,6 +216,8 @@
             const compactToggleLock = useRef(0);
             const [frozenPositions, setFrozenPositions] = useState({}); // id -> {x, y} snapshot taken at click time
             const stageRef = useRef(null);
+            const captureRef = useRef(null);
+            const [savingImage, setSavingImage] = useState(false);
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
@@ -380,6 +383,48 @@
             };
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+            // Renders just the collection grid (not the header buttons) to a
+            // clean PNG, then either opens the native share sheet — which on
+            // iOS/Android lets you save straight to Photos or share to an app —
+            // or falls back to a plain file download if that's unavailable.
+            const saveCollectionImage = async () => {
+                if (!captureRef.current || !window.html2canvas || savingImage) return;
+                setSavingImage(true);
+                try {
+                    const canvas = await window.html2canvas(captureRef.current, {
+                        backgroundColor: bgColor,
+                        scale: 2,
+                        useCORS: true
+                    });
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) { setSavingImage(false); return; }
+                        const fileName = 'sprite-collection.png';
+                        const file = new File([blob], fileName, { type: 'image/png' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({ files: [file], title: 'My Sprite Collection' });
+                                setSavingImage(false);
+                                return;
+                            } catch (err) {
+                                // Share sheet cancelled or failed — fall through to a direct download.
+                            }
+                        }
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        setSavingImage(false);
+                    }, 'image/png');
+                } catch (err) {
+                    console.error('Failed to save collection image', err);
+                    setSavingImage(false);
+                }
+            };
 
             // Keep wander points clear of the chest itself (a disk around the
             // stage center) by pushing anything too close radially outward.
@@ -768,32 +813,35 @@
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
                         <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={saveCollectionImage} disabled={savingImage} title="Save a clean image of your collection" style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: savingImage ? 'default' : 'pointer', opacity: savingImage ? 0.6 : 1 }}>{savingImage ? '…' : '💾'}</button>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
                     
-                    <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem 0', flexShrink: 0 }}>Full collection</h2>
+                    <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
+                        <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem 0', flexShrink: 0, color: textColor }}>Full collection</h2>
 
-                    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
-                            {sprites.map(sp => {
-                                const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
-                                const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
-                                const c = collectedStatus.filter(Boolean).length;
-                                
-                                return (
-                                    <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
-                                        <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
-                                        <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
-                                            {sp.name}
+                        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
+                                {sprites.map(sp => {
+                                    const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
+                                    const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
+                                    const c = collectedStatus.filter(Boolean).length;
+                                    
+                                    return (
+                                        <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
+                                            <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
+                                            <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
+                                                {sp.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.65rem', color: accentColor, fontWeight: 500 }}>
+                                                {c}/{sp.v.length}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: '0.65rem', color: accentColor, fontWeight: 500 }}>
-                                            {c}/{sp.v.length}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>;
