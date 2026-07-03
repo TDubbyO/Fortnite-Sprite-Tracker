@@ -218,14 +218,12 @@
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
-            // Enable/disable is fully independent from direction — direction is
-            // remembered even while disabled, so re-enabling restores it.
-            const [collectedEnabled, setCollectedEnabled] = useState(() => JSON.parse(localStorage.getItem('filterCollectedEnabled') || 'false'));
+            // 'all' | 'collected' | 'uncollected', and 'all' | 'mastered' | 'unmastered'
+            const [filterCollectedMode, setFilterCollectedMode] = useState(() => localStorage.getItem('filterCollectedMode') || 'all');
+            const [filterMasteredMode, setFilterMasteredMode] = useState(() => localStorage.getItem('filterMasteredMode') || 'all');
             const [compactView, setCompactView] = useState(() => JSON.parse(localStorage.getItem('compactView') || 'false'));
             const [statsExpanded, setStatsExpanded] = useState(() => JSON.parse(localStorage.getItem('statsExpanded') || 'false'));
-            const [collectedDirection, setCollectedDirection] = useState(() => localStorage.getItem('filterCollectedDirection') || 'collected');
-            const [masteredEnabled, setMasteredEnabled] = useState(() => JSON.parse(localStorage.getItem('filterMasteredEnabled') || 'false'));
-            const [masteredDirection, setMasteredDirection] = useState(() => localStorage.getItem('filterMasteredDirection') || 'mastered');
+            const [filtersExpanded, setFiltersExpanded] = useState(() => JSON.parse(localStorage.getItem('filtersExpanded') || 'false'));
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
 
@@ -234,13 +232,12 @@
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(masterCollectorSeen)); }, [masterCollectorSeen]);
             useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(masterCollectorActive)); }, [masterCollectorActive]);
-            useEffect(() => { localStorage.setItem('filterCollectedEnabled', JSON.stringify(collectedEnabled)); }, [collectedEnabled]);
-            useEffect(() => { localStorage.setItem('filterCollectedDirection', collectedDirection); }, [collectedDirection]);
-            useEffect(() => { localStorage.setItem('filterMasteredEnabled', JSON.stringify(masteredEnabled)); }, [masteredEnabled]);
-            useEffect(() => { localStorage.setItem('filterMasteredDirection', masteredDirection); }, [masteredDirection]);
+            useEffect(() => { localStorage.setItem('filterCollectedMode', filterCollectedMode); }, [filterCollectedMode]);
+            useEffect(() => { localStorage.setItem('filterMasteredMode', filterMasteredMode); }, [filterMasteredMode]);
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
             useEffect(() => { localStorage.setItem('compactView', JSON.stringify(compactView)); }, [compactView]);
             useEffect(() => { localStorage.setItem('statsExpanded', JSON.stringify(statsExpanded)); }, [statsExpanded]);
+            useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
             const tot = 61;
@@ -320,18 +317,14 @@
             // AND the mastered toggle (each independently, all must hold).
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
-                if (collectedEnabled) {
-                    if (collectedDirection === 'collected' && !isCollected) return false;
-                    if (collectedDirection === 'uncollected' && isCollected) return false;
-                }
-                if (masteredEnabled) {
-                    if (masteredDirection === 'mastered' && !isMastered) return false;
-                    if (masteredDirection === 'unmastered' && isMastered) return false;
-                }
+                if (filterCollectedMode === 'collected' && !isCollected) return false;
+                if (filterCollectedMode === 'uncollected' && isCollected) return false;
+                if (filterMasteredMode === 'mastered' && !isMastered) return false;
+                if (filterMasteredMode === 'unmastered' && isMastered) return false;
                 return true;
             };
 
-            const hasActiveFilters = collectedEnabled || masteredEnabled || filterVariants.length > 0;
+            const hasActiveFilters = filterCollectedMode !== 'all' || filterMasteredMode !== 'all' || filterVariants.length > 0;
 
             // Small colored dot + fraction/percentage chips, one per variant type.
             // Wraps to additional lines as more variants get added, instead of
@@ -352,12 +345,37 @@
                 </div>
             );
 
+            // A full-width, 3-segment status filter (All / positive / negative).
+            // Each segment is its own large tap target instead of a tiny switch.
+            const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color) => (
+                <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                    <div style={{ display: 'flex', border: `1.5px solid ${color}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
+                        {[['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]].map(([val, txt], i) => (
+                            <button
+                                key={val}
+                                onClick={() => setMode(val)}
+                                style={{
+                                    flex: 1, padding: '0.65rem 0.3rem', border: 'none', cursor: 'pointer',
+                                    borderLeft: i > 0 ? `1px solid ${mode === val ? 'rgba(255,255,255,0.4)' : color}` : 'none',
+                                    background: mode === val ? color : 'transparent',
+                                    color: mode === val ? 'white' : textColor,
+                                    fontWeight: 'bold', fontSize: '0.78rem'
+                                }}
+                            >
+                                {txt}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+
             const toggleVariantFilter = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
             const clearFilters = () => {
-                setCollectedEnabled(false);
-                setMasteredEnabled(false);
+                setFilterCollectedMode('all');
+                setFilterMasteredMode('all');
                 setFilterVariants([]);
             };
 
@@ -813,99 +831,6 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
-                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6 }}>Filter by:</div>
-
-                        {/* Collected + Mastered grouped so they stay on the same line together */}
-                        <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${collectedEnabled ? accentColor : cardBorder}` }}>
-                                <button
-                                    onClick={() => setCollectedEnabled(e => !e)}
-                                    title="Turn this filter on/off"
-                                    style={{
-                                        padding: '0.3rem 0.5rem', border: 'none', cursor: 'pointer',
-                                        fontWeight: 'bold', fontSize: '0.75rem',
-                                        background: collectedEnabled ? accentColor : 'transparent',
-                                        color: collectedEnabled ? 'white' : textColor,
-                                        opacity: collectedEnabled ? 1 : 0.55
-                                    }}
-                                >
-                                    Collected
-                                </button>
-                                <button
-                                    onClick={() => setCollectedDirection(d => d === 'collected' ? 'uncollected' : 'collected')}
-                                    disabled={!collectedEnabled}
-                                    title="Tap to flip between Collected and Uncollected"
-                                    style={{
-                                        display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.65rem',
-                                        cursor: collectedEnabled ? 'pointer' : 'default',
-                                        background: collectedEnabled ? accentColor : 'transparent',
-                                        borderLeft: `1px solid ${collectedEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
-                                        color: collectedEnabled ? 'white' : textColor,
-                                        opacity: collectedEnabled ? 1 : 0.55
-                                    }}
-                                >
-                                    <span style={{ padding: '0.3rem 0.4rem', background: collectedEnabled && collectedDirection === 'collected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
-                                    <span style={{ padding: '0.3rem 0.4rem', background: collectedEnabled && collectedDirection === 'uncollected' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
-                                </button>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: '0.5rem', overflow: 'hidden', border: `1.5px solid ${masteredEnabled ? masteredAccent : cardBorder}` }}>
-                                <button
-                                    onClick={() => setMasteredEnabled(e => !e)}
-                                    title="Turn this filter on/off"
-                                    style={{
-                                        padding: '0.3rem 0.5rem', border: 'none', cursor: 'pointer',
-                                        fontWeight: 'bold', fontSize: '0.75rem',
-                                        background: masteredEnabled ? masteredAccent : 'transparent',
-                                        color: masteredEnabled ? 'white' : textColor,
-                                        opacity: masteredEnabled ? 1 : 0.55
-                                    }}
-                                >
-                                    Mastered
-                                </button>
-                                <button
-                                    onClick={() => setMasteredDirection(d => d === 'mastered' ? 'unmastered' : 'mastered')}
-                                    disabled={!masteredEnabled}
-                                    title="Tap to flip between Mastered and Unmastered"
-                                    style={{
-                                        display: 'flex', padding: 0, border: 'none', fontWeight: 'bold', fontSize: '0.65rem',
-                                        cursor: masteredEnabled ? 'pointer' : 'default',
-                                        background: masteredEnabled ? masteredAccent : 'transparent',
-                                        borderLeft: `1px solid ${masteredEnabled ? 'rgba(255,255,255,0.4)' : cardBorder}`,
-                                        color: masteredEnabled ? 'white' : textColor,
-                                        opacity: masteredEnabled ? 1 : 0.55
-                                    }}
-                                >
-                                    <span style={{ padding: '0.3rem 0.4rem', background: masteredEnabled && masteredDirection === 'mastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>I</span>
-                                    <span style={{ padding: '0.3rem 0.4rem', background: masteredEnabled && masteredDirection === 'unmastered' ? 'rgba(255,255,255,0.28)' : 'transparent' }}>O</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                        {ALL_VARIANTS.map(v => (
-                            <button
-                                key={v}
-                                onClick={() => toggleVariantFilter(v)}
-                                style={{
-                                    padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
-                                    background: filterVariants.includes(v) ? accentColor : 'transparent',
-                                    color: filterVariants.includes(v) ? 'white' : accentColor,
-                                    border: `1.5px solid ${accentColor}`
-                                }}
-                            >
-                                {v}
-                            </button>
-                        ))}
-                        {hasActiveFilters && (
-                            <button onClick={clearFilters} style={{ padding: '0.4rem 0.8rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', background: 'transparent', color: textColor, border: `1.5px dashed ${cardBorder}`, opacity: 0.75 }}>
-                                ✕ Clear filters
-                            </button>
-                        )}
-                        </div>
-                    </div>
-
                     <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
@@ -940,6 +865,49 @@
                                         <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
                                         {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
                                     </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', overflow: 'hidden' }}>
+                        <button
+                            onClick={() => setFiltersExpanded(e => !e)}
+                            style={{
+                                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
+                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                            }}
+                        >
+                            <span>Filters <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>{hasActiveFilters ? '(active)' : ''}</span></span>
+                            <span style={{ fontSize: '1.2rem', transform: filtersExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+                        </button>
+                        {filtersExpanded && (
+                            <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
+                                {renderStatusFilter('Collected', filterCollectedMode, setFilterCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', accentColor)}
+                                {renderStatusFilter('Mastered', filterMasteredMode, setFilterMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', masteredAccent)}
+
+                                <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Variant</div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                                    {ALL_VARIANTS.map(v => (
+                                        <button
+                                            key={v}
+                                            onClick={() => toggleVariantFilter(v)}
+                                            style={{
+                                                padding: '0.5rem 0.9rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
+                                                background: filterVariants.includes(v) ? accentColor : 'transparent',
+                                                color: filterVariants.includes(v) ? 'white' : accentColor,
+                                                border: `1.5px solid ${accentColor}`
+                                            }}
+                                        >
+                                            {v}
+                                        </button>
+                                    ))}
+                                    {hasActiveFilters && (
+                                        <button onClick={clearFilters} style={{ padding: '0.5rem 0.9rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', background: 'transparent', color: textColor, border: `1.5px dashed ${cardBorder}`, opacity: 0.75 }}>
+                                            ✕ Clear filters
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
