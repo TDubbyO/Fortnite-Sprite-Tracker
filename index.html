@@ -299,13 +299,15 @@
                     <div style={{ textAlign: 'center' }}>
                         <div
                             onContextMenu={(e) => e.preventDefault()}
-                            style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
+                            style={{ width: '100%', position: 'relative', paddingTop: '100%', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}
                         >
                             <img 
                                 src={getImagePath(spriteName, 'Base')}
                                 {...noCalloutImgProps}
                                 style={{
                                     ...noCalloutImgProps.style,
+                                    position: 'absolute',
+                                    inset: 0,
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'contain'
@@ -321,19 +323,31 @@
                                 const color = VARIANT_COLORS[variant] || '#94a3b8';
                                 
                                 return (
-                                    <div 
+                                    <div
                                         key={variant}
-                                        style={{
-                                            width: '9px',
-                                            height: '9px',
-                                            borderRadius: '50%',
-                                            background: isCollected ? color : '#4b5563',
-                                            border: isMastered ? `1px solid ${masteredAccent}` : '1px solid transparent',
-                                            boxShadow: isMastered ? 'inset 0 0 0 0.5px #000' : 'none',
-                                            boxSizing: 'border-box'
-                                        }}
                                         title={variant}
-                                    />
+                                        style={{
+                                            width: '9px', height: '9px', borderRadius: '50%',
+                                            background: isMastered ? masteredAccent : 'transparent',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: isMastered ? '7.5px' : '9px',
+                                            height: isMastered ? '7.5px' : '9px',
+                                            borderRadius: '50%',
+                                            background: isMastered ? '#000' : 'transparent',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            <div style={{
+                                                width: isMastered ? '6px' : '9px',
+                                                height: isMastered ? '6px' : '9px',
+                                                borderRadius: '50%',
+                                                background: isCollected ? color : '#4b5563'
+                                            }} />
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -445,15 +459,12 @@
 
                     // Force a fresh layout read so html2canvas sees fully committed styles.
                     void captureRef.current.offsetHeight;
-                    const rect = captureRef.current.getBoundingClientRect();
 
                     const canvas = await window.html2canvas(captureRef.current, {
                         backgroundColor: bgColor,
                         scale: 2,
                         useCORS: true,
-                        logging: false,
-                        width: Math.ceil(rect.width),
-                        height: Math.ceil(rect.height)
+                        logging: false
                     });
                     canvas.toBlob(async (blob) => {
                         if (!blob) { setSavingImage(false); return; }
@@ -480,7 +491,7 @@
                     }, 'image/png');
                 } catch (err) {
                     console.error('Failed to save collection image', err);
-                    alert('Something went wrong generating the image. Please try again.');
+                    alert('Something went wrong generating the image: ' + (err && err.message ? err.message : 'unknown error') + '. Please try again.');
                     setSavingImage(false);
                 }
             };
