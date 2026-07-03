@@ -903,15 +903,20 @@
                     </button>
                     
                     <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
-                        <h2 style={{
-                            fontSize: '1.5rem', fontWeight: 900, margin: '1rem 0 0.75rem 0', flexShrink: 0,
-                            textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.02em',
-                            background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)',
-                            backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent', color: '#06b6d4'
-                        }}>
-                            Full Collection
-                        </h2>
+                        <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
+                            <svg viewBox="0 0 340 44" style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }}>
+                                <defs>
+                                    <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stopColor="#06b6d4" />
+                                        <stop offset="50%" stopColor="#a855f7" />
+                                        <stop offset="100%" stopColor="#ec4899" />
+                                    </linearGradient>
+                                </defs>
+                                <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontSize="30" fontWeight="900" letterSpacing="1" fill="url(#shareTitleGradient)">
+                                    FULL COLLECTION
+                                </text>
+                            </svg>
+                        </div>
 
                         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
