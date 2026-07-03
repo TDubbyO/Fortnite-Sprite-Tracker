@@ -460,12 +460,38 @@
                     // Force a fresh layout read so html2canvas sees fully committed styles.
                     void captureRef.current.offsetHeight;
 
-                    const canvas = await window.html2canvas(captureRef.current, {
+                    const gridCanvas = await window.html2canvas(captureRef.current, {
                         backgroundColor: bgColor,
                         scale: 2,
                         useCORS: true,
                         logging: false
                     });
+
+                    // Draw the title directly with the Canvas API instead of
+                    // capturing the SVG through html2canvas — native canvas text
+                    // rendering draws at full export resolution with no
+                    // intermediate rasterization step, so it can't come out soft.
+                    const titleHeight = Math.round(gridCanvas.width / 6);
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = gridCanvas.width;
+                    finalCanvas.height = gridCanvas.height + titleHeight;
+                    const ctx = finalCanvas.getContext('2d');
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+                    const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, 0);
+                    gradient.addColorStop(0, '#06b6d4');
+                    gradient.addColorStop(0.5, '#a855f7');
+                    gradient.addColorStop(1, '#ec4899');
+                    ctx.fillStyle = gradient;
+                    ctx.font = `900 ${Math.round(finalCanvas.width / 13)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight / 2);
+
+                    ctx.drawImage(gridCanvas, 0, titleHeight);
+
+                    const canvas = finalCanvas;
                     canvas.toBlob(async (blob) => {
                         if (!blob) { setSavingImage(false); return; }
                         const fileName = 'sprite-collection.png';
@@ -902,22 +928,22 @@
                         {savingImage ? 'Generating image…' : '📤 Share Collection'}
                     </button>
                     
-                    <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
-                        <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
-                            <svg viewBox="0 0 340 44" width="2040" height="264" style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }}>
-                                <defs>
-                                    <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stopColor="#06b6d4" />
-                                        <stop offset="50%" stopColor="#a855f7" />
-                                        <stop offset="100%" stopColor="#ec4899" />
-                                    </linearGradient>
-                                </defs>
-                                <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontSize="30" fontWeight="900" letterSpacing="1" fill="url(#shareTitleGradient)">
-                                    MY SPRITE VAULT
-                                </text>
-                            </svg>
-                        </div>
+                    <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 340 44" style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }}>
+                            <defs>
+                                <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#06b6d4" />
+                                    <stop offset="50%" stopColor="#a855f7" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontSize="30" fontWeight="900" letterSpacing="1" fill="url(#shareTitleGradient)">
+                                MY SPRITE VAULT
+                            </text>
+                        </svg>
+                    </div>
 
+                    <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
                         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
                                 {sprites.map(sp => {
