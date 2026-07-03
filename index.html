@@ -93,7 +93,11 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        const sprites = [
+        // Flip this to true once Seven, Air, and the Gem/Holofoil variant
+        // images are actually uploaded to /images/ and ready to ship.
+        const NEW_CONTENT_LIVE = false;
+
+        const BASE_SPRITES = [
             { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
@@ -112,15 +116,40 @@
             { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
         ];
 
+        // Upcoming sprites — inert until NEW_CONTENT_LIVE is flipped to true.
+        const NEW_SPRITES = [
+            { name: 'Seven', color: '#0891b2', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] },
+            { name: 'Air', color: '#7dd3fc', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] },
+        ];
+
+        // Gem and Holofoil are expected to apply across the whole collection
+        // (all 18 sprite types), not just Seven and Air — so when the flag
+        // flips, every existing sprite also picks up these two variants.
+        // Note: as of writing, only 6 Gems and 7 Holofoils are confirmed via
+        // an Epic leak — trim individual sprites' v[] arrays before going
+        // live if a particular sprite turns out not to get one of these.
+        const sprites = NEW_CONTENT_LIVE
+            ? [...BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, 'Gem', 'Holofoil'] })), ...NEW_SPRITES]
+            : BASE_SPRITES;
+
+        // Filename suffixes don't always match the lowercased display name
+        // (Holofoil's file suffix is "holo", not "holofoil").
+        const VARIANT_FILE_SUFFIX = {
+            Base: 'base', Gold: 'gold', Gummy: 'gummy', Galaxy: 'galaxy',
+            Gem: 'gem', Holofoil: 'holo'
+        };
+
         const getImagePath = (spriteName, variant) => {
             const nameMap = {
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
-                'Fishy': 'Fishy', 'Striker': 'Striker', 'Aura': 'Aura', 'Boss': 'Boss', 'Grim': 'Grim'
+                'Fishy': 'Fishy', 'Striker': 'Striker', 'Aura': 'Aura', 'Boss': 'Boss', 'Grim': 'Grim',
+                'Seven': 'Seven', 'Air': 'Air'
             };
             const mappedName = nameMap[spriteName];
-            return `/images/${mappedName}-${variant.toLowerCase()}.webp`;
+            const suffix = VARIANT_FILE_SUFFIX[variant] || variant.toLowerCase();
+            return `/images/${mappedName}-${suffix}.webp`;
         };
 
         // Shared style/props to stop the native long-press image menu (context menu,
@@ -243,7 +272,7 @@
             useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
-            const tot = 61;
+            const tot = sprites.reduce((sum, sp) => sum + sp.v.length, 0);
             const col = collected.length;
             const mas = mastered.length;
             const masterCollectorUnlocked = mas === tot && tot > 0;
@@ -312,8 +341,8 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy'];
-            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7' };
+            const ALL_VARIANTS = NEW_CONTENT_LIVE ? ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] : ['Base', 'Gold', 'Gummy', 'Galaxy'];
+            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#10b981', Holofoil: '#38bdf8' };
 
             // A single sprite-variant tile passes the current filters if it
             // satisfies the variant-type selection AND the collected toggle
@@ -389,13 +418,42 @@
             // iOS/Android lets you save straight to Photos or share to an app —
             // or falls back to a plain file download if that's unavailable.
             const saveCollectionImage = async () => {
-                if (!captureRef.current || !window.html2canvas || savingImage) return;
+                if (!captureRef.current || savingImage) return;
                 setSavingImage(true);
                 try {
+                    // html2canvas loads async from a CDN <script> tag — if it hasn't
+                    // finished (slow connection, blocked, etc.) wait briefly instead
+                    // of silently failing.
+                    let waited = 0;
+                    while (!window.html2canvas && waited < 4000) {
+                        await new Promise(res => setTimeout(res, 100));
+                        waited += 100;
+                    }
+                    if (!window.html2canvas) {
+                        alert("Couldn't load the image export tool — check your internet connection and try again.");
+                        setSavingImage(false);
+                        return;
+                    }
+
+                    // Make sure every sprite image has actually finished loading
+                    // before snapshotting, so we never capture a blank/half-loaded frame.
+                    const imgs = Array.from(captureRef.current.querySelectorAll('img'));
+                    await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
+                        img.addEventListener('load', res, { once: true });
+                        img.addEventListener('error', res, { once: true });
+                    })));
+
+                    // Force a fresh layout read so html2canvas sees fully committed styles.
+                    void captureRef.current.offsetHeight;
+                    const rect = captureRef.current.getBoundingClientRect();
+
                     const canvas = await window.html2canvas(captureRef.current, {
                         backgroundColor: bgColor,
                         scale: 2,
-                        useCORS: true
+                        useCORS: true,
+                        logging: false,
+                        width: Math.ceil(rect.width),
+                        height: Math.ceil(rect.height)
                     });
                     canvas.toBlob(async (blob) => {
                         if (!blob) { setSavingImage(false); return; }
@@ -422,6 +480,7 @@
                     }, 'image/png');
                 } catch (err) {
                     console.error('Failed to save collection image', err);
+                    alert('Something went wrong generating the image. Please try again.');
                     setSavingImage(false);
                 }
             };
@@ -813,11 +872,24 @@
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
                         <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={saveCollectionImage} disabled={savingImage} title="Save a clean image of your collection" style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: savingImage ? 'default' : 'pointer', opacity: savingImage ? 0.6 : 1 }}>{savingImage ? '…' : '💾'}</button>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
+
+                    <button
+                        onClick={saveCollectionImage}
+                        disabled={savingImage}
+                        style={{
+                            width: '100%', padding: '0.6rem', marginBottom: '0.6rem', borderRadius: '0.5rem',
+                            border: 'none', cursor: savingImage ? 'default' : 'pointer', flexShrink: 0,
+                            background: savingImage ? iconBg : accentColor,
+                            color: savingImage ? accentColor : 'white',
+                            fontWeight: 'bold', fontSize: '0.9rem'
+                        }}
+                    >
+                        {savingImage ? 'Generating image…' : '📤 Share Collection'}
+                    </button>
                     
                     <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
                         <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.5rem 0', flexShrink: 0, color: textColor }}>Full collection</h2>
