@@ -474,8 +474,8 @@
                     // capturing the SVG through html2canvas — native canvas text
                     // rendering draws at full export resolution with no
                     // intermediate rasterization step, so it can't come out soft.
-                    const titleHeight = Math.round(gridCanvas.width / 6);
-                    const titleFontSize = Math.round(gridCanvas.width / 13);
+                    const titleHeight = Math.round(gridCanvas.width / 5.2);
+                    const titleFontSize = Math.round(gridCanvas.width / 10.5);
                     const titleFont = `400 ${titleFontSize}px "Anton"`;
                     // Canvas text doesn't auto-wait for custom webfonts the way
                     // DOM rendering does — without this, the very first export
@@ -782,7 +782,7 @@
                         </div>
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>SPRITE ROULETTE</h1>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.5rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>SPRITE ROULETTE</h1>
                     <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
@@ -901,8 +901,20 @@
                                     const h = splitId(id);
                                     return (
                                         <div key={i} style={{ width: '52px', textAlign: 'center' }}>
-                                            <div style={{ width: '52px', height: '52px', borderRadius: '0.5rem', overflow: 'hidden', background: cardBg, border: `1px solid ${cardBorder}` }}>
-                                                <img src={getImagePath(h.name, h.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                            <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '0.5rem', overflow: 'visible' }}>
+                                                <div style={{ width: '100%', height: '100%', borderRadius: '0.5rem', overflow: 'hidden', background: cardBg, border: `1px solid ${cardBorder}` }}>
+                                                    <img src={getImagePath(h.name, h.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                                </div>
+                                                <div style={{
+                                                    position: 'absolute', top: '-6px', right: '-6px',
+                                                    width: '18px', height: '18px', borderRadius: '50%',
+                                                    background: accentColor, color: 'white',
+                                                    fontSize: '0.6rem', fontWeight: 'bold',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    border: `1.5px solid ${bgColor}`
+                                                }}>
+                                                    {i + 1}
+                                                </div>
                                             </div>
                                             <div style={{ fontSize: '0.6rem', marginTop: '0.25rem', opacity: 0.7, overflowWrap: 'break-word' }}>{h.name}</div>
                                         </div>
@@ -939,7 +951,7 @@
                     </button>
                     
                     <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
-                        <svg viewBox="0 0 340 44" style={{ width: '100%', maxWidth: '320px', height: 'auto', display: 'block' }}>
+                        <svg viewBox="0 0 340 52" style={{ width: '100%', maxWidth: '340px', height: 'auto', display: 'block' }}>
                             <defs>
                                 <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                     <stop offset="0%" stopColor="#06b6d4" />
@@ -947,7 +959,7 @@
                                     <stop offset="100%" stopColor="#ec4899" />
                                 </linearGradient>
                             </defs>
-                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="'Anton', sans-serif" fontSize="30" fontWeight="400" letterSpacing="1" fill="url(#shareTitleGradient)">
+                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="'Anton', sans-serif" fontSize="36" fontWeight="400" letterSpacing="1" fill="url(#shareTitleGradient)">
                                 MY SPRITE VAULT
                             </text>
                         </svg>
@@ -1097,6 +1109,7 @@
                         {sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                            const cardPct = sp.v.length > 0 ? (c / sp.v.length) * 100 : 0;
                             const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                             if (!anyVariantMatches) return null;
                             return (
@@ -1105,8 +1118,18 @@
                                         <div style={{ fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
                                             {sp.name}
                                         </div>
-                                        <div style={{ fontSize: compactView ? '0.7rem' : '0.875rem', fontWeight: 600, color: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px', borderRadius: '50%', border: `2px solid ${accentColor}`, flexShrink: 0 }}>
-                                            {c}/{sp.v.length}
+                                        <div style={{
+                                            width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
+                                            borderRadius: '50%', flexShrink: 0, position: 'relative',
+                                            background: `conic-gradient(${accentColor} ${cardPct}%, ${accentColor}26 ${cardPct}%)`
+                                        }}>
+                                            <div style={{
+                                                position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
+                                                background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: compactView ? '0.6rem' : '0.75rem', fontWeight: 600, color: accentColor
+                                            }}>
+                                                {c}/{sp.v.length}
+                                            </div>
                                         </div>
                                     </div>
                                     
