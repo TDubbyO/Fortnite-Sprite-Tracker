@@ -766,6 +766,11 @@
             const iconBg = isMasterCollector
                 ? (dark ? 'rgba(168, 85, 247, 0.3)' : '#e9d5ff')
                 : (dark ? 'rgba(6, 182, 212, 0.25)' : '#a5f3fc');
+            const cardGlow = isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.45)' : 'none';
+            // Soft ambient bloom behind titles — a static, non-animated glow using
+            // the same gradient colors, applied via drop-shadow so it respects the
+            // gradient-clipped text's actual glyph shapes rather than a rectangle.
+            const titleGlow = 'drop-shadow(0 0 18px rgba(168, 85, 247, 0.35)) drop-shadow(0 0 32px rgba(6, 182, 212, 0.2))';
 
             if (roulette) {
                 const pool = getRoulettePool();
@@ -782,7 +787,7 @@
                         </div>
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.5rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>SPRITE ROULETTE</h1>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.5rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
                     <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
@@ -940,18 +945,19 @@
                         onClick={saveCollectionImage}
                         disabled={savingImage}
                         style={{
-                            width: '100%', padding: '0.6rem', marginBottom: '0.6rem', borderRadius: '0.5rem',
+                            width: '100%', padding: '0.75rem', marginBottom: '0.6rem', borderRadius: '0.75rem',
                             border: 'none', cursor: savingImage ? 'default' : 'pointer', flexShrink: 0,
-                            background: savingImage ? iconBg : accentColor,
+                            background: savingImage ? iconBg : 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)',
                             color: savingImage ? accentColor : 'white',
-                            fontWeight: 'bold', fontSize: '0.9rem'
+                            fontWeight: 900, fontSize: '0.95rem', letterSpacing: '0.02em',
+                            boxShadow: savingImage ? 'none' : '0 4px 16px rgba(168, 85, 247, 0.45)'
                         }}
                     >
-                        {savingImage ? 'Generating image…' : '📤 Share Collection'}
+                        {savingImage ? 'Generating image…' : '✨ Share Collection'}
                     </button>
                     
                     <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
-                        <svg viewBox="0 0 340 52" style={{ width: '100%', maxWidth: '340px', height: 'auto', display: 'block' }}>
+                        <svg viewBox="0 0 340 52" style={{ width: '100%', maxWidth: '340px', height: 'auto', display: 'block', filter: titleGlow }}>
                             <defs>
                                 <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                     <stop offset="0%" stopColor="#06b6d4" />
@@ -1019,15 +1025,15 @@
                         </div>
                     </div>
 
-                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
+                    <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, boxShadow: cardGlow }}>
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
                     
-                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: isMasterCollector ? '0 0 24px rgba(168, 85, 247, 0.5)' : 'none', overflow: 'hidden' }}>
+                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
                             onClick={() => setStatsExpanded(e => !e)}
                             style={{
@@ -1062,7 +1068,7 @@
                         )}
                     </div>
 
-                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', overflow: 'hidden' }}>
+                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
                             onClick={() => setFiltersExpanded(e => !e)}
                             style={{
@@ -1110,10 +1116,15 @@
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             const cardPct = sp.v.length > 0 ? (c / sp.v.length) * 100 : 0;
+                            const allMastered = sp.v.length > 0 && m === sp.v.length;
+                            const ringColor = allMastered ? masteredAccent : accentColor;
+                            const cardShadows = [];
+                            if (isMasterCollector) cardShadows.push(cardGlow);
+                            if (allMastered) cardShadows.push(`0 0 16px ${masteredAccent}99`);
                             const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                             if (!anyVariantMatches) return null;
                             return (
-                                <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}`, position: 'relative', boxShadow: isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.4)' : 'none' }}>
+                                <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
                                         <div style={{ fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
                                             {sp.name}
@@ -1121,12 +1132,13 @@
                                         <div style={{
                                             width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
                                             borderRadius: '50%', flexShrink: 0, position: 'relative',
-                                            background: `conic-gradient(${accentColor} ${cardPct}%, ${accentColor}26 ${cardPct}%)`
+                                            background: `conic-gradient(${ringColor} ${cardPct}%, ${cardBorder} ${cardPct}%)`,
+                                            boxShadow: cardPct === 100 ? `0 0 6px ${ringColor}` : 'none'
                                         }}>
                                             <div style={{
                                                 position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
                                                 background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: compactView ? '0.6rem' : '0.75rem', fontWeight: 600, color: accentColor
+                                                fontSize: compactView ? '0.6rem' : '0.75rem', fontWeight: 600, color: ringColor
                                             }}>
                                                 {c}/{sp.v.length}
                                             </div>
