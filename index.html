@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fortnite Sprite Collection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -472,6 +475,13 @@
                     // rendering draws at full export resolution with no
                     // intermediate rasterization step, so it can't come out soft.
                     const titleHeight = Math.round(gridCanvas.width / 6);
+                    const titleFontSize = Math.round(gridCanvas.width / 13);
+                    const titleFont = `400 ${titleFontSize}px "Anton"`;
+                    // Canvas text doesn't auto-wait for custom webfonts the way
+                    // DOM rendering does — without this, the very first export
+                    // could silently fall back to the default system font.
+                    try { await document.fonts.load(titleFont); } catch (err) {}
+
                     const finalCanvas = document.createElement('canvas');
                     finalCanvas.width = gridCanvas.width;
                     finalCanvas.height = gridCanvas.height + titleHeight;
@@ -484,7 +494,7 @@
                     gradient.addColorStop(0.5, '#a855f7');
                     gradient.addColorStop(1, '#ec4899');
                     ctx.fillStyle = gradient;
-                    ctx.font = `900 ${Math.round(finalCanvas.width / 13)}px sans-serif`;
+                    ctx.font = titleFont;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight / 2);
@@ -772,7 +782,7 @@
                         </div>
                     </div>
 
-                    <h1 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
                     <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
@@ -937,7 +947,7 @@
                                     <stop offset="100%" stopColor="#ec4899" />
                                 </linearGradient>
                             </defs>
-                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontSize="30" fontWeight="900" letterSpacing="1" fill="url(#shareTitleGradient)">
+                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="'Anton', sans-serif" fontSize="30" fontWeight="400" letterSpacing="1" fill="url(#shareTitleGradient)">
                                 MY SPRITE VAULT
                             </text>
                         </svg>
@@ -1001,7 +1011,7 @@
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
                     </div>
 
-                    <h1 style={{ fontSize: '3rem', fontWeight: 900, margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
                     
