@@ -767,8 +767,8 @@
                 const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake' || roulettePhase === 'settle';
                 const goBack = () => { resetRoulette(); setRoulette(false); };
 
-                return <div style={{ width: '100%', minHeight: '100vh', background: bgColor, color: textColor, padding: '2rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                return <div style={{ width: '100%', height: '100dvh', background: bgColor, color: textColor, padding: '1rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
@@ -776,8 +776,8 @@
                         </div>
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.5rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.25rem 0', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
-                    <div style={{ opacity: 0.7, marginBottom: '2.5rem', fontSize: '0.9rem' }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
+                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.15rem 0', flexShrink: 0, textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
+                    <div style={{ opacity: 0.7, marginBottom: '0.75rem', fontSize: '0.85rem', flexShrink: 0 }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
                         <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center', maxWidth: '320px' }}>
@@ -785,7 +785,7 @@
                         </div>
                     ) : (
                         <>
-                            <div ref={stageRef} style={{ position: 'relative', width: 'min(90vw, 460px)', height: 'min(90vw, 460px)', marginBottom: '2rem' }}>
+                            <div ref={stageRef} style={{ position: 'relative', width: 'min(70vw, 300px)', height: 'min(70vw, 300px)', marginBottom: '0.75rem', flexShrink: 0 }}>
                                 {/* Every collected sprite wanders the stage until Roll is pressed, then flies into the chest */}
                                 {(roulettePhase === 'idle' || roulettePhase === 'gather') && scatterItems.map((item) => {
                                     const info = splitId(item.id);
@@ -860,7 +860,7 @@
                                 )}
                             </div>
 
-                            <div style={{ textAlign: 'center', marginBottom: '1.5rem', minHeight: '2.75rem', visibility: (roulettePhase === 'burst' && resultInfo) ? 'visible' : 'hidden', animation: (roulettePhase === 'burst' && resultInfo) ? 'popIn 0.4s ease-out 0.3s both' : 'none' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '0.5rem', minHeight: '2.4rem', flexShrink: 0, visibility: (roulettePhase === 'burst' && resultInfo) ? 'visible' : 'hidden', animation: (roulettePhase === 'burst' && resultInfo) ? 'popIn 0.4s ease-out 0.3s both' : 'none' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo ? resultInfo.name : '\u00A0'}</div>
                                 <div style={{ fontSize: '0.9rem', color: accentColor }}>{resultInfo ? resultInfo.variant : '\u00A0'}</div>
                             </div>
@@ -869,7 +869,8 @@
                                 onClick={roulettePhase === 'burst' ? resetToIdle : startRoll}
                                 disabled={isBusy}
                                 style={{
-                                    padding: '0.75rem 2rem',
+                                    padding: '0.6rem 1.75rem',
+                                    flexShrink: 0,
                                     background: isBusy ? cardBg : masteredAccent,
                                     color: isBusy ? accentColor : 'white',
                                     border: 'none',
@@ -886,29 +887,29 @@
                     )}
 
                     {rollHistory.length > 0 && (
-                        <div style={{ marginTop: '2.5rem', width: '100%', maxWidth: '420px', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.7, marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last {rollHistory.length} roll{rollHistory.length === 1 ? '' : 's'}</div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <div style={{ marginTop: '0.75rem', width: '100%', maxWidth: '420px', textAlign: 'center', flexShrink: 0, minHeight: 0, overflow: 'hidden' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.7, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last {rollHistory.length} roll{rollHistory.length === 1 ? '' : 's'}</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                                 {rollHistory.map((id, i) => {
                                     const h = splitId(id);
                                     return (
-                                        <div key={i} style={{ width: '52px', textAlign: 'center' }}>
-                                            <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '0.5rem', overflow: 'visible' }}>
+                                        <div key={i} style={{ width: '42px', textAlign: 'center' }}>
+                                            <div style={{ position: 'relative', width: '42px', height: '42px', borderRadius: '0.5rem', overflow: 'visible' }}>
                                                 <div style={{ width: '100%', height: '100%', borderRadius: '0.5rem', overflow: 'hidden', background: cardBg, border: `1px solid ${cardBorder}` }}>
                                                     <img src={getImagePath(h.name, h.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
                                                 </div>
                                                 <div style={{
-                                                    position: 'absolute', top: '-6px', right: '-6px',
-                                                    width: '18px', height: '18px', borderRadius: '50%',
+                                                    position: 'absolute', top: '-5px', right: '-5px',
+                                                    width: '15px', height: '15px', borderRadius: '50%',
                                                     background: accentColor, color: 'white',
-                                                    fontSize: '0.6rem', fontWeight: 'bold',
+                                                    fontSize: '0.55rem', fontWeight: 'bold',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     border: `1.5px solid ${bgColor}`
                                                 }}>
                                                     {i + 1}
                                                 </div>
                                             </div>
-                                            <div style={{ fontSize: '0.6rem', marginTop: '0.25rem', opacity: 0.7, overflowWrap: 'break-word' }}>{h.name}</div>
+                                            <div style={{ fontSize: '0.55rem', marginTop: '0.2rem', opacity: 0.7, overflowWrap: 'break-word' }}>{h.name}</div>
                                         </div>
                                     );
                                 })}
