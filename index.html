@@ -216,7 +216,7 @@
                 <div style={{ background: 'linear-gradient(135deg, #1a0033, #330066)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #a855f7' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
                     <h2 style={{ color: '#a855f7', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>Master Collector!</h2>
-                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All 61 sprites mastered!</p>
+                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All sprites collected!</p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                         <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #a855f7', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
                         <button onClick={() => { onEnable(); onClose(); }} style={{ padding: '0.75rem 1.5rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Activate ✨</button>
@@ -278,7 +278,7 @@
             const tot = sprites.reduce((sum, sp) => sum + sp.v.length, 0);
             const col = collected.length;
             const mas = mastered.length;
-            const masterCollectorUnlocked = mas === tot && tot > 0;
+            const masterCollectorUnlocked = col === tot && tot > 0;
             const isMasterCollector = masterCollectorUnlocked && masterCollectorActive;
 
             useEffect(() => {
@@ -292,10 +292,10 @@
             }, [masterCollectorUnlocked, masterCollectorSeen]);
 
             useEffect(() => {
-                if (masterCollectorActive && mas < tot) {
+                if (masterCollectorActive && col < tot) {
                     setMasterCollectorActive(false);
                 }
-            }, [mas, tot, masterCollectorActive]);
+            }, [col, tot, masterCollectorActive]);
 
             const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus }) => {
                 return (
