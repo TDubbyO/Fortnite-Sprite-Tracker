@@ -21,10 +21,6 @@
             60% { transform: translate(-50%, -50%) translateX(-4px) rotate(-2deg); }
             80% { transform: translate(-50%, -50%) translateX(4px) rotate(2deg); }
         }
-        @keyframes lidOpen {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(-108deg); }
-        }
         @keyframes burstFlash {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
             35% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
@@ -85,10 +81,6 @@
             97% { transform: translate(-50%, -50%) translateY(0) scaleY(0.85); }
             98% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
             100% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
-        }
-        @keyframes shuffleBob {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
         }
     </style>
 </head>
@@ -155,20 +147,20 @@
             return `/images/${mappedName}-${suffix}.webp`;
         };
 
-        // Shared style/props to stop the native long-press image menu (context menu,
-        // "save image", callout) from appearing on iOS/Android while still allowing
-        // our own onPointerDown/onPointerUp long-press logic to run.
-        // Sprite names never contain a hyphen, so the LAST hyphen always
-        // separates the variant (Base/Gold/Gummy/Galaxy) from the name.
         // Update these two filenames if your uploaded chest images use different names.
         const CHEST_CLOSED = '/images/Chest-closed.png';
         const CHEST_OPEN = '/images/Chest-open.png';
 
+        // Sprite names never contain a hyphen, so the LAST hyphen always
+        // separates the variant (Base/Gold/Gummy/Galaxy) from the name.
         const splitId = (id) => {
             const idx = id.lastIndexOf('-');
             return { name: id.slice(0, idx), variant: id.slice(idx + 1) };
         };
 
+        // Shared style/props to stop the native long-press image menu (context menu,
+        // "save image", callout) from appearing on iOS/Android while still allowing
+        // our own onPointerDown/onPointerUp long-press logic to run.
         const noCalloutImgProps = {
             draggable: false,
             onDragStart: (e) => e.preventDefault(),
@@ -757,9 +749,6 @@
                 : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(168, 85, 247, 0.6)');
             const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
             const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
-            // Emoji glyphs (☀️🌙🎲✨) have their own fixed bright colors, so the
-            // pale tinted cardBg (especially in light mode) washes them out.
-            // This neutral gray tint keeps contrast consistent everywhere.
             // Emoji glyphs (☀️🌙🎲✨) have their own fixed bright colors, so a pale
             // translucent tint (especially in light mode) washes them out. Solid,
             // in-theme pastels keep the accent-color identity while giving real contrast.
@@ -871,12 +860,10 @@
                                 )}
                             </div>
 
-                            {roulettePhase === 'burst' && resultInfo && (
-                                <div style={{ textAlign: 'center', marginBottom: '1.5rem', animation: 'popIn 0.4s ease-out 0.3s both' }}>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo.name}</div>
-                                    <div style={{ fontSize: '0.9rem', color: accentColor }}>{resultInfo.variant}</div>
-                                </div>
-                            )}
+                            <div style={{ textAlign: 'center', marginBottom: '1.5rem', minHeight: '2.75rem', visibility: (roulettePhase === 'burst' && resultInfo) ? 'visible' : 'hidden', animation: (roulettePhase === 'burst' && resultInfo) ? 'popIn 0.4s ease-out 0.3s both' : 'none' }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo ? resultInfo.name : '\u00A0'}</div>
+                                <div style={{ fontSize: '0.9rem', color: accentColor }}>{resultInfo ? resultInfo.variant : '\u00A0'}</div>
+                            </div>
 
                             <button
                                 onClick={roulettePhase === 'burst' ? resetToIdle : startRoll}
