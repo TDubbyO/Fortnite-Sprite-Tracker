@@ -1127,7 +1127,9 @@
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
-                        {sprites.map(sp => {
+                        {(() => {
+                            const maxTileSlots = Math.ceil(Math.max(...sprites.map(sp => sp.v.length)) / 2) * 2;
+                            return sprites.map(sp => {
                             const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
                             const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                             const cardPct = sp.v.length > 0 ? (c / sp.v.length) * 100 : 0;
@@ -1207,10 +1209,14 @@
                                                 </div>
                                             );
                                         })}
+                                        {Array.from({ length: Math.max(0, maxTileSlots - sp.v.length) }).map((_, idx) => (
+                                            <div key={`placeholder-${idx}`} style={{ width: '100%', height: compactView ? '62px' : '120px', visibility: 'hidden' }} />
+                                        ))}
                                     </div>
                                 </div>
                             );
-                        })}
+                        });
+                        })()}
                     </div>
                 </div>
             </div>;
