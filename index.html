@@ -93,19 +93,19 @@
         const NEW_CONTENT_LIVE = false;
 
         const BASE_SPRITES = [
-            { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Duck', color: '#facc15', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Ghost', color: '#cbd5e1', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Ghost', color: '#cbd5e1', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Dream', color: '#a855f7', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Demon', color: '#b91c1c', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Punk', color: '#db2777', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'King', color: '#b45309', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'King', color: '#b45309', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Burnt Peanut', color: '#78350f', v: ['Base'] },
             { name: 'Zero Point', color: '#6d28d9', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Aura', color: '#ffffff', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
@@ -117,14 +117,14 @@
             { name: 'Air', color: '#7dd3fc', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] },
         ];
 
-        // Gem and Holofoil are expected to apply across the whole collection
-        // (all 18 sprite types), not just Seven and Air — so when the flag
-        // flips, every existing sprite also picks up these two variants.
-        // Note: as of writing, only 6 Gems and 7 Holofoils are confirmed via
-        // an Epic leak — trim individual sprites' v[] arrays before going
-        // live if a particular sprite turns out not to get one of these.
+        // Gem and Holofoil are expected to eventually apply across the whole
+        // collection, not just Seven and Air — so when the flag flips, every
+        // remaining existing sprite also picks up these two variants. Water,
+        // Fire, King, Ghost, and Striker already have Holofoil for real (as of
+        // writing), so this only adds what's still missing per sprite —
+        // it won't duplicate Holofoil on those five.
         const sprites = NEW_CONTENT_LIVE
-            ? [...BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, 'Gem', 'Holofoil'] })), ...NEW_SPRITES]
+            ? [...BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, ...['Gem', 'Holofoil'].filter(x => !sp.v.includes(x))] })), ...NEW_SPRITES]
             : BASE_SPRITES;
 
         // Filename suffixes don't always match the lowercased display name
@@ -374,8 +374,8 @@
                 );
             };
 
-            const ALL_VARIANTS = NEW_CONTENT_LIVE ? ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] : ['Base', 'Gold', 'Gummy', 'Galaxy'];
-            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#10b981', Holofoil: '#38bdf8' };
+            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', ...(NEW_CONTENT_LIVE ? ['Gem'] : [])];
+            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#10b981', Holofoil: '#14b8a6' };
 
             // A single sprite-variant tile passes the current filters if it
             // satisfies the variant-type selection AND the collected toggle
