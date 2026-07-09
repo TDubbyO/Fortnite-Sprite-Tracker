@@ -241,7 +241,31 @@
             const [frozenPositions, setFrozenPositions] = useState({}); // id -> {x, y} snapshot taken at click time
             const stageRef = useRef(null);
             const captureRef = useRef(null);
+            const gridWrapperRef = useRef(null);
+            const [gridScale, setGridScale] = useState(1);
             const [savingImage, setSavingImage] = useState(false);
+
+            // scrollHeight reflects the grid's natural, untransformed size
+            // regardless of any CSS scale already applied, so this is safe to
+            // recompute even while a previous scale is active.
+            useEffect(() => {
+                if (!share) return;
+                const measure = () => {
+                    if (!captureRef.current || !gridWrapperRef.current) return;
+                    const contentHeight = captureRef.current.scrollHeight;
+                    const availableHeight = gridWrapperRef.current.clientHeight;
+                    if (contentHeight > 0 && availableHeight > 0) {
+                        setGridScale(Math.min(1, availableHeight / contentHeight));
+                    }
+                };
+                measure();
+                const raf = requestAnimationFrame(measure); // catch late image-driven layout shifts
+                window.addEventListener('resize', measure);
+                return () => {
+                    cancelAnimationFrame(raf);
+                    window.removeEventListener('resize', measure);
+                };
+            }, [share, collected, mastered, shareColumns, dark, isMasterCollector]);
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
@@ -959,8 +983,11 @@
                         </svg>
                     </div>
 
-                    <div ref={captureRef} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: bgColor }}>
-                        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                    {/* This wrapper is whatever space is actually left on THIS device.
+                        The grid inside is measured against it and scaled down (never up)
+                        to fit exactly — no clipping, no scrolling, on any screen size. */}
+                    <div ref={gridWrapperRef} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden' }}>
+                        <div ref={captureRef} style={{ background: bgColor, width: '100%', transform: savingImage ? 'none' : `scale(${gridScale})`, transformOrigin: 'top center' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
                                 {sprites.map(sp => {
                                     const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
