@@ -88,11 +88,12 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        // Flip this to true once Seven, Air, and the Gem/Holofoil variant
-        // images are actually uploaded to /images/ and ready to ship.
+        // Flip this to true once the remaining unconfirmed content (Gem
+        // variant expansion) is actually uploaded to /images/ and ready to ship.
         const NEW_CONTENT_LIVE = false;
 
         const BASE_SPRITES = [
+            { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
@@ -102,6 +103,8 @@
             { name: 'Demon', color: '#b91c1c', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Punk', color: '#db2777', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'King', color: '#b45309', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Pollo', color: '#f59e0b', v: ['Base'] },
+            { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
             { name: 'Burnt Peanut', color: '#78350f', v: ['Base'] },
             { name: 'Zero Point', color: '#6d28d9', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
@@ -109,22 +112,18 @@
             { name: 'Aura', color: '#ffffff', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Air', color: '#7dd3fc', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Seven', color: '#0891b2', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
         ];
 
-        // Upcoming sprites — inert until NEW_CONTENT_LIVE is flipped to true.
-        const NEW_SPRITES = [
-            { name: 'Seven', color: '#0891b2', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] },
-            { name: 'Air', color: '#7dd3fc', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem', 'Holofoil'] },
-        ];
-
-        // Gem and Holofoil are expected to eventually apply across the whole
-        // collection, not just Seven and Air — so when the flag flips, every
-        // remaining existing sprite also picks up these two variants. Water,
-        // Fire, King, Ghost, and Striker already have Holofoil for real (as of
-        // writing), so this only adds what's still missing per sprite —
-        // it won't duplicate Holofoil on those five.
+        // Gem is still unconfirmed and expected to eventually apply across the
+        // whole collection once NEW_CONTENT_LIVE flips to true. Every sprite
+        // that doesn't already have Holofoil for real also picks up Holofoil
+        // at that point; the de-dup filter below means sprites that already
+        // ship with real Holofoil (Water, Fire, King, Ghost, Striker, Air,
+        // Batman, Seven) won't end up with it listed twice.
         const sprites = NEW_CONTENT_LIVE
-            ? [...BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, ...['Gem', 'Holofoil'].filter(x => !sp.v.includes(x))] })), ...NEW_SPRITES]
+            ? BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, ...['Gem', 'Holofoil'].filter(x => !sp.v.includes(x))] }))
             : BASE_SPRITES;
 
         // Filename suffixes don't always match the lowercased display name
@@ -140,7 +139,7 @@
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
                 'Fishy': 'Fishy', 'Striker': 'Striker', 'Aura': 'Aura', 'Boss': 'Boss', 'Grim': 'Grim',
-                'Seven': 'Seven', 'Air': 'Air'
+                'Seven': 'Seven', 'Air': 'Air', 'Batman': 'Batman', 'Pollo': 'Pollo', 'Vini Jr.': 'Vini-Jr'
             };
             const mappedName = nameMap[spriteName];
             const suffix = VARIANT_FILE_SUFFIX[variant] || variant.toLowerCase();
