@@ -236,7 +236,6 @@
             const [scatterItems, setScatterItems] = useState([]); // [{id, xPct, yPct, wp:[{x,y}x3], roamDuration, roamDelay, gatherDelay}]
             const [rouletteResult, setRouletteResult] = useState(null);
             const rouletteTimeoutRef = useRef(null);
-            const compactToggleLock = useRef(0);
             const [frozenPositions, setFrozenPositions] = useState({}); // id -> {x, y} snapshot taken at click time
             const stageRef = useRef(null);
             const captureRef = useRef(null);
@@ -271,7 +270,14 @@
             // 'all' | 'collected' | 'uncollected', and 'all' | 'mastered' | 'unmastered'
             const [filterCollectedMode, setFilterCollectedMode] = useState(() => localStorage.getItem('filterCollectedMode') || 'all');
             const [filterMasteredMode, setFilterMasteredMode] = useState(() => localStorage.getItem('filterMasteredMode') || 'all');
-            const [compactView, setCompactView] = useState(() => JSON.parse(localStorage.getItem('compactView') || 'false'));
+            const [viewMode, setViewMode] = useState(() => {
+                const saved = localStorage.getItem('viewMode');
+                if (saved === 'cozy' || saved === 'compact' || saved === 'list') return saved;
+                // Migrate the old Cozy/Compact boolean toggle so existing choices carry over.
+                return JSON.parse(localStorage.getItem('compactView') || 'false') ? 'compact' : 'cozy';
+            });
+            const compactView = viewMode === 'compact';
+            const listView = viewMode === 'list';
             const [statsExpanded, setStatsExpanded] = useState(() => JSON.parse(localStorage.getItem('statsExpanded') || 'false'));
             const [filtersExpanded, setFiltersExpanded] = useState(() => JSON.parse(localStorage.getItem('filtersExpanded') || 'false'));
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
@@ -285,7 +291,7 @@
             useEffect(() => { localStorage.setItem('filterCollectedMode', filterCollectedMode); }, [filterCollectedMode]);
             useEffect(() => { localStorage.setItem('filterMasteredMode', filterMasteredMode); }, [filterMasteredMode]);
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
-            useEffect(() => { localStorage.setItem('compactView', JSON.stringify(compactView)); }, [compactView]);
+            useEffect(() => { localStorage.setItem('viewMode', viewMode); }, [viewMode]);
             useEffect(() => { localStorage.setItem('statsExpanded', JSON.stringify(statsExpanded)); }, [statsExpanded]);
             useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
@@ -1022,17 +1028,23 @@
                                 <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
                             </div>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button
-                                    onClick={() => {
-                                        const now = Date.now();
-                                        if (now - compactToggleLock.current < 250) return;
-                                        compactToggleLock.current = now;
-                                        setCompactView(v => !v);
-                                    }}
-                                    style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}
-                                >
-                                    {compactView ? 'Compact' : 'Cozy'}
-                                </button>
+                                <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
+                                    {[['cozy', 'Cozy'], ['compact', 'Compact'], ['list', 'List']].map(([val, txt], i) => (
+                                        <button
+                                            key={val}
+                                            onClick={() => setViewMode(val)}
+                                            style={{
+                                                padding: '0.5rem 0.7rem', border: 'none', cursor: 'pointer',
+                                                borderLeft: i > 0 ? `1px solid ${viewMode === val ? 'rgba(255,255,255,0.4)' : accentColor}` : 'none',
+                                                background: viewMode === val ? accentColor : 'transparent',
+                                                color: viewMode === val ? 'white' : accentColor,
+                                                fontWeight: 'bold', fontSize: '0.78rem'
+                                            }}
+                                        >
+                                            {txt}
+                                        </button>
+                                    ))}
+                                </div>
                                 <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                                 {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
                             </div>
@@ -1125,6 +1137,90 @@
                         )}
                     </div>
 
+                    {listView ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {sprites.map(sp => {
+                                const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                                const allMastered = sp.v.length > 0 && m === sp.v.length;
+                                const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                if (!anyVariantMatches) return null;
+                                return (
+                                    <div key={sp.name} style={{ background: cardBg, padding: '0.4rem 0.6rem', borderRadius: '0.6rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: isMasterCollector ? cardGlow : 'none' }}>
+                                        <div style={{ width: '38px', height: '38px', borderRadius: '0.4rem', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.1)' }}>
+                                            <img
+                                                src={getImagePath(sp.name, 'Base')}
+                                                {...noCalloutImgProps}
+                                                style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }}
+                                                alt="Base"
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100px', flexShrink: 0 }}>
+                                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                            <span title={sp.name} style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sp.name}</span>
+                                        </div>
+                                        <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
+                                            {ALL_VARIANTS.map((variant, i) => {
+                                                const applicable = sp.v.includes(variant);
+
+                                                // A variant this sprite doesn't have gets a permanent
+                                                // hatched pattern in its fixed slot — visually distinct
+                                                // from "uncollected" grey and never tappable.
+                                                if (!applicable) {
+                                                    return (
+                                                        <div
+                                                            key={variant}
+                                                            title={`${variant} — not part of this sprite`}
+                                                            style={{
+                                                                flex: 1, height: '100%',
+                                                                borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
+                                                                background: 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)'
+                                                            }}
+                                                        />
+                                                    );
+                                                }
+
+                                                const id = sp.name + '-' + variant;
+                                                const isC = collected.includes(id);
+                                                const isM = mastered.includes(id);
+                                                const isFilteredOut = !matchesFilters(variant, isC, isM);
+                                                const color = VARIANT_COLORS[variant] || '#94a3b8';
+
+                                                return (
+                                                    <div
+                                                        key={variant}
+                                                        title={variant}
+                                                        onContextMenu={(e) => e.preventDefault()}
+                                                        onPointerDown={(e) => handlePointerDown(e, sp.name, variant)}
+                                                        onPointerUp={(e) => handlePointerUp(e, sp.name, variant)}
+                                                        onPointerCancel={(e) => handlePointerCancel(e, sp.name, variant)}
+                                                        onPointerLeave={(e) => handlePointerCancel(e, sp.name, variant)}
+                                                        style={{
+                                                            flex: 1, height: '100%', boxSizing: 'border-box',
+                                                            borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
+                                                            cursor: 'pointer', touchAction: 'manipulation', WebkitTouchCallout: 'none',
+                                                            opacity: isFilteredOut ? 0.08 : 1,
+                                                            filter: isFilteredOut ? 'grayscale(1)' : 'none',
+                                                            background: isM ? masteredAccent : (isC ? color : '#4b5563'),
+                                                            padding: isM ? '2px' : 0
+                                                        }}
+                                                    >
+                                                        {/* Mastered = gold trim (outer bg) + black buffer + color fill,
+                                                            same three-layer treatment as the dots on the Vault page. */}
+                                                        {isM && (
+                                                            <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box' }}>
+                                                                <div style={{ width: '100%', height: '100%', background: color }} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
                         {(() => {
                             const maxTileSlots = Math.ceil(Math.max(...sprites.map(sp => sp.v.length)) / 2) * 2;
@@ -1142,8 +1238,9 @@
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
-                                        <div style={{ fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
-                                            {sp.name}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0, fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
+                                            <span style={{ width: compactView ? '7px' : '9px', height: compactView ? '7px' : '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                            <span style={{ overflowWrap: 'break-word' }}>{sp.name}</span>
                                         </div>
                                         <div style={{
                                             width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
@@ -1217,6 +1314,7 @@
                         });
                         })()}
                     </div>
+                    )}
                 </div>
             </div>;
         }
