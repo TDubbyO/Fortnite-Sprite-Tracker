@@ -98,22 +98,22 @@
             { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Duck', color: '#facc15', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Ghost', color: '#cbd5e1', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Dream', color: '#a855f7', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Demon', color: '#b91c1c', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Punk', color: '#db2777', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'King', color: '#b45309', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Pollo', color: '#f59e0b', v: ['Base'] },
+            { name: 'Ghost', color: '#ec4899', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Dream', color: '#94a3b8', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Demon', color: '#991b1b', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Punk', color: '#f472b6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'King', color: '#7c3aed', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Pollo', color: '#fbbf24', v: ['Base'] },
             { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
-            { name: 'Burnt Peanut', color: '#78350f', v: ['Base'] },
-            { name: 'Zero Point', color: '#6d28d9', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Burnt Peanut', color: '#d2a679', v: ['Base'] },
+            { name: 'Zero Point', color: '#c026d3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Aura', color: '#ffffff', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Aura', color: '#a3a3a3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Grim', color: '#312e81', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Air', color: '#7dd3fc', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Seven', color: '#0891b2', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Air', color: '#d4d0a8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Seven', color: '#617a93', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
         ];
 
         // Gem is still unconfirmed and expected to eventually apply across the
@@ -1162,6 +1162,18 @@
                                         <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
                                             {ALL_VARIANTS.map((variant, i) => {
                                                 const applicable = sp.v.includes(variant);
+                                                // Relying on the parent's overflow:hidden to round the end
+                                                // segments isn't reliable once a segment has its own nested
+                                                // layers (the mastered trim/buffer/fill), so the end corners
+                                                // are rounded explicitly here instead, at every layer.
+                                                const isFirst = i === 0;
+                                                const isLast = i === ALL_VARIANTS.length - 1;
+                                                const endRadius = {
+                                                    borderTopLeftRadius: isFirst ? '0.3rem' : 0,
+                                                    borderBottomLeftRadius: isFirst ? '0.3rem' : 0,
+                                                    borderTopRightRadius: isLast ? '0.3rem' : 0,
+                                                    borderBottomRightRadius: isLast ? '0.3rem' : 0
+                                                };
 
                                                 // A variant this sprite doesn't have gets a permanent
                                                 // hatched pattern in its fixed slot — visually distinct
@@ -1174,7 +1186,8 @@
                                                             style={{
                                                                 flex: 1, height: '100%',
                                                                 borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
-                                                                background: 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)'
+                                                                background: 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)',
+                                                                ...endRadius
                                                             }}
                                                         />
                                                     );
@@ -1202,14 +1215,18 @@
                                                             opacity: isFilteredOut ? 0.08 : 1,
                                                             filter: isFilteredOut ? 'grayscale(1)' : 'none',
                                                             background: isM ? masteredAccent : (isC ? color : '#4b5563'),
-                                                            padding: isM ? '2px' : 0
+                                                            padding: isM ? '2px' : 0,
+                                                            overflow: 'hidden',
+                                                            ...endRadius
                                                         }}
                                                     >
                                                         {/* Mastered = gold trim (outer bg) + black buffer + color fill,
-                                                            same three-layer treatment as the dots on the Vault page. */}
+                                                            same three-layer treatment as the dots on the Vault page.
+                                                            Each layer gets the same corner rounding so the trim
+                                                            doesn't square off inside a rounded segment. */}
                                                         {isM && (
-                                                            <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box' }}>
-                                                                <div style={{ width: '100%', height: '100%', background: color }} />
+                                                            <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box', overflow: 'hidden', ...endRadius }}>
+                                                                <div style={{ width: '100%', height: '100%', background: color, ...endRadius }} />
                                                             </div>
                                                         )}
                                                     </div>
