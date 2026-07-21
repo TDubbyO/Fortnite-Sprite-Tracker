@@ -1165,15 +1165,21 @@
                                                 // Relying on the parent's overflow:hidden to round the end
                                                 // segments isn't reliable once a segment has its own nested
                                                 // layers (the mastered trim/buffer/fill), so the end corners
-                                                // are rounded explicitly here instead, at every layer.
+                                                // are rounded explicitly here instead, at every layer. Each
+                                                // nested layer is inset by 2px of padding from the one
+                                                // around it, so its radius has to shrink by 2px too, or the
+                                                // corners stop being concentric and the inner layers bulge.
                                                 const isFirst = i === 0;
                                                 const isLast = i === ALL_VARIANTS.length - 1;
-                                                const endRadius = {
-                                                    borderTopLeftRadius: isFirst ? '0.4rem' : 0,
-                                                    borderBottomLeftRadius: isFirst ? '0.4rem' : 0,
-                                                    borderTopRightRadius: isLast ? '0.4rem' : 0,
-                                                    borderBottomRightRadius: isLast ? '0.4rem' : 0
-                                                };
+                                                const makeEndRadius = (px) => ({
+                                                    borderTopLeftRadius: isFirst ? `${px}px` : 0,
+                                                    borderBottomLeftRadius: isFirst ? `${px}px` : 0,
+                                                    borderTopRightRadius: isLast ? `${px}px` : 0,
+                                                    borderBottomRightRadius: isLast ? `${px}px` : 0
+                                                });
+                                                const endRadius = makeEndRadius(6.4);   // segment itself — matches the container's 0.4rem
+                                                const bufferRadius = makeEndRadius(4.4); // black buffer, inset 2px from the segment
+                                                const fillRadius = makeEndRadius(2.4);   // color fill, inset 2px further
 
                                                 // A variant this sprite doesn't have gets a permanent
                                                 // hatched pattern in its fixed slot — visually distinct
@@ -1225,8 +1231,8 @@
                                                             Each layer gets the same corner rounding so the trim
                                                             doesn't square off inside a rounded segment. */}
                                                         {isM && (
-                                                            <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box', overflow: 'hidden', ...endRadius }}>
-                                                                <div style={{ width: '100%', height: '100%', background: color, ...endRadius }} />
+                                                            <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box', overflow: 'hidden', ...bufferRadius }}>
+                                                                <div style={{ width: '100%', height: '100%', background: color, ...fillRadius }} />
                                                             </div>
                                                         )}
                                                     </div>
