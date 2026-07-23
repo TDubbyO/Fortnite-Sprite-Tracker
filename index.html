@@ -93,27 +93,28 @@
         const NEW_CONTENT_LIVE = false;
 
         const BASE_SPRITES = [
-            { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
             { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
+            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
             { name: 'Duck', color: '#facc15', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Ghost', color: '#dea4c3', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Dream', color: '#94a3b8', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Dream', color: '#94a3b8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'Demon', color: '#991b1b', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Punk', color: '#ec4899', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Punk', color: '#ec4899', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'King', color: '#7c3aed', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Pollo', color: '#fbbf24', v: ['Base'] },
             { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
             { name: 'Burnt Peanut', color: '#d2a679', v: ['Base'] },
             { name: 'Zero Point', color: '#c026d3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Aura', color: '#a3a3a3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
+            { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
+            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'Air', color: '#d4d0a8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Seven', color: '#617a93', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'John Wick', color: '#8b5a2b', v: ['Base'] },
         ];
 
         // Gem is still unconfirmed and expected to eventually apply across the
@@ -130,7 +131,7 @@
         // (Holofoil's file suffix is "holo", not "holofoil").
         const VARIANT_FILE_SUFFIX = {
             Base: 'base', Gold: 'gold', Gummy: 'gummy', Galaxy: 'galaxy',
-            Gem: 'gem', Holofoil: 'holo'
+            Gem: 'gem', Holofoil: 'holo', Cube: 'cube'
         };
 
         const getImagePath = (spriteName, variant) => {
@@ -139,7 +140,7 @@
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
                 'Fishy': 'Fishy', 'Striker': 'Striker', 'Aura': 'Aura', 'Boss': 'Boss', 'Grim': 'Grim',
-                'Seven': 'Seven', 'Air': 'Air', 'Batman': 'Batman', 'Pollo': 'Pollo', 'Vini Jr.': 'Vini-Jr'
+                'Seven': 'Seven', 'Air': 'Air', 'Batman': 'Batman', 'Pollo': 'Pollo', 'Vini Jr.': 'Vini-Jr', 'John Wick': 'John-Wick'
             };
             const mappedName = nameMap[spriteName];
             const suffix = VARIANT_FILE_SUFFIX[variant] || variant.toLowerCase();
@@ -379,8 +380,8 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', ...(NEW_CONTENT_LIVE ? ['Gem'] : [])];
-            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#10b981', Holofoil: '#14b8a6' };
+            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', ...(NEW_CONTENT_LIVE ? ['Gem'] : [])];
+            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#10b981', Holofoil: '#14b8a6', Cube: '#4c1d95' };
 
             // A single sprite-variant tile passes the current filters if it
             // satisfies the variant-type selection AND the collected toggle
