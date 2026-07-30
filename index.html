@@ -93,6 +93,7 @@
         const NEW_CONTENT_LIVE = false;
 
         const BASE_SPRITES = [
+            { name: 'John Wick', color: '#8b5a2b', v: ['Base'] },
             { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
             { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Quack'] },
             { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube', 'Quack'] },
@@ -103,8 +104,8 @@
             { name: 'Demon', color: '#991b1b', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Punk', color: '#ec4899', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'King', color: '#7c3aed', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
             { name: 'Burnt Peanut', color: '#d2a679', v: ['Base'] },
+            { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
             { name: 'Zero Point', color: '#c026d3', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Quack'] },
             { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
             { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
@@ -113,7 +114,6 @@
             { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Gem'] },
             { name: 'Air', color: '#d4d0a8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Seven', color: '#617a93', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'John Wick', color: '#8b5a2b', v: ['Base'] },
             { name: 'Pollo', color: '#fbbf24', v: ['Base'] },
             { name: 'Ironmouse', color: '#fda4af', v: ['Base'] },
             { name: "Lootin' Llama", color: '#f472b6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem'] },
@@ -1223,8 +1223,8 @@
                                                             flex: 1, height: '100%', boxSizing: 'border-box',
                                                             borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
                                                             cursor: 'pointer', touchAction: 'manipulation', WebkitTouchCallout: 'none',
-                                                            opacity: isFilteredOut ? 0.08 : 1,
-                                                            filter: isFilteredOut ? 'grayscale(1)' : 'none',
+                                                            opacity: isFilteredOut ? 0.55 : 1,
+                                                            filter: isFilteredOut ? 'grayscale(0.65)' : 'none',
                                                             background: isM ? masteredAccent : (isC ? color : '#4b5563'),
                                                             padding: isM ? '2px' : 0,
                                                             overflow: 'hidden',
