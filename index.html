@@ -1223,9 +1223,9 @@
                                                             flex: 1, height: '100%', boxSizing: 'border-box',
                                                             borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
                                                             cursor: 'pointer', touchAction: 'manipulation', WebkitTouchCallout: 'none',
-                                                            opacity: isFilteredOut ? 0.55 : 1,
-                                                            filter: isFilteredOut ? 'grayscale(0.65)' : 'none',
-                                                            background: isM ? masteredAccent : (isC ? color : '#4b5563'),
+                                                            opacity: isFilteredOut ? 0.08 : (isC ? 1 : 0.3),
+                                                            filter: isFilteredOut ? 'grayscale(1)' : 'none',
+                                                            background: isM ? masteredAccent : color,
                                                             padding: isM ? '2px' : 0,
                                                             overflow: 'hidden',
                                                             ...endRadius
