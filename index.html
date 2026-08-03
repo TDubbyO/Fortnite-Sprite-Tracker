@@ -286,6 +286,7 @@
             const [statsExpanded, setStatsExpanded] = useState(() => JSON.parse(localStorage.getItem('statsExpanded') || 'false'));
             const [filtersExpanded, setFiltersExpanded] = useState(() => JSON.parse(localStorage.getItem('filtersExpanded') || 'false'));
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
+            const [searchQuery, setSearchQuery] = useState('');
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
@@ -422,28 +423,45 @@
 
             // A full-width, 3-segment status filter (All / positive / negative).
             // Each segment is its own large tap target instead of a tiny switch.
-            const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color) => (
-                <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
-                    <div style={{ display: 'flex', border: `1.5px solid ${color}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
-                        {[['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]].map(([val, txt], i) => (
-                            <button
-                                key={val}
-                                onClick={() => setMode(val)}
-                                style={{
-                                    flex: 1, padding: '0.65rem 0.3rem', border: 'none', cursor: 'pointer',
-                                    borderLeft: i > 0 ? `1px solid ${mode === val ? 'rgba(255,255,255,0.4)' : color}` : 'none',
-                                    background: mode === val ? color : 'transparent',
-                                    color: mode === val ? 'white' : textColor,
-                                    fontWeight: 'bold', fontSize: '0.78rem'
-                                }}
-                            >
-                                {txt}
-                            </button>
-                        ))}
+            const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color, hiddenVals = []) => {
+                const options = [['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]].filter(([val]) => !hiddenVals.includes(val));
+                return (
+                    <div style={{ marginBottom: '1rem' }}>
+                        <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+                        <div style={{ display: 'flex', border: `1.5px solid ${color}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
+                            {options.map(([val, txt], i) => (
+                                <button
+                                    key={val}
+                                    onClick={() => setMode(val)}
+                                    style={{
+                                        flex: 1, padding: '0.65rem 0.3rem', border: 'none', cursor: 'pointer',
+                                        borderLeft: i > 0 ? `1px solid ${mode === val ? 'rgba(255,255,255,0.4)' : color}` : 'none',
+                                        background: mode === val ? color : 'transparent',
+                                        color: mode === val ? 'white' : textColor,
+                                        fontWeight: 'bold', fontSize: '0.78rem'
+                                    }}
+                                >
+                                    {txt}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            };
+
+            // A sprite can't be Mastered without being Collected, so Uncollected+Mastered
+            // is an impossible combo — always zero results. Rather than let that be
+            // selected, each handler clears the other filter if picking this value
+            // would create that dead end, and the filter buttons below hide the
+            // now-impossible option entirely instead of just disabling it.
+            const handleSetCollectedMode = (val) => {
+                setFilterCollectedMode(val);
+                if (val === 'uncollected' && filterMasteredMode === 'mastered') setFilterMasteredMode('all');
+            };
+            const handleSetMasteredMode = (val) => {
+                setFilterMasteredMode(val);
+                if (val === 'mastered' && filterCollectedMode === 'uncollected') setFilterCollectedMode('all');
+            };
 
             const toggleVariantFilter = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
@@ -453,6 +471,9 @@
                 setFilterMasteredMode('all');
                 setFilterVariants([]);
             };
+            // Sprite-name search — not persisted, since a search is a momentary
+            // lookup rather than a standing preference like the filters above.
+            const matchesSearch = (name) => !searchQuery.trim() || name.toLowerCase().includes(searchQuery.trim().toLowerCase());
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -1063,6 +1084,33 @@
                     <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
+
+                    <div style={{ position: 'relative', marginBottom: '2rem' }}>
+                        <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '0.95rem', pointerEvents: 'none' }}>🔍</span>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search sprites..."
+                            style={{
+                                width: '100%', padding: '0.7rem 2.5rem', borderRadius: '0.6rem',
+                                background: cardBg, border: `1px solid ${cardBorder}`, color: textColor,
+                                fontSize: '0.9rem', boxSizing: 'border-box'
+                            }}
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                style={{
+                                    position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)',
+                                    background: 'transparent', border: 'none', cursor: 'pointer',
+                                    color: textColor, opacity: 0.6, fontSize: '1rem', padding: '0.3rem'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
                     
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
@@ -1113,8 +1161,8 @@
                         </button>
                         {filtersExpanded && (
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
-                                {renderStatusFilter('Collected', filterCollectedMode, setFilterCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', accentColor)}
-                                {renderStatusFilter('Mastered', filterMasteredMode, setFilterMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', masteredAccent)}
+                                {renderStatusFilter('Collected', filterCollectedMode, handleSetCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', accentColor, filterMasteredMode === 'mastered' ? ['uncollected'] : [])}
+                                {renderStatusFilter('Mastered', filterMasteredMode, handleSetMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', masteredAccent, filterCollectedMode === 'uncollected' ? ['mastered'] : [])}
 
                                 <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Variant</div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
@@ -1147,8 +1195,12 @@
                             {sprites.map(sp => {
                                 const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                                 const allMastered = sp.v.length > 0 && m === sp.v.length;
-                                const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
-                                if (!anyVariantMatches) return null;
+                                // Only variants that both exist on this sprite AND match the
+                                // active filters get a segment at all — nothing renders dimmed
+                                // or hatched anymore, it simply isn't in this array, so the bar
+                                // naturally shrinks to whatever's left.
+                                const visibleVariants = sp.v.filter(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                if (visibleVariants.length === 0 || !matchesSearch(sp.name)) return null;
                                 return (
                                     <div key={sp.name} style={{ background: cardBg, padding: '0.4rem 0.6rem', borderRadius: '0.6rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: isMasterCollector ? cardGlow : 'none' }}>
                                         <div style={{ width: '38px', height: '38px', borderRadius: '0.4rem', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.1)' }}>
@@ -1165,8 +1217,7 @@
                                             <span title={sp.name} style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sp.name}</span>
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
-                                            {ALL_VARIANTS.map((variant, i) => {
-                                                const applicable = sp.v.includes(variant);
+                                            {visibleVariants.map((variant, i) => {
                                                 // Relying on the parent's overflow:hidden to round the end
                                                 // segments isn't reliable once a segment has its own nested
                                                 // layers (the mastered trim/buffer/fill), so the end corners
@@ -1174,8 +1225,10 @@
                                                 // nested layer is inset by 2px of padding from the one
                                                 // around it, so its radius has to shrink by 2px too, or the
                                                 // corners stop being concentric and the inner layers bulge.
+                                                // isFirst/isLast are based on this sprite's own visible
+                                                // segment count, which can differ row to row.
                                                 const isFirst = i === 0;
-                                                const isLast = i === ALL_VARIANTS.length - 1;
+                                                const isLast = i === visibleVariants.length - 1;
                                                 const makeEndRadius = (px) => ({
                                                     borderTopLeftRadius: isFirst ? `${px}px` : 0,
                                                     borderBottomLeftRadius: isFirst ? `${px}px` : 0,
@@ -1186,28 +1239,9 @@
                                                 const bufferRadius = makeEndRadius(4.4); // black buffer, inset 2px from the segment
                                                 const fillRadius = makeEndRadius(2.4);   // color fill, inset 2px further
 
-                                                // A variant this sprite doesn't have gets a permanent
-                                                // hatched pattern in its fixed slot — visually distinct
-                                                // from "uncollected" grey and never tappable.
-                                                if (!applicable) {
-                                                    return (
-                                                        <div
-                                                            key={variant}
-                                                            title={`${variant} — not part of this sprite`}
-                                                            style={{
-                                                                flex: 1, height: '100%',
-                                                                borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
-                                                                background: 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)',
-                                                                ...endRadius
-                                                            }}
-                                                        />
-                                                    );
-                                                }
-
                                                 const id = sp.name + '-' + variant;
                                                 const isC = collected.includes(id);
                                                 const isM = mastered.includes(id);
-                                                const isFilteredOut = !matchesFilters(variant, isC, isM);
                                                 const color = VARIANT_COLORS[variant] || '#94a3b8';
 
                                                 return (
@@ -1223,8 +1257,7 @@
                                                             flex: 1, height: '100%', boxSizing: 'border-box',
                                                             borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
                                                             cursor: 'pointer', touchAction: 'manipulation', WebkitTouchCallout: 'none',
-                                                            opacity: isFilteredOut ? 0.08 : (isC ? 1 : 0.3),
-                                                            filter: isFilteredOut ? 'grayscale(1)' : 'none',
+                                                            opacity: isC ? 1 : 0.3,
                                                             background: isM ? masteredAccent : color,
                                                             padding: isM ? '2px' : 0,
                                                             overflow: 'hidden',
@@ -1262,7 +1295,7 @@
                             if (isMasterCollector) cardShadows.push(cardGlow);
                             if (allMastered) cardShadows.push(`0 0 16px ${masteredAccent}99`);
                             const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
-                            if (!anyVariantMatches) return null;
+                            if (!anyVariantMatches || !matchesSearch(sp.name)) return null;
                             return (
                                 <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
