@@ -423,27 +423,35 @@
 
             // A full-width, 3-segment status filter (All / positive / negative).
             // Each segment is its own large tap target instead of a tiny switch.
-            const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color, hiddenVals = []) => {
-                const options = [['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]].filter(([val]) => !hiddenVals.includes(val));
+            const HATCH_PATTERN = 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)';
+
+            const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color, disabledVals = []) => {
+                const options = [['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]];
                 return (
                     <div style={{ marginBottom: '1rem' }}>
                         <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
                         <div style={{ display: 'flex', border: `1.5px solid ${color}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
-                            {options.map(([val, txt], i) => (
-                                <button
-                                    key={val}
-                                    onClick={() => setMode(val)}
-                                    style={{
-                                        flex: 1, padding: '0.65rem 0.3rem', border: 'none', cursor: 'pointer',
-                                        borderLeft: i > 0 ? `1px solid ${mode === val ? 'rgba(255,255,255,0.4)' : color}` : 'none',
-                                        background: mode === val ? color : 'transparent',
-                                        color: mode === val ? 'white' : textColor,
-                                        fontWeight: 'bold', fontSize: '0.78rem'
-                                    }}
-                                >
-                                    {txt}
-                                </button>
-                            ))}
+                            {options.map(([val, txt], i) => {
+                                const isDisabled = disabledVals.includes(val);
+                                return (
+                                    <button
+                                        key={val}
+                                        onClick={() => !isDisabled && setMode(val)}
+                                        disabled={isDisabled}
+                                        title={isDisabled ? 'Not possible — Mastered requires Collected' : undefined}
+                                        style={{
+                                            flex: 1, padding: '0.65rem 0.3rem', border: 'none',
+                                            cursor: isDisabled ? 'default' : 'pointer',
+                                            borderLeft: i > 0 ? `1px solid ${mode === val ? 'rgba(255,255,255,0.4)' : color}` : 'none',
+                                            background: isDisabled ? HATCH_PATTERN : (mode === val ? color : 'transparent'),
+                                            color: isDisabled ? 'rgba(148,163,184,0.75)' : (mode === val ? 'white' : textColor),
+                                            fontWeight: 'bold', fontSize: '0.78rem'
+                                        }}
+                                    >
+                                        {txt}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 );
@@ -1084,32 +1092,6 @@
                     <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </h1>
-
-                    <div style={{ position: 'relative', marginBottom: '2rem' }}>
-                        <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '0.95rem', pointerEvents: 'none' }}>🔍</span>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search sprites..."
-                            style={{
-                                width: '100%', padding: '0.7rem 2.5rem', borderRadius: '0.6rem',
-                                background: cardBg, border: `1px solid ${cardBorder}`, color: textColor,
-                                fontSize: '0.9rem', boxSizing: 'border-box'
-                            }}
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                style={{
-                                    position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)',
-                                    background: 'transparent', border: 'none', cursor: 'pointer',
-                                    color: textColor, opacity: 0.6, fontSize: '1rem', padding: '0.3rem'
-                                }}
-                            >
-                                ✕
-                            </button>
-                        )}
                     </div>
                     
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
@@ -1161,6 +1143,36 @@
                         </button>
                         {filtersExpanded && (
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
+                                <div style={{ position: 'relative', marginBottom: '1.1rem' }}>
+                                    <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '0.95rem', pointerEvents: 'none' }}>🔍</span>
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder="Search sprites..."
+                                        style={{
+                                            width: '100%', padding: '0.7rem 2.5rem', borderRadius: '0.6rem',
+                                            background: cardBg, border: `1px solid ${cardBorder}`, color: textColor,
+                                            /* iOS Safari auto-zooms the page on focus for any input with a
+                                               font-size under 16px — this keeps it at exactly the threshold
+                                               so tapping in doesn't trigger that zoom. */
+                                            fontSize: '16px', boxSizing: 'border-box'
+                                        }}
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            style={{
+                                                position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)',
+                                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                                color: textColor, opacity: 0.6, fontSize: '1rem', padding: '0.3rem'
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+
                                 {renderStatusFilter('Collected', filterCollectedMode, handleSetCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', accentColor, filterMasteredMode === 'mastered' ? ['uncollected'] : [])}
                                 {renderStatusFilter('Mastered', filterMasteredMode, handleSetMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', masteredAccent, filterCollectedMode === 'uncollected' ? ['mastered'] : [])}
 
@@ -1195,12 +1207,8 @@
                             {sprites.map(sp => {
                                 const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
                                 const allMastered = sp.v.length > 0 && m === sp.v.length;
-                                // Only variants that both exist on this sprite AND match the
-                                // active filters get a segment at all — nothing renders dimmed
-                                // or hatched anymore, it simply isn't in this array, so the bar
-                                // naturally shrinks to whatever's left.
-                                const visibleVariants = sp.v.filter(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
-                                if (visibleVariants.length === 0 || !matchesSearch(sp.name)) return null;
+                                const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                if (!anyVariantMatches || !matchesSearch(sp.name)) return null;
                                 return (
                                     <div key={sp.name} style={{ background: cardBg, padding: '0.4rem 0.6rem', borderRadius: '0.6rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: isMasterCollector ? cardGlow : 'none' }}>
                                         <div style={{ width: '38px', height: '38px', borderRadius: '0.4rem', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.1)' }}>
@@ -1217,7 +1225,7 @@
                                             <span title={sp.name} style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sp.name}</span>
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
-                                            {visibleVariants.map((variant, i) => {
+                                            {ALL_VARIANTS.map((variant, i) => {
                                                 // Relying on the parent's overflow:hidden to round the end
                                                 // segments isn't reliable once a segment has its own nested
                                                 // layers (the mastered trim/buffer/fill), so the end corners
@@ -1225,10 +1233,11 @@
                                                 // nested layer is inset by 2px of padding from the one
                                                 // around it, so its radius has to shrink by 2px too, or the
                                                 // corners stop being concentric and the inner layers bulge.
-                                                // isFirst/isLast are based on this sprite's own visible
-                                                // segment count, which can differ row to row.
+                                                // Bars are fixed-length (every ALL_VARIANTS slot always gets
+                                                // a segment) so isFirst/isLast are stable across every row —
+                                                // that fixed length is what keeps rows scannable.
                                                 const isFirst = i === 0;
-                                                const isLast = i === visibleVariants.length - 1;
+                                                const isLast = i === ALL_VARIANTS.length - 1;
                                                 const makeEndRadius = (px) => ({
                                                     borderTopLeftRadius: isFirst ? `${px}px` : 0,
                                                     borderBottomLeftRadius: isFirst ? `${px}px` : 0,
@@ -1239,9 +1248,33 @@
                                                 const bufferRadius = makeEndRadius(4.4); // black buffer, inset 2px from the segment
                                                 const fillRadius = makeEndRadius(2.4);   // color fill, inset 2px further
 
+                                                const applicable = sp.v.includes(variant);
                                                 const id = sp.name + '-' + variant;
                                                 const isC = collected.includes(id);
                                                 const isM = mastered.includes(id);
+                                                const matches = applicable && matchesFilters(variant, isC, isM);
+
+                                                // Hatch means exactly one thing: "not relevant right now."
+                                                // That covers both a variant this sprite doesn't have at all,
+                                                // and one that exists but doesn't match the active filters —
+                                                // same visual language for both, so a segment only ever means
+                                                // one of two things: hatched (skip it) or colored (here's its
+                                                // real status via color/opacity/trim).
+                                                if (!matches) {
+                                                    return (
+                                                        <div
+                                                            key={variant}
+                                                            title={applicable ? `${variant} — doesn't match current filters` : `${variant} — not part of this sprite`}
+                                                            style={{
+                                                                flex: 1, height: '100%',
+                                                                borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
+                                                                background: HATCH_PATTERN,
+                                                                ...endRadius
+                                                            }}
+                                                        />
+                                                    );
+                                                }
+
                                                 const color = VARIANT_COLORS[variant] || '#94a3b8';
 
                                                 return (
