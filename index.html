@@ -221,6 +221,20 @@
             </div>
         );
 
+        const ResetConfirmPopup = ({ onClose, onConfirm }) => (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ background: 'linear-gradient(135deg, #2a0a0a, #4d0f0f)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '380px', border: '2px solid #ef4444' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+                    <h2 style={{ color: '#ef4444', fontSize: '1.5rem', fontWeight: 900, margin: '1rem 0' }}>Reset Collection?</h2>
+                    <p style={{ color: '#e2e8f0', fontSize: '0.95rem', marginBottom: '2rem' }}>This clears every collected and mastered Sprite. This can't be undone.</p>
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                        <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #ef4444', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
+                        <button onClick={onConfirm} style={{ padding: '0.75rem 1.5rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Reset</button>
+                    </div>
+                </div>
+            </div>
+        );
+
         function App() {
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
             const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
@@ -235,6 +249,7 @@
             const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
             const [masterCollectorSeen, setMasterCollectorSeen] = useState(() => JSON.parse(localStorage.getItem('mythic') || 'false'));
             const [showMasterCollectorPopup, setShowMasterCollectorPopup] = useState(false);
+            const [showResetConfirm, setShowResetConfirm] = useState(false);
             const [masterCollectorActive, setMasterCollectorActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
             const [roulette, setRoulette] = useState(false);
             const [roulettePhase, setRoulettePhase] = useState('idle'); // idle (roaming) | gather | shake | burst
@@ -480,6 +495,18 @@
             // Sprite-name search — not persisted, since a search is a momentary
             // lookup rather than a standing preference like the filters above.
             const matchesSearch = (name) => !searchQuery.trim() || name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+
+            // Wipes collected/mastered progress only — leaves theme, view mode,
+            // filters, and roll history untouched. Also resets masterCollectorSeen
+            // so the celebration popup can fire again on a future 100% completion;
+            // masterCollectorActive doesn't need resetting here since the existing
+            // effect below already turns it off the moment col < tot.
+            const resetCollection = () => {
+                setCollected([]);
+                setMastered([]);
+                setMasterCollectorSeen(false);
+                setShowResetConfirm(false);
+            };
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -1051,6 +1078,7 @@
 
             return <div style={{ width: '100%', background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
                 {showMasterCollectorPopup && <MasterCollectorPopup onClose={() => setShowMasterCollectorPopup(false)} onEnable={() => setMasterCollectorActive(true)} />}
+                {showResetConfirm && <ResetConfirmPopup onClose={() => setShowResetConfirm(false)} onConfirm={resetCollection} />}
                 <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
                         <div />
@@ -1121,6 +1149,19 @@
                                         <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
                                         {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
                                     </div>
+                                </div>
+
+                                <div style={{ borderTop: `1px solid ${cardBorder}`, marginTop: '2rem', paddingTop: '1.5rem' }}>
+                                    <button
+                                        onClick={() => setShowResetConfirm(true)}
+                                        style={{
+                                            width: '100%', padding: '0.85rem', borderRadius: '0.6rem',
+                                            background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer',
+                                            fontWeight: 900, fontSize: '0.85rem', letterSpacing: '0.02em', textTransform: 'uppercase'
+                                        }}
+                                    >
+                                        Reset Collection
+                                    </button>
                                 </div>
                             </div>
                         )}
