@@ -92,6 +92,15 @@
         // variant expansion) is actually uploaded to /images/ and ready to ship.
         const NEW_CONTENT_LIVE = false;
 
+        // A specific, confirmed batch of Gem images (Water, Demon, Duck, Earth,
+        // Aura, Zero Point, Grim, Lootin' Llama) is scheduled to ship — flip
+        // GEM_WAVE_2_LIVE to true once that actually happens. This is separate
+        // from NEW_CONTENT_LIVE above, which is a much broader, still-unconfirmed
+        // "Gem eventually goes everywhere" flag — this one is a concrete, dated
+        // release for exactly these 8 sprites, nothing more.
+        const GEM_WAVE_2_LIVE = false;
+        const GEM_WAVE_2_SPRITES = ['Water', 'Demon', 'Duck', 'Earth', 'Aura', 'Zero Point', 'Grim', "Lootin' Llama"];
+
         const BASE_SPRITES = [
             { name: 'John Wick', color: '#8b5a2b', v: ['Base'] },
             { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
@@ -111,12 +120,12 @@
             { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Aura', color: '#a3a3a3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
-            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Gem'] },
+            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
             { name: 'Air', color: '#d4d0a8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Seven', color: '#617a93', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
             { name: 'Pollo', color: '#fbbf24', v: ['Base'] },
             { name: 'Ironmouse', color: '#fda4af', v: ['Base'] },
-            { name: "Lootin' Llama", color: '#f472b6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Gem'] },
+            { name: "Lootin' Llama", color: '#f472b6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
             { name: 'Peeky Peely', color: '#eab308', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
         ];
 
@@ -126,9 +135,13 @@
         // at that point; the de-dup filter below means sprites that already
         // ship with real Holofoil (Water, Fire, King, Ghost, Striker, Air,
         // Batman, Seven) won't end up with it listed twice.
-        const sprites = NEW_CONTENT_LIVE
+        const sprites = (NEW_CONTENT_LIVE
             ? BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, ...['Gem', 'Holofoil'].filter(x => !sp.v.includes(x))] }))
-            : BASE_SPRITES;
+            : BASE_SPRITES
+        ).map(sp => (GEM_WAVE_2_LIVE && GEM_WAVE_2_SPRITES.includes(sp.name) && !sp.v.includes('Gem'))
+            ? { ...sp, v: [...sp.v, 'Gem'] }
+            : sp
+        );
 
         // Filename suffixes don't always match the lowercased display name
         // (Holofoil's file suffix is "holo", not "holofoil").
@@ -137,7 +150,20 @@
             Gem: 'gem', Holofoil: 'holo', Cube: 'cube', Quack: 'quack'
         };
 
+        // One-off filename mismatches that don't fit the general suffix
+        // pattern, keyed as "SpriteName-Variant" exactly as used in
+        // BASE_SPRITES. Currently just the "Zeropoing-gem.webp" typo (should
+        // be "Zeropoint") — if that file ever gets renamed correctly, delete
+        // this entry and the normal suffix logic below will take over.
+        const FILENAME_OVERRIDES = {
+            'Zero Point-Gem': 'Zeropoing-gem.webp'
+        };
+
         const getImagePath = (spriteName, variant) => {
+            const overrideKey = `${spriteName}-${variant}`;
+            if (FILENAME_OVERRIDES[overrideKey]) {
+                return `/images/${FILENAME_OVERRIDES[overrideKey]}`;
+            }
             const nameMap = {
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
