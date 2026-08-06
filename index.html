@@ -150,20 +150,7 @@
             Gem: 'gem', Holofoil: 'holo', Cube: 'cube', Quack: 'quack'
         };
 
-        // One-off filename mismatches that don't fit the general suffix
-        // pattern, keyed as "SpriteName-Variant" exactly as used in
-        // BASE_SPRITES. Currently just the "Zeropoing-gem.webp" typo (should
-        // be "Zeropoint") — if that file ever gets renamed correctly, delete
-        // this entry and the normal suffix logic below will take over.
-        const FILENAME_OVERRIDES = {
-            'Zero Point-Gem': 'Zeropoing-gem.webp'
-        };
-
         const getImagePath = (spriteName, variant) => {
-            const overrideKey = `${spriteName}-${variant}`;
-            if (FILENAME_OVERRIDES[overrideKey]) {
-                return `/images/${FILENAME_OVERRIDES[overrideKey]}`;
-            }
             const nameMap = {
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
