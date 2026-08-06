@@ -283,7 +283,7 @@
                     cancelAnimationFrame(raf);
                     window.removeEventListener('resize', measure);
                 };
-            }, [share, collected, mastered, shareColumns, dark, isMasterCollector]);
+            }, [share, collected, mastered, shareColumns, dark, isMasterCollector, shareMode]);
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
@@ -302,6 +302,11 @@
             const [filtersExpanded, setFiltersExpanded] = useState(() => JSON.parse(localStorage.getItem('filtersExpanded') || 'false'));
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
             const [searchQuery, setSearchQuery] = useState('');
+            // 'full' | 'filtered' — which version of the collection the Share
+            // screen currently shows/exports. Not persisted, resets to 'full'
+            // each visit so sharing never silently defaults to a filtered view.
+            const [shareMode, setShareMode] = useState('full');
+            useEffect(() => { if (share) setShareMode('full'); }, [share]);
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
@@ -496,6 +501,19 @@
             // lookup rather than a standing preference like the filters above.
             const matchesSearch = (name) => !searchQuery.trim() || name.toLowerCase().includes(searchQuery.trim().toLowerCase());
 
+            // Readable summary of whatever filters are currently active, shown
+            // as a subtitle on the Filtered View share (both on-screen and in
+            // the exported PNG), so anyone looking at the image knows what
+            // they're looking at without having to ask.
+            const getFilterSummaryText = () => {
+                const parts = [];
+                if (filterCollectedMode !== 'all') parts.push(filterCollectedMode === 'collected' ? 'Collected' : 'Uncollected');
+                if (filterMasteredMode !== 'all') parts.push(filterMasteredMode === 'mastered' ? 'Mastered' : 'Unmastered');
+                if (filterVariants.length > 0) parts.push(filterVariants.join(', '));
+                if (searchQuery.trim()) parts.push(`"${searchQuery.trim()}"`);
+                return parts.length > 0 ? parts.join(' • ') : 'All Sprites';
+            };
+
             // Wipes collected/mastered progress only — leaves theme, view mode,
             // filters, and roll history untouched. Also resets masterCollectorSeen
             // so the celebration popup can fire again on a future 100% completion;
@@ -554,9 +572,13 @@
                     // capturing the SVG through html2canvas — native canvas text
                     // rendering draws at full export resolution with no
                     // intermediate rasterization step, so it can't come out soft.
-                    const titleHeight = Math.round(gridCanvas.width / 5.2);
+                    // Filtered View gets extra title height for a subtitle line
+                    // stating which filters were active.
+                    const titleHeight = Math.round(gridCanvas.width / (shareMode === 'filtered' ? 4.3 : 5.2));
                     const titleFontSize = Math.round(gridCanvas.width / 10.5);
                     const titleFont = `400 ${titleFontSize}px "Anton"`;
+                    const subtitleFontSize = Math.round(gridCanvas.width / 30);
+                    const subtitleFont = `600 ${subtitleFontSize}px -apple-system, sans-serif`;
                     // Canvas text doesn't auto-wait for custom webfonts the way
                     // DOM rendering does — without this, the very first export
                     // could silently fall back to the default system font.
@@ -577,7 +599,13 @@
                     ctx.font = titleFont;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight / 2);
+                    ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight * (shareMode === 'filtered' ? 0.38 : 0.5));
+
+                    if (shareMode === 'filtered') {
+                        ctx.fillStyle = textColor;
+                        ctx.font = subtitleFont;
+                        ctx.fillText(getFilterSummaryText(), finalCanvas.width / 2, titleHeight * 0.74);
+                    }
 
                     ctx.drawImage(gridCanvas, 0, titleHeight);
 
@@ -1017,6 +1045,24 @@
                         </div>
                     </div>
 
+                    <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.6rem', flexShrink: 0 }}>
+                        {[['full', 'Full Collection'], ['filtered', 'Filtered View']].map(([val, txt], i) => (
+                            <button
+                                key={val}
+                                onClick={() => setShareMode(val)}
+                                style={{
+                                    flex: 1, padding: '0.6rem 0.5rem', border: 'none', cursor: 'pointer',
+                                    borderLeft: i > 0 ? `1px solid ${shareMode === val ? 'rgba(255,255,255,0.4)' : accentColor}` : 'none',
+                                    background: shareMode === val ? accentColor : 'transparent',
+                                    color: shareMode === val ? 'white' : accentColor,
+                                    fontWeight: 'bold', fontSize: '0.82rem'
+                                }}
+                            >
+                                {txt}
+                            </button>
+                        ))}
+                    </div>
+
                     <button
                         onClick={saveCollectionImage}
                         disabled={savingImage}
@@ -1032,7 +1078,7 @@
                         {savingImage ? 'Generating image…' : '✨ Share Collection'}
                     </button>
                     
-                    <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                         <svg viewBox="0 0 340 52" style={{ width: '100%', maxWidth: '340px', height: 'auto', display: 'block', filter: titleGlow }}>
                             <defs>
                                 <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1045,6 +1091,9 @@
                                 MY SPRITE VAULT
                             </text>
                         </svg>
+                        {shareMode === 'filtered' && (
+                            <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.85 }}>{getFilterSummaryText()}</div>
+                        )}
                     </div>
 
                     {/* This wrapper is whatever space is actually left on THIS device.
@@ -1054,18 +1103,26 @@
                         <div ref={captureRef} style={{ background: bgColor, width: '100%', transform: savingImage ? 'none' : `scale(${gridScale})`, transformOrigin: 'top center' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
                                 {sprites.map(sp => {
-                                    const collectedStatus = sp.v.map(vv => collected.includes(sp.name + '-' + vv));
-                                    const masteredStatus = sp.v.map(vv => mastered.includes(sp.name + '-' + vv));
+                                    // Full Collection ignores filters entirely (always the
+                                    // complete set); Filtered View mirrors whatever the
+                                    // Filters card and search box currently have active.
+                                    let variantsToShow = sp.v;
+                                    if (shareMode === 'filtered') {
+                                        variantsToShow = sp.v.filter(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                        if (variantsToShow.length === 0 || !matchesSearch(sp.name)) return null;
+                                    }
+                                    const collectedStatus = variantsToShow.map(vv => collected.includes(sp.name + '-' + vv));
+                                    const masteredStatus = variantsToShow.map(vv => mastered.includes(sp.name + '-' + vv));
                                     const c = collectedStatus.filter(Boolean).length;
                                     
                                     return (
                                         <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
-                                            <CompositeImage spriteName={sp.name} variants={sp.v} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
+                                            <CompositeImage spriteName={sp.name} variants={variantsToShow} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
                                             <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
                                                 {sp.name}
                                             </div>
                                             <div style={{ fontSize: '0.65rem', color: accentColor, fontWeight: 500 }}>
-                                                {c}/{sp.v.length}
+                                                {c}/{variantsToShow.length}
                                             </div>
                                         </div>
                                     );
