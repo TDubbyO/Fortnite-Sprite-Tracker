@@ -312,6 +312,7 @@
             const compactView = viewMode === 'compact';
             const listView = viewMode === 'list';
             const [statsExpanded, setStatsExpanded] = useState(() => JSON.parse(localStorage.getItem('statsExpanded') || 'false'));
+            const [keyExpanded, setKeyExpanded] = useState(() => JSON.parse(localStorage.getItem('keyExpanded') || 'false'));
             const [filtersExpanded, setFiltersExpanded] = useState(() => JSON.parse(localStorage.getItem('filtersExpanded') || 'false'));
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
             const [searchQuery, setSearchQuery] = useState('');
@@ -332,6 +333,7 @@
             useEffect(() => { localStorage.setItem('filterVariants', JSON.stringify(filterVariants)); }, [filterVariants]);
             useEffect(() => { localStorage.setItem('viewMode', viewMode); }, [viewMode]);
             useEffect(() => { localStorage.setItem('statsExpanded', JSON.stringify(statsExpanded)); }, [statsExpanded]);
+            useEffect(() => { localStorage.setItem('keyExpanded', JSON.stringify(keyExpanded)); }, [keyExpanded]);
             useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
 
@@ -357,7 +359,7 @@
                 }
             }, [col, tot, masterCollectorActive]);
 
-            const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus }) => {
+            const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus, fullOpacity = false }) => {
                 return (
                     <div style={{ textAlign: 'center' }}>
                         <div
@@ -408,7 +410,7 @@
                                                 height: isMastered ? '6px' : '9px',
                                                 borderRadius: '50%',
                                                 background: color,
-                                                opacity: isCollected ? 1 : 0.3
+                                                opacity: fullOpacity || isCollected ? 1 : 0.3
                                             }} />
                                         </div>
                                     </div>
@@ -1131,7 +1133,7 @@
                                     
                                     return (
                                         <div key={sp.name} style={{ textAlign: 'center', minWidth: 0 }}>
-                                            <CompositeImage spriteName={sp.name} variants={variantsToShow} collectedStatus={collectedStatus} masteredStatus={masteredStatus} />
+                                            <CompositeImage spriteName={sp.name} variants={variantsToShow} collectedStatus={collectedStatus} masteredStatus={masteredStatus} fullOpacity={shareMode === 'filtered'} />
                                             <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
                                                 {sp.name}
                                             </div>
@@ -1184,6 +1186,38 @@
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, boxShadow: cardGlow }}>
                         <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
+                    </div>
+
+                    <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
+                        <button
+                            onClick={() => setKeyExpanded(e => !e)}
+                            style={{
+                                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
+                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                            }}
+                        >
+                            <span>Color Key</span>
+                            <span style={{ fontSize: '1.2rem', transform: keyExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+                        </button>
+                        {keyExpanded && (
+                            <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    {ALL_VARIANTS.map(v => (
+                                        <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.15)', border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.35rem 0.7rem' }}>
+                                            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: VARIANT_COLORS[v] || '#94a3b8', flexShrink: 0 }} />
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{v}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', opacity: 0.75, lineHeight: 1.6 }}>
+                                    <span style={{ fontWeight: 700 }}>Full color</span> = collected &nbsp;•&nbsp;
+                                    <span style={{ fontWeight: 700 }}>Faded</span> = uncollected &nbsp;•&nbsp;
+                                    <span style={{ fontWeight: 700, color: masteredAccent }}>Gold ring</span> = mastered &nbsp;•&nbsp;
+                                    <span style={{ fontWeight: 700 }}>Hatched</span> = doesn't apply right now
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
