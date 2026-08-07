@@ -1273,29 +1273,33 @@
                     </div>
 
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
-                        <div
-                            onClick={() => setFiltersExpanded(e => !e)}
-                            style={{
-                                width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                padding: '1rem 1.5rem', cursor: 'pointer',
-                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
-                            }}
-                        >
-                            <span>Filters <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>{hasActiveFilters ? '(active)' : ''}</span></span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem' }}>
+                            <div
+                                onClick={() => setFiltersExpanded(e => !e)}
+                                style={{
+                                    cursor: 'pointer', color: textColor, fontWeight: 900, fontSize: '1rem',
+                                    textTransform: 'uppercase', letterSpacing: '0.03em', flex: 1
+                                }}
+                            >
+                                Filters <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>{hasActiveFilters ? '(active)' : ''}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
                                 {hasActiveFilters && (
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); clearFilters(); }}
+                                        onClick={clearFilters}
                                         style={{
                                             padding: '0.3rem 0.7rem', borderRadius: '999px', cursor: 'pointer',
                                             background: 'transparent', color: textColor, border: `1.5px dashed ${cardBorder}`,
-                                            fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', letterSpacing: 'normal', opacity: 0.85
+                                            fontSize: '0.7rem', fontWeight: 700, opacity: 0.85
                                         }}
                                     >
                                         ✕ Clear
                                     </button>
                                 )}
-                                <span style={{ fontSize: '1.2rem', transform: filtersExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+                                <span
+                                    onClick={() => setFiltersExpanded(e => !e)}
+                                    style={{ fontSize: '1.2rem', cursor: 'pointer', transform: filtersExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+                                >▾</span>
                             </div>
                         </div>
                         {filtersExpanded && (
