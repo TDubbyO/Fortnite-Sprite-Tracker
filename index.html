@@ -1217,8 +1217,8 @@
                                 <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
                                 <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
                             </div>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden', flexShrink: 0 }}>
                                     {[['cozy', 'Cozy'], ['compact', 'Compact'], ['list', 'List']].map(([val, txt], i) => (
                                         <button
                                             key={val}
@@ -1228,15 +1228,15 @@
                                                 borderLeft: i > 0 ? `1px solid ${viewMode === val ? 'rgba(255,255,255,0.4)' : accentColor}` : 'none',
                                                 background: viewMode === val ? accentColor : 'transparent',
                                                 color: viewMode === val ? 'white' : accentColor,
-                                                fontWeight: 'bold', fontSize: '0.78rem'
+                                                fontWeight: 'bold', fontSize: '0.78rem', whiteSpace: 'nowrap'
                                             }}
                                         >
                                             {txt}
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨ Master Collector</button>}
+                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>{dark ? '☀️' : '🌙'}</button>
+                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', flexShrink: 0 }}>✨ Master Collector</button>}
                             </div>
                         </div>
                     </div>
