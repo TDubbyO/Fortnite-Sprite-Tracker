@@ -844,6 +844,45 @@
             // touch, and pen (no duplicate/"ghost" mouse events like touch
             // handlers can trigger), which is what was causing a completed
             // long-press to be immediately undone by a delayed synthetic tap.
+            //
+            // activePress tracks WHICH sprite+variant is currently being held,
+            // independent of any specific DOM element. That matters because a
+            // long-press can itself cause its own element to unmount mid-gesture
+            // (e.g. mastering the last "Unmastered"-filtered variant makes its
+            // row stop matching and disappear) — pointer capture is silently
+            // released the instant that happens, so the finger-up event would
+            // otherwise land on whatever sprite reflowed into that same screen
+            // position and wrongly toggle it. Resolving from activePress instead
+            // of from the event's target sidesteps that entirely.
+            const activePress = useRef(null);
+
+            const resolvePress = () => {
+                const press = activePress.current;
+                if (!press) return;
+                activePress.current = null;
+                const { n, v, id } = press;
+                const isLongPress = longPressFlag.current[id];
+                if (longPressTimers.current[id]) {
+                    clearTimeout(longPressTimers.current[id]);
+                    delete longPressTimers.current[id];
+                }
+                if (!isLongPress) {
+                    toggle(n, v);
+                }
+                longPressFlag.current[id] = false;
+            };
+
+            const cancelPress = () => {
+                const press = activePress.current;
+                if (!press) return;
+                if (longPressTimers.current[press.id]) {
+                    clearTimeout(longPressTimers.current[press.id]);
+                    delete longPressTimers.current[press.id];
+                }
+                longPressFlag.current[press.id] = false;
+                activePress.current = null;
+            };
+
             const handlePointerDown = (e, n, v) => {
                 e.preventDefault();
                 const id = n + '-' + v;
@@ -852,6 +891,7 @@
                     delete longPressTimers.current[id];
                 }
                 longPressFlag.current[id] = false;
+                activePress.current = { n, v, id };
                 try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
                 longPressTimers.current[id] = setTimeout(() => {
                     longPressFlag.current[id] = true;
@@ -859,32 +899,38 @@
                 }, 500);
             };
 
+            // These still resolve the currently-tracked press (via activePress),
+            // not necessarily the specific element the event fired on — normally
+            // those are the same element, but not always (see activePress above).
             const handlePointerUp = (e, n, v) => {
-                const id = n + '-' + v;
-                const isLongPress = longPressFlag.current[id];
-
-                if (longPressTimers.current[id]) {
-                    clearTimeout(longPressTimers.current[id]);
-                    delete longPressTimers.current[id];
-                }
-
-                if (!isLongPress) {
-                    toggle(n, v);
-                }
-
-                longPressFlag.current[id] = false;
+                resolvePress();
             };
 
             // Pointer left the element or the gesture was cancelled (e.g. the OS
             // took over for a system gesture) — just clean up, don't toggle.
             const handlePointerCancel = (e, n, v) => {
-                const id = n + '-' + v;
-                if (longPressTimers.current[id]) {
-                    clearTimeout(longPressTimers.current[id]);
-                    delete longPressTimers.current[id];
-                }
-                longPressFlag.current[id] = false;
+                cancelPress();
             };
+
+            // Fallback for when pointer capture is lost mid-gesture because the
+            // capturing element got removed from the DOM (see activePress above).
+            // The browser still fires pointerup/pointercancel somewhere — usually
+            // on whatever now sits at that screen position — but window-level
+            // listeners see it too, and resolving from activePress there ignores
+            // whatever element the native event actually landed on. If the normal
+            // per-element handler above already resolved the press first (the
+            // common case, when capture wasn't lost), activePress is already null
+            // by the time this runs, so it's a no-op — never a double-fire.
+            useEffect(() => {
+                const onWindowPointerUp = () => resolvePress();
+                const onWindowPointerCancel = () => cancelPress();
+                window.addEventListener('pointerup', onWindowPointerUp);
+                window.addEventListener('pointercancel', onWindowPointerCancel);
+                return () => {
+                    window.removeEventListener('pointerup', onWindowPointerUp);
+                    window.removeEventListener('pointercancel', onWindowPointerCancel);
+                };
+            }, []);
 
             // Same tap-vs-long-press Pointer Events pattern as the sprite tiles
             // above (fires exactly once per physical press, no ghost-click risk),
