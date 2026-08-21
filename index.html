@@ -1140,6 +1140,12 @@
             }
 
             useEffect(() => {
+                if (garden && !gardenScatterItems.length) {
+                    setGardenScatterItems(generateGardenScatterItems());
+                }
+            }, [garden]);
+
+            if (garden) {
                 // Garden wandering screen
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
