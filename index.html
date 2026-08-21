@@ -82,76 +82,84 @@
             98% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
             100% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
         }
+        @keyframes glitch {
+            0% { clip-path: inset(40% 0 61% 0); transform: translate(2px, -2px); }
+            20% { clip-path: inset(92% 0 1% 0); transform: translate(-2px, 2px); }
+            40% { clip-path: inset(43% 0 1% 0); transform: translate(-2px, -2px); }
+            60% { clip-path: inset(25% 0 58% 0); transform: translate(2px, 2px); }
+            80% { clip-path: inset(54% 0 7% 0); transform: translate(2px, -2px); }
+            100% { clip-path: inset(58% 0 43% 0); transform: translate(-2px, 2px); }
+        }
     </style>
 </head>
 <body style="margin:0; padding:0; -webkit-user-select: none; user-select: none;">
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-        // Flip this to true once the remaining unconfirmed content (Gem
-        // variant expansion) is actually uploaded to /images/ and ready to ship.
-        const NEW_CONTENT_LIVE = false;
 
-        // A specific, confirmed batch of Gem images (Water, Demon, Duck, Earth,
-        // Aura, Zero Point, Grim, Lootin' Llama) is scheduled to ship — flip
-        // GEM_WAVE_2_LIVE to true once that actually happens. This is separate
-        // from NEW_CONTENT_LIVE above, which is a much broader, still-unconfirmed
-        // "Gem eventually goes everywhere" flag — this one is a concrete, dated
-        // release for exactly these 8 sprites, nothing more.
-        const GEM_WAVE_2_LIVE = true;
-        const GEM_WAVE_2_SPRITES = ['Water', 'Demon', 'Duck', 'Earth', 'Aura', 'Zero Point', 'Grim', "Lootin' Llama"];
-
+        // ============================================
+        // NEW SEASON SPRITES (12 sprites, 3 variants each)
+        // ============================================
         const BASE_SPRITES = [
-            { name: 'John Wick', color: '#8b5a2b', v: ['Base'] },
-            { name: 'Batman', color: '#1e293b', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
-            { name: 'Water', color: '#3b82f6', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Quack'] },
-            { name: 'Earth', color: '#16a34a', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube', 'Quack'] },
-            { name: 'Fire', color: '#ef4444', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Quack'] },
-            { name: 'Duck', color: '#facc15', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Ghost', color: '#dea4c3', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Dream', color: '#94a3b8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
-            { name: 'Demon', color: '#991b1b', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Punk', color: '#ec4899', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
-            { name: 'King', color: '#7c3aed', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Burnt Peanut', color: '#d2a679', v: ['Base'] },
-            { name: 'Vini Jr.', color: '#22c55e', v: ['Base'] },
-            { name: 'Zero Point', color: '#c026d3', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Quack'] },
-            { name: 'Fishy', color: '#f97316', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
-            { name: 'Striker', color: '#000000', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Aura', color: '#a3a3a3', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Boss', color: '#dc2626', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Cube'] },
-            { name: 'Grim', color: '#475569', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube'] },
-            { name: 'Air', color: '#d4d0a8', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Seven', color: '#617a93', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
-            { name: 'Pollo', color: '#fbbf24', v: ['Base'] },
-            { name: 'Ironmouse', color: '#fda4af', v: ['Base'] },
-            { name: "Lootin' Llama", color: '#f472b6', v: ['Base', 'Gold', 'Gummy', 'Galaxy'] },
-            { name: 'Peeky Peely', color: '#eab308', v: ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil'] },
+            { name: 'Jackrabbit', color: '#7ec850' },
+            { name: 'Shadow', color: '#5a5a5a' },
+            { name: 'Bush', color: '#6ba050' },
+            { name: 'Tails', color: '#f4a460' },
+            { name: 'Killswitch', color: '#8b4513' },
+            { name: 'Adventure', color: '#228b22' },
+            { name: 'Klombo', color: '#ff69b4' },
+            { name: 'Jonesy', color: '#daa520' },
+            { name: 'Sonic', color: '#6495ed' },
+            { name: 'Crown', color: '#d4af37' },
+            { name: '8-Bit', color: '#ff4500' },
+            { name: 'Storm Scout', color: '#a9a9a9' },
         ];
 
-        // Gem is still unconfirmed and expected to eventually apply across the
-        // whole collection once NEW_CONTENT_LIVE flips to true. Every sprite
-        // that doesn't already have Holofoil for real also picks up Holofoil
-        // at that point; the de-dup filter below means sprites that already
-        // ship with real Holofoil (Water, Fire, King, Ghost, Striker, Air,
-        // Batman, Seven) won't end up with it listed twice.
-        const sprites = (NEW_CONTENT_LIVE
-            ? BASE_SPRITES.map(sp => ({ ...sp, v: [...sp.v, ...['Gem', 'Holofoil'].filter(x => !sp.v.includes(x))] }))
-            : BASE_SPRITES
-        ).map(sp => (GEM_WAVE_2_LIVE && GEM_WAVE_2_SPRITES.includes(sp.name) && !sp.v.includes('Gem'))
-            ? { ...sp, v: [...sp.v, 'Gem'] }
-            : sp
-        );
+        const sprites = BASE_SPRITES;
 
-        // Filename suffixes don't always match the lowercased display name
-        // (Holofoil's file suffix is "holo", not "holofoil").
+        // ============================================
+        // ARCHIVED SPRITES (25 old sprites)
+        // ============================================
+        const ARCHIVED_SPRITES = [
+            { name: 'John Wick', color: '#8b5a2b' },
+            { name: 'Batman', color: '#1e293b' },
+            { name: 'Water', color: '#3b82f6' },
+            { name: 'Earth', color: '#16a34a' },
+            { name: 'Fire', color: '#ef4444' },
+            { name: 'Duck', color: '#facc15' },
+            { name: 'Ghost', color: '#dea4c3' },
+            { name: 'Dream', color: '#94a3b8' },
+            { name: 'Demon', color: '#991b1b' },
+            { name: 'Punk', color: '#ec4899' },
+            { name: 'King', color: '#7c3aed' },
+            { name: 'Burnt Peanut', color: '#d2a679' },
+            { name: 'Vini Jr.', color: '#22c55e' },
+            { name: 'Zero Point', color: '#c026d3' },
+            { name: 'Fishy', color: '#f97316' },
+            { name: 'Striker', color: '#000000' },
+            { name: 'Aura', color: '#a3a3a3' },
+            { name: 'Boss', color: '#dc2626' },
+            { name: 'Grim', color: '#475569' },
+            { name: 'Air', color: '#d4d0a8' },
+            { name: 'Seven', color: '#617a93' },
+            { name: 'Pollo', color: '#fbbf24' },
+            { name: 'Ironmouse', color: '#fda4af' },
+            { name: "Lootin' Llama", color: '#f472b6' },
+            { name: 'Peeky Peely', color: '#eab308' },
+        ];
+
         const VARIANT_FILE_SUFFIX = {
-            Base: 'base', Gold: 'gold', Gummy: 'gummy', Galaxy: 'galaxy',
-            Gem: 'gem', Holofoil: 'holo', Cube: 'cube', Quack: 'quack'
+            Base: 'base',
+            Gold: 'gold',
+            'Cheat Master': 'cheat-master'
         };
 
         const getImagePath = (spriteName, variant) => {
             const nameMap = {
+                'Jackrabbit': 'Jackrabbit', 'Shadow': 'Shadow', 'Bush': 'Bush',
+                'Tails': 'Tails', 'Killswitch': 'Killswitch', 'Adventure': 'Adventure',
+                'Klombo': 'Klombo', 'Jonesy': 'Jonesy', 'Sonic': 'Sonic',
+                'Crown': 'Crown', '8-Bit': '8-bit', 'Storm Scout': 'Storm-Scout',
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
@@ -164,20 +172,14 @@
             return `/images/${mappedName}-${suffix}.webp`;
         };
 
-        // Update these two filenames if your uploaded chest images use different names.
         const CHEST_CLOSED = '/images/Chest-closed.png';
         const CHEST_OPEN = '/images/Chest-open.png';
 
-        // Sprite names never contain a hyphen, so the LAST hyphen always
-        // separates the variant (Base/Gold/Gummy/Galaxy) from the name.
         const splitId = (id) => {
             const idx = id.lastIndexOf('-');
             return { name: id.slice(0, idx), variant: id.slice(idx + 1) };
         };
 
-        // Shared style/props to stop the native long-press image menu (context menu,
-        // "save image", callout) from appearing on iOS/Android while still allowing
-        // our own onPointerDown/onPointerUp long-press logic to run.
         const noCalloutImgProps = {
             draggable: false,
             onDragStart: (e) => e.preventDefault(),
@@ -187,7 +189,7 @@
                 WebkitUserSelect: 'none',
                 userSelect: 'none',
                 WebkitUserDrag: 'none',
-                pointerEvents: 'none' // let the parent div own all touch/mouse handling
+                pointerEvents: 'none'
             }
         };
 
@@ -222,13 +224,13 @@
 
         const MasterCollectorPopup = ({ onClose, onEnable }) => (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                <div style={{ background: 'linear-gradient(135deg, #1a0033, #330066)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #a855f7' }}>
+                <div style={{ background: 'linear-gradient(135deg, #0f0515, #1a0f2e)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #FF006E' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
-                    <h2 style={{ color: '#a855f7', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>Master Collector!</h2>
-                    <p style={{ color: '#e2e8f0', fontSize: '1rem', marginBottom: '2rem' }}>All sprites collected!</p>
+                    <h2 style={{ color: '#39FF14', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>Master Collector!</h2>
+                    <p style={{ color: '#e8f0ff', fontSize: '1rem', marginBottom: '2rem' }}>All sprites collected!</p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #a855f7', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
-                        <button onClick={() => { onEnable(); onClose(); }} style={{ padding: '0.75rem 1.5rem', background: '#a855f7', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Activate ✨</button>
+                        <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #FF006E', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
+                        <button onClick={() => { onEnable(); onClose(); }} style={{ padding: '0.75rem 1.5rem', background: '#39FF14', color: '#0f0515', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Activate ✨</button>
                     </div>
                 </div>
             </div>
@@ -265,54 +267,22 @@
             const [showResetConfirm, setShowResetConfirm] = useState(false);
             const [masterCollectorActive, setMasterCollectorActive] = useState(() => JSON.parse(localStorage.getItem('mythicActive') || 'false'));
             const [roulette, setRoulette] = useState(false);
-            const [roulettePhase, setRoulettePhase] = useState('idle'); // idle (roaming) | gather | shake | burst
-            const [scatterItems, setScatterItems] = useState([]); // [{id, xPct, yPct, wp:[{x,y}x3], roamDuration, roamDelay, gatherDelay}]
+            const [roulettePhase, setRoulettePhase] = useState('idle');
+            const [scatterItems, setScatterItems] = useState([]);
             const [rouletteResult, setRouletteResult] = useState(null);
             const rouletteTimeoutRef = useRef(null);
-            const [frozenPositions, setFrozenPositions] = useState({}); // id -> {x, y} snapshot taken at click time
+            const [frozenPositions, setFrozenPositions] = useState({});
             const stageRef = useRef(null);
             const captureRef = useRef(null);
             const gridWrapperRef = useRef(null);
             const [gridScale, setGridScale] = useState(1);
             const [savingImage, setSavingImage] = useState(false);
-
-            // scrollHeight reflects the grid's natural, untransformed size
-            // regardless of any CSS scale already applied, so this is safe to
-            // recompute even while a previous scale is active.
-            useEffect(() => {
-                if (!share) return;
-                const measure = () => {
-                    if (!captureRef.current || !gridWrapperRef.current) return;
-                    const contentHeight = captureRef.current.scrollHeight;
-                    const availableHeight = gridWrapperRef.current.clientHeight;
-                    if (contentHeight > 0 && availableHeight > 0) {
-                        setGridScale(Math.min(1, availableHeight / contentHeight));
-                    }
-                };
-                measure();
-                const raf = requestAnimationFrame(measure); // catch late image-driven layout shifts
-                window.addEventListener('resize', measure);
-                return () => {
-                    cancelAnimationFrame(raf);
-                    window.removeEventListener('resize', measure);
-                };
-            }, [share, collected, mastered, shareColumns, dark, isMasterCollector, shareMode]);
-            const rouletteItemRefs = useRef({});
-            const longPressTimers = useRef({});
-            const longPressFlag = useRef({});
-            // Separate long-press tracking for the Variant filter chips (tap =
-            // include, long-press = exclude) — kept distinct from the sprite-tile
-            // refs above so the two systems never share or collide on IDs.
-            const filterChipLongPressTimers = useRef({});
-            const filterChipLongPressFlag = useRef({});
             const [showVariantHint, setShowVariantHint] = useState(false);
-            // 'all' | 'collected' | 'uncollected', and 'all' | 'mastered' | 'unmastered'
             const [filterCollectedMode, setFilterCollectedMode] = useState(() => localStorage.getItem('filterCollectedMode') || 'all');
             const [filterMasteredMode, setFilterMasteredMode] = useState(() => localStorage.getItem('filterMasteredMode') || 'all');
             const [viewMode, setViewMode] = useState(() => {
                 const saved = localStorage.getItem('viewMode');
                 if (saved === 'cozy' || saved === 'compact' || saved === 'list') return saved;
-                // Migrate the old Cozy/Compact boolean toggle so existing choices carry over.
                 return JSON.parse(localStorage.getItem('compactView') || 'false') ? 'compact' : 'cozy';
             });
             const compactView = viewMode === 'compact';
@@ -323,12 +293,20 @@
             const [filterVariants, setFilterVariants] = useState(() => JSON.parse(localStorage.getItem('filterVariants') || '[]'));
             const [filterExcludedVariants, setFilterExcludedVariants] = useState(() => JSON.parse(localStorage.getItem('filterExcludedVariants') || '[]'));
             const [searchQuery, setSearchQuery] = useState('');
-            // 'full' | 'filtered' — which version of the collection the Share
-            // screen currently shows/exports. Not persisted, resets to 'full'
-            // each visit so sharing never silently defaults to a filtered view.
             const [shareMode, setShareMode] = useState('full');
             useEffect(() => { if (share) setShareMode('full'); }, [share]);
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
+            
+            // Garden state
+            const [garden, setGarden] = useState(false);
+            const [gardenEditMode, setGardenEditMode] = useState(false);
+            const [gardenSelectedSprite, setGardenSelectedSprite] = useState(null);
+            const [gardenScatterItems, setGardenScatterItems] = useState([]);
+            const gardenStageRef = useRef(null);
+            const gardenItemRefs = useRef({});
+            
+            // Glitch effect toggle
+            const [glitchOn, setGlitchOn] = useState(() => JSON.parse(localStorage.getItem('glitchOn') || 'false'));
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
@@ -344,10 +322,17 @@
             useEffect(() => { localStorage.setItem('keyExpanded', JSON.stringify(keyExpanded)); }, [keyExpanded]);
             useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
+            useEffect(() => { localStorage.setItem('glitchOn', JSON.stringify(glitchOn)); }, [glitchOn]);
 
-            const tot = sprites.reduce((sum, sp) => sum + sp.v.length, 0);
-            const col = collected.length;
-            const mas = mastered.length;
+            const tot = sprites.length * 3; // 12 sprites × 3 variants = 36
+            const col = collected.filter(id => {
+                const { name } = splitId(id);
+                return sprites.some(sp => sp.name === name);
+            }).length;
+            const mas = mastered.filter(id => {
+                const { name } = splitId(id);
+                return sprites.some(sp => sp.name === name);
+            }).length;
             const masterCollectorUnlocked = col === tot && tot > 0;
             const isMasterCollector = masterCollectorUnlocked && masterCollectorActive;
 
@@ -366,6 +351,69 @@
                     setMasterCollectorActive(false);
                 }
             }, [col, tot, masterCollectorActive]);
+
+            // ============================================
+            // COLOR SYSTEM
+            // ============================================
+            const getDarkModeColors = () => ({
+                bg: '#1a0f2e',
+                text: '#e8f0ff',
+                primary: '#39FF14',
+                secondary: '#BC13FE',
+                tertiary: '#FF006E',
+                cardBg: 'rgba(88, 19, 254, 0.15)',
+                cardBorder: '#BC13FE',
+                cardGlow: '0 0 20px rgba(57, 255, 20, 0.4)',
+                icon: 'rgba(57, 255, 20, 0.25)',
+            });
+
+            const getLightModeColors = () => ({
+                bg: '#f0f4f8',
+                text: '#1a0f2e',
+                primary: '#39FF14',
+                secondary: '#8B00FF',
+                tertiary: '#FF006E',
+                cardBg: 'rgba(139, 0, 255, 0.08)',
+                cardBorder: '#BC13FE',
+                cardGlow: 'none',
+                icon: 'rgba(57, 255, 20, 0.1)',
+            });
+
+            const getMasterModeColors = () => ({
+                bg: '#0f0515',
+                text: '#FF006E',
+                primary: '#39FF14',
+                secondary: '#FF006E',
+                tertiary: '#39FF14',
+                cardBg: 'rgba(255, 0, 110, 0.12)',
+                cardBorder: '2px solid transparent; background: linear-gradient(rgba(255, 0, 110, 0.2), rgba(57, 255, 20, 0.2)) padding-box',
+                cardGlow: '0 0 25px rgba(255, 0, 110, 0.5), 0 0 15px rgba(57, 255, 20, 0.3)',
+                icon: 'rgba(57, 255, 20, 0.3)',
+            });
+
+            const getGardenColors = () => ({
+                bg: 'linear-gradient(135deg, #87ceeb 0%, #a8d8a8 100%)',
+                text: '#2d5016',
+                primary: '#7ec850',
+                secondary: '#6ba3d4',
+                cardBg: 'rgba(255, 255, 255, 0.7)',
+                cardBorder: '#7ec850',
+                cardGlow: 'none',
+                icon: 'rgba(126, 200, 80, 0.2)',
+            });
+
+            let colors;
+            if (garden || gardenEditMode) {
+                colors = getGardenColors();
+            } else if (isMasterCollector) {
+                colors = getMasterModeColors();
+            } else if (dark) {
+                colors = getDarkModeColors();
+            } else {
+                colors = getLightModeColors();
+            }
+
+            const { bg, text, primary, secondary, tertiary, cardBg, cardBorder, cardGlow, icon } = colors;
 
             const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus, fullOpacity = false }) => {
                 return (
@@ -393,7 +441,7 @@
                             {variants.map((variant, idx) => {
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
-                                const color = VARIANT_COLORS[variant] || '#94a3b8';
+                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : '#94a3b8');
                                 
                                 return (
                                     <div
@@ -401,7 +449,7 @@
                                         title={variant}
                                         style={{
                                             width: '9px', height: '9px', borderRadius: '50%',
-                                            background: isMastered ? masteredAccent : 'transparent',
+                                            background: isMastered ? tertiary : 'transparent',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             flexShrink: 0
                                         }}
@@ -417,7 +465,7 @@
                                                 width: isMastered ? '6px' : '9px',
                                                 height: isMastered ? '6px' : '9px',
                                                 borderRadius: '50%',
-                                                background: color,
+                                                background: variantColor,
                                                 opacity: fullOpacity || isCollected ? 1 : 0.3
                                             }} />
                                         </div>
@@ -429,12 +477,8 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Gummy', 'Galaxy', 'Holofoil', 'Cube', 'Gem', 'Quack'];
-            const VARIANT_COLORS = { Base: '#94a3b8', Gold: '#fbbf24', Gummy: '#ec4899', Galaxy: '#a855f7', Gem: '#f1f5f9', Holofoil: '#14b8a6', Cube: '#4c1d95', Quack: '#7787ee' };
+            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master'];
 
-            // A single sprite-variant tile passes the current filters if it
-            // satisfies the variant-type selection AND the collected toggle
-            // AND the mastered toggle (each independently, all must hold).
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterExcludedVariants.includes(variant)) return false;
                 if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
@@ -447,18 +491,15 @@
 
             const hasActiveFilters = filterCollectedMode !== 'all' || filterMasteredMode !== 'all' || filterVariants.length > 0 || filterExcludedVariants.length > 0;
 
-            // Small colored dot + fraction/percentage chips, one per variant type.
-            // Wraps to additional lines as more variants get added, instead of
-            // squeezing or overflowing a fixed-width row.
             const renderVariantChips = (numeratorFn, format) => (
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.35rem', marginTop: '0.6rem' }}>
                     {ALL_VARIANTS.map(v => {
-                        const t = sprites.filter(sp => sp.v.includes(v)).length;
+                        const t = sprites.filter(sp => true).length; // All 12 sprites have all 3 variants
                         const n = numeratorFn(v);
                         const label = format === 'percentage' ? `${t > 0 ? Math.round((n / t) * 100) : 0}%` : `${n}/${t}`;
                         return (
                             <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.15rem 0.45rem' }}>
-                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: VARIANT_COLORS[v] || '#94a3b8', flexShrink: 0 }} />
+                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8'), flexShrink: 0 }} />
                                 <span>{label}</span>
                             </div>
                         );
@@ -466,8 +507,6 @@
                 </div>
             );
 
-            // A full-width, 3-segment status filter (All / positive / negative).
-            // Each segment is its own large tap target instead of a tiny switch.
             const HATCH_PATTERN = 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)';
 
             const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color, rowDisabled = false, disabledReason) => {
@@ -487,7 +526,7 @@
                                         cursor: rowDisabled ? 'default' : 'pointer',
                                         borderLeft: i > 0 ? `1px solid ${rowDisabled ? 'rgba(148,163,184,0.35)' : (mode === val ? 'rgba(255,255,255,0.4)' : color)}` : 'none',
                                         background: rowDisabled ? HATCH_PATTERN : (mode === val ? color : 'transparent'),
-                                        color: rowDisabled ? 'rgba(148,163,184,0.75)' : (mode === val ? 'white' : textColor),
+                                        color: rowDisabled ? 'rgba(148,163,184,0.75)' : (mode === val ? 'white' : text),
                                         fontWeight: 'bold', fontSize: '0.78rem'
                                     }}
                                 >
@@ -499,46 +538,35 @@
                 );
             };
 
-            // A sprite can't be Mastered without being Collected. Rather than leave
-            // that dead-end combo selectable, picking "Uncollected" hatches out the
-            // entire Mastered row (mastery is meaningless once you're only looking
-            // at uncollected items), and picking "Mastered" hatches out the entire
-            // Collected row (collected is implied). Each handler clears the other
-            // filter back to "All" the moment its row becomes irrelevant.
             const handleSetCollectedMode = (val) => {
                 setFilterCollectedMode(val);
                 if (val === 'uncollected') setFilterMasteredMode('all');
             };
+
             const handleSetMasteredMode = (val) => {
                 setFilterMasteredMode(val);
                 if (val === 'mastered') setFilterCollectedMode('all');
             };
 
-            // Tap includes a variant, long-press excludes it — the two are
-            // mutually exclusive per chip, so picking one always clears the
-            // other for that variant rather than letting both apply at once.
             const toggleVariantFilter = (variant) => {
                 setFilterExcludedVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : v);
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
+
             const toggleVariantExclude = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : v);
                 setFilterExcludedVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
+
             const clearFilters = () => {
                 setFilterCollectedMode('all');
                 setFilterMasteredMode('all');
                 setFilterVariants([]);
                 setFilterExcludedVariants([]);
             };
-            // Sprite-name search — not persisted, since a search is a momentary
-            // lookup rather than a standing preference like the filters above.
+
             const matchesSearch = (name) => !searchQuery.trim() || name.toLowerCase().includes(searchQuery.trim().toLowerCase());
 
-            // Readable summary of whatever filters are currently active, shown
-            // as a subtitle on the Filtered View share (both on-screen and in
-            // the exported PNG), so anyone looking at the image knows what
-            // they're looking at without having to ask.
             const getFilterSummaryText = () => {
                 const parts = [];
                 if (filterCollectedMode !== 'all') parts.push(filterCollectedMode === 'collected' ? 'Collected' : 'Uncollected');
@@ -549,11 +577,6 @@
                 return parts.length > 0 ? parts.join(' • ') : 'All Sprites';
             };
 
-            // Wipes collected/mastered progress only — leaves theme, view mode,
-            // filters, and roll history untouched. Also resets masterCollectorSeen
-            // so the celebration popup can fire again on a future 100% completion;
-            // masterCollectorActive doesn't need resetting here since the existing
-            // effect below already turns it off the moment col < tot.
             const resetCollection = () => {
                 setCollected([]);
                 setMastered([]);
@@ -563,17 +586,10 @@
 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-            // Renders just the collection grid (not the header buttons) to a
-            // clean PNG, then either opens the native share sheet — which on
-            // iOS/Android lets you save straight to Photos or share to an app —
-            // or falls back to a plain file download if that's unavailable.
             const saveCollectionImage = async () => {
                 if (!captureRef.current || savingImage) return;
                 setSavingImage(true);
                 try {
-                    // html2canvas loads async from a CDN <script> tag — if it hasn't
-                    // finished (slow connection, blocked, etc.) wait briefly instead
-                    // of silently failing.
                     let waited = 0;
                     while (!window.html2canvas && waited < 4000) {
                         await new Promise(res => setTimeout(res, 100));
@@ -585,51 +601,39 @@
                         return;
                     }
 
-                    // Make sure every sprite image has actually finished loading
-                    // before snapshotting, so we never capture a blank/half-loaded frame.
                     const imgs = Array.from(captureRef.current.querySelectorAll('img'));
                     await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
                         img.addEventListener('load', res, { once: true });
                         img.addEventListener('error', res, { once: true });
                     })));
 
-                    // Force a fresh layout read so html2canvas sees fully committed styles.
                     void captureRef.current.offsetHeight;
 
                     const gridCanvas = await window.html2canvas(captureRef.current, {
-                        backgroundColor: bgColor,
+                        backgroundColor: typeof bg === 'string' && !bg.includes('gradient') ? bg : '#1a0f2e',
                         scale: 2,
                         useCORS: true,
                         logging: false
                     });
 
-                    // Draw the title directly with the Canvas API instead of
-                    // capturing the SVG through html2canvas — native canvas text
-                    // rendering draws at full export resolution with no
-                    // intermediate rasterization step, so it can't come out soft.
-                    // Filtered View gets extra title height for a subtitle line
-                    // stating which filters were active.
                     const titleHeight = Math.round(gridCanvas.width / (shareMode === 'filtered' ? 4.3 : 5.2));
                     const titleFontSize = Math.round(gridCanvas.width / 10.5);
                     const titleFont = `400 ${titleFontSize}px "Anton"`;
                     const subtitleFontSize = Math.round(gridCanvas.width / 30);
                     const subtitleFont = `600 ${subtitleFontSize}px -apple-system, sans-serif`;
-                    // Canvas text doesn't auto-wait for custom webfonts the way
-                    // DOM rendering does — without this, the very first export
-                    // could silently fall back to the default system font.
                     try { await document.fonts.load(titleFont); } catch (err) {}
 
                     const finalCanvas = document.createElement('canvas');
                     finalCanvas.width = gridCanvas.width;
                     finalCanvas.height = gridCanvas.height + titleHeight;
                     const ctx = finalCanvas.getContext('2d');
-                    ctx.fillStyle = bgColor;
+                    ctx.fillStyle = '#1a0f2e';
                     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
                     const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, 0);
-                    gradient.addColorStop(0, '#06b6d4');
-                    gradient.addColorStop(0.5, '#a855f7');
-                    gradient.addColorStop(1, '#ec4899');
+                    gradient.addColorStop(0, '#39FF14');
+                    gradient.addColorStop(0.5, '#BC13FE');
+                    gradient.addColorStop(1, '#FF006E');
                     ctx.fillStyle = gradient;
                     ctx.font = titleFont;
                     ctx.textAlign = 'center';
@@ -637,7 +641,7 @@
                     ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight * (shareMode === 'filtered' ? 0.38 : 0.5));
 
                     if (shareMode === 'filtered') {
-                        ctx.fillStyle = textColor;
+                        ctx.fillStyle = '#e8f0ff';
                         ctx.font = subtitleFont;
                         ctx.fillText(getFilterSummaryText(), finalCanvas.width / 2, titleHeight * 0.74);
                     }
@@ -655,7 +659,7 @@
                                 setSavingImage(false);
                                 return;
                             } catch (err) {
-                                // Share sheet cancelled or failed — fall through to a direct download.
+                                // Fall through to download
                             }
                         }
                         const url = URL.createObjectURL(blob);
@@ -675,9 +679,7 @@
                 }
             };
 
-            // Keep wander points clear of the chest itself (a disk around the
-            // stage center) by pushing anything too close radially outward.
-            const CHEST_EXCLUDE_RADIUS = 21; // percent of stage size
+            const CHEST_EXCLUDE_RADIUS = 21;
             const keepClearOfChest = (x, y) => {
                 const dx = x - 50, dy = y - 50;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -690,9 +692,6 @@
                 };
             };
 
-            // Each sprite gets a home spot plus 3 nearby waypoints (for a gentle
-            // infinite wander loop, kept clear of the chest) and a random stagger
-            // delay for the "sucked into the chest" moment once Roll is pressed.
             const generateScatterItems = (pool) => {
                 const staggerStep = Math.max(6, Math.min(30, Math.floor(360 / pool.length)));
                 return pool.map(id => {
@@ -701,7 +700,7 @@
                         clamp(home.x + (Math.random() * 26 - 13), 4, 96),
                         clamp(home.y + (Math.random() * 26 - 13), 4, 92)
                     );
-                    const roamDuration = 9 + Math.random() * 7; // slower still (was 6-12s)
+                    const roamDuration = 9 + Math.random() * 7;
                     return {
                         id, xPct: home.x, yPct: home.y,
                         wp: [jitter(), jitter(), jitter()],
@@ -712,148 +711,35 @@
                 });
             };
 
-            // The roulette only ever draws from sprites you actually have, filtered
-            // by whatever Collected/Mastered/Variant filters are currently active.
-            const getRoulettePool = () => collected.filter(id => {
-                const { variant } = splitId(id);
-                return matchesFilters(variant, true, mastered.includes(id));
-            });
-
-            const resetToIdle = () => {
-                if (rouletteTimeoutRef.current) {
-                    clearTimeout(rouletteTimeoutRef.current);
-                    rouletteTimeoutRef.current = null;
-                }
-                setRouletteResult(null);
-                setFrozenPositions({});
-                setRoulettePhase('idle');
-                const pool = getRoulettePool();
-                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
-            };
-
-            const resetRoulette = () => {
-                if (rouletteTimeoutRef.current) {
-                    clearTimeout(rouletteTimeoutRef.current);
-                    rouletteTimeoutRef.current = null;
-                }
-                setRoulettePhase('idle');
-                setScatterItems([]);
-                setFrozenPositions({});
-                setRouletteResult(null);
-            };
-
-            const openRoulette = () => {
-                resetRoulette();
-                const pool = getRoulettePool();
-                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
-                setRoulette(true);
-            };
-
-            const startRoll = () => {
-                const pool = getRoulettePool();
-                if (pool.length === 0 || scatterItems.length === 0) return;
-                if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
-                setRouletteResult(null);
-
-                // Snapshot exactly where each sprite is on screen right now (mid
-                // wander) and lock it in as a static position, so the very next
-                // step has a real, stable starting point to transition from —
-                // rather than snapping straight to wherever the CSS animation's
-                // "home" value happened to be.
-                const container = stageRef.current;
-                const frozen = {};
-                if (container) {
-                    const rect = container.getBoundingClientRect();
-                    scatterItems.forEach(item => {
-                        const el = rouletteItemRefs.current[item.id];
-                        if (el) {
-                            const r = el.getBoundingClientRect();
-                            const cx = r.left + r.width / 2 - rect.left;
-                            const cy = r.top + r.height / 2 - rect.top;
-                            frozen[item.id] = {
-                                x: clamp((cx / rect.width) * 100, 0, 100),
-                                y: clamp((cy / rect.height) * 100, 0, 100)
-                            };
-                        }
+            const generateGardenScatterItems = () => {
+                return ARCHIVED_SPRITES.map(sp => {
+                    const home = { x: 10 + Math.random() * 80, y: 10 + Math.random() * 75 };
+                    const jitter = () => ({
+                        x: clamp(home.x + (Math.random() * 26 - 13), 4, 96),
+                        y: clamp(home.y + (Math.random() * 26 - 13), 4, 92)
                     });
-                }
-                setFrozenPositions(frozen);
-
-                // Wait two paints: one to commit the frozen (non-animated, non-
-                // transitioning) position, then start the transition to the
-                // chest from that now-stable starting point.
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        setRoulettePhase('gather');
-                        const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
-                        const gatherDuration = maxDelay + 700;
-
-                        rouletteTimeoutRef.current = setTimeout(() => {
-                            setRoulettePhase('shake');
-                            if (navigator.vibrate) navigator.vibrate(40);
-                            rouletteTimeoutRef.current = setTimeout(() => {
-                                const finalId = pool[Math.floor(Math.random() * pool.length)];
-                                // Settle at rest (animation off, normal size) for one clean
-                                // frame first, so the shrink/shift into "burst" has a stable
-                                // starting point to transition from instead of snapping.
-                                setRoulettePhase('settle');
-                                requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                        setRoulettePhase('burst');
-                                        setRouletteResult(finalId);
-                                        setRollHistory(prev => [finalId, ...prev].slice(0, 5));
-                                        if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
-                                    });
-                                });
-                            }, 650);
-                        }, gatherDuration);
-                    });
+                    const roamDuration = 9 + Math.random() * 7;
+                    return {
+                        name: sp.name,
+                        xPct: home.x,
+                        yPct: home.y,
+                        wp: [jitter(), jitter(), jitter()],
+                        roamDuration,
+                        roamDelay: Math.random() * 3
+                    };
                 });
             };
 
-            useEffect(() => {
-                return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
-            }, []);
+            const getRoulettePool = () => collected.filter(id => {
+                const { name, variant } = splitId(id);
+                return sprites.some(sp => sp.name === name) && matchesFilters(variant, true, mastered.includes(id));
+            });
 
-            const toggle = (n, v) => {
-                const id = n + '-' + v;
-                setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-                setMastered(p => p.filter(x => x !== id));
-            };
-
-            const longPress = (n, v) => {
-                const id = n + '-' + v;
-                const c = collected.includes(id);
-                const m = mastered.includes(id);
-                
-                if (navigator.vibrate) navigator.vibrate(60);
-                
-                if (!c) { 
-                    setCollected(p => [...p, id]); 
-                    setMastered(p => [...p, id]); 
-                }
-                else if (!m) { 
-                    setMastered(p => [...p, id]); 
-                }
-                else { 
-                    setMastered(p => p.filter(x => x !== id)); 
-                }
-            };
-
-            // Pointer Events fire exactly once per physical press across mouse,
-            // touch, and pen (no duplicate/"ghost" mouse events like touch
-            // handlers can trigger), which is what was causing a completed
-            // long-press to be immediately undone by a delayed synthetic tap.
-            //
-            // activePress tracks WHICH sprite+variant is currently being held,
-            // independent of any specific DOM element. That matters because a
-            // long-press can itself cause its own element to unmount mid-gesture
-            // (e.g. mastering the last "Unmastered"-filtered variant makes its
-            // row stop matching and disappear) — pointer capture is silently
-            // released the instant that happens, so the finger-up event would
-            // otherwise land on whatever sprite reflowed into that same screen
-            // position and wrongly toggle it. Resolving from activePress instead
-            // of from the event's target sidesteps that entirely.
+            const rouletteItemRefs = useRef({});
+            const longPressTimers = useRef({});
+            const longPressFlag = useRef({});
+            const filterChipLongPressTimers = useRef({});
+            const filterChipLongPressFlag = useRef({});
             const activePress = useRef(null);
 
             const resolvePress = () => {
@@ -899,28 +785,14 @@
                 }, 500);
             };
 
-            // These still resolve the currently-tracked press (via activePress),
-            // not necessarily the specific element the event fired on — normally
-            // those are the same element, but not always (see activePress above).
             const handlePointerUp = (e, n, v) => {
                 resolvePress();
             };
 
-            // Pointer left the element or the gesture was cancelled (e.g. the OS
-            // took over for a system gesture) — just clean up, don't toggle.
             const handlePointerCancel = (e, n, v) => {
                 cancelPress();
             };
 
-            // Fallback for when pointer capture is lost mid-gesture because the
-            // capturing element got removed from the DOM (see activePress above).
-            // The browser still fires pointerup/pointercancel somewhere — usually
-            // on whatever now sits at that screen position — but window-level
-            // listeners see it too, and resolving from activePress there ignores
-            // whatever element the native event actually landed on. If the normal
-            // per-element handler above already resolved the press first (the
-            // common case, when capture wasn't lost), activePress is already null
-            // by the time this runs, so it's a no-op — never a double-fire.
             useEffect(() => {
                 const onWindowPointerUp = () => resolvePress();
                 const onWindowPointerCancel = () => cancelPress();
@@ -932,9 +804,6 @@
                 };
             }, []);
 
-            // Same tap-vs-long-press Pointer Events pattern as the sprite tiles
-            // above (fires exactly once per physical press, no ghost-click risk),
-            // applied to the Variant filter chips: tap includes, long-press excludes.
             const handleFilterChipPointerDown = (e, variant) => {
                 e.preventDefault();
                 if (filterChipLongPressTimers.current[variant]) {
@@ -970,58 +839,456 @@
                 filterChipLongPressFlag.current[variant] = false;
             };
 
-            const bgColor = isMasterCollector 
-                ? (dark ? '#2d1b4e' : '#fdf2f8')
-                : (dark ? '#0f172a' : '#faf5ff');
-            const textColor = isMasterCollector 
-                ? (dark ? '#e2e8f0' : '#831843')
-                : (dark ? '#e2e8f0' : '#4c1d95');
-            const cardBg = isMasterCollector 
-                ? (dark ? 'rgba(88, 28, 135, 0.3)' : 'rgba(236, 72, 153, 0.18)')
-                : (dark ? 'rgba(30,41,59,0.4)' : 'rgba(192, 132, 250, 0.25)');
-            const cardBorder = isMasterCollector 
-                ? (dark ? 'rgba(168, 85, 247, 0.5)' : 'rgba(236, 72, 153, 0.55)')
-                : (dark ? 'rgba(100,116,139,0.3)' : 'rgba(168, 85, 247, 0.6)');
-            const accentColor = isMasterCollector ? '#a855f7' : '#06b6d4';
-            const masteredAccent = isMasterCollector ? '#ec4899' : '#fbbf24';
-            // Emoji glyphs (☀️🌙🎲✨) have their own fixed bright colors, so a pale
-            // translucent tint (especially in light mode) washes them out. Solid,
-            // in-theme pastels keep the accent-color identity while giving real contrast.
-            const iconBg = isMasterCollector
-                ? (dark ? 'rgba(168, 85, 247, 0.3)' : '#e9d5ff')
-                : (dark ? 'rgba(6, 182, 212, 0.25)' : '#a5f3fc');
-            const cardGlow = isMasterCollector ? '0 0 20px rgba(168, 85, 247, 0.45)' : 'none';
-            // Soft ambient bloom behind titles — a static, non-animated glow using
-            // the same gradient colors, applied via drop-shadow so it respects the
-            // gradient-clipped text's actual glyph shapes rather than a rectangle.
-            const titleGlow = 'drop-shadow(0 0 18px rgba(168, 85, 247, 0.35)) drop-shadow(0 0 32px rgba(6, 182, 212, 0.2))';
+            const resetToIdle = () => {
+                if (rouletteTimeoutRef.current) {
+                    clearTimeout(rouletteTimeoutRef.current);
+                    rouletteTimeoutRef.current = null;
+                }
+                setRouletteResult(null);
+                setFrozenPositions({});
+                setRoulettePhase('idle');
+                const pool = getRoulettePool();
+                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
+            };
 
+            const resetRoulette = () => {
+                if (rouletteTimeoutRef.current) {
+                    clearTimeout(rouletteTimeoutRef.current);
+                    rouletteTimeoutRef.current = null;
+                }
+                setRoulettePhase('idle');
+                setScatterItems([]);
+                setFrozenPositions({});
+                setRouletteResult(null);
+            };
+
+            const openRoulette = () => {
+                resetRoulette();
+                const pool = getRoulettePool();
+                setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
+                setRoulette(true);
+            };
+
+            const startRoll = () => {
+                const pool = getRoulettePool();
+                if (pool.length === 0 || scatterItems.length === 0) return;
+                if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
+                setRouletteResult(null);
+
+                const container = stageRef.current;
+                const frozen = {};
+                if (container) {
+                    const rect = container.getBoundingClientRect();
+                    scatterItems.forEach(item => {
+                        const el = rouletteItemRefs.current[item.id];
+                        if (el) {
+                            const r = el.getBoundingClientRect();
+                            const cx = r.left + r.width / 2 - rect.left;
+                            const cy = r.top + r.height / 2 - rect.top;
+                            frozen[item.id] = {
+                                x: clamp((cx / rect.width) * 100, 0, 100),
+                                y: clamp((cy / rect.height) * 100, 0, 100)
+                            };
+                        }
+                    });
+                }
+                setFrozenPositions(frozen);
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        setRoulettePhase('gather');
+                        const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
+                        const gatherDuration = maxDelay + 700;
+
+                        rouletteTimeoutRef.current = setTimeout(() => {
+                            setRoulettePhase('shake');
+                            if (navigator.vibrate) navigator.vibrate(40);
+                            rouletteTimeoutRef.current = setTimeout(() => {
+                                const finalId = pool[Math.floor(Math.random() * pool.length)];
+                                setRoulettePhase('settle');
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        setRoulettePhase('burst');
+                                        setRouletteResult(finalId);
+                                        setRollHistory(prev => [finalId, ...prev].slice(0, 5));
+                                        if (navigator.vibrate) navigator.vibrate([50, 30, 80]);
+                                    });
+                                });
+                            }, 650);
+                        }, gatherDuration);
+                    });
+                });
+            };
+
+            useEffect(() => {
+                return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
+            }, []);
+
+            const toggle = (n, v) => {
+                const id = n + '-' + v;
+                setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+                setMastered(p => p.filter(x => x !== id));
+            };
+
+            const longPress = (n, v) => {
+                const id = n + '-' + v;
+                const c = collected.includes(id);
+                const m = mastered.includes(id);
+                
+                if (navigator.vibrate) navigator.vibrate(60);
+                
+                if (!c) { 
+                    setCollected(p => [...p, id]); 
+                    setMastered(p => [...p, id]); 
+                }
+                else if (!m) { 
+                    setMastered(p => [...p, id]); 
+                }
+                else { 
+                    setMastered(p => p.filter(x => x !== id)); 
+                }
+            };
+
+            // ============================================
+            // GLITCH TITLE COMPONENT
+            // ============================================
+            const GlitchTitle = ({ children, style = {} }) => {
+                return (
+                    <div
+                        onClick={() => setGlitchOn(!glitchOn)}
+                        style={{
+                            cursor: 'pointer',
+                            position: 'relative',
+                            ...style
+                        }}
+                        title="Click to toggle glitch effect"
+                    >
+                        {glitchOn && (
+                            <>
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    animation: 'glitch 0.15s infinite',
+                                    zIndex: 1,
+                                    fontSize: 'inherit',
+                                    fontFamily: 'inherit',
+                                    fontWeight: 'inherit',
+                                    letterSpacing: 'inherit',
+                                    textTransform: 'inherit',
+                                }}>
+                                    {children}
+                                </div>
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    animation: 'glitch 0.15s infinite reverse',
+                                    zIndex: 0,
+                                    fontSize: 'inherit',
+                                    fontFamily: 'inherit',
+                                    fontWeight: 'inherit',
+                                    letterSpacing: 'inherit',
+                                    textTransform: 'inherit',
+                                    opacity: 0.8,
+                                }}>
+                                    {children}
+                                </div>
+                            </>
+                        )}
+                        <div style={{
+                            background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            color: '#39FF14',
+                            fontSize: 'inherit',
+                            fontFamily: 'inherit',
+                            fontWeight: 'inherit',
+                            letterSpacing: 'inherit',
+                            textTransform: 'inherit',
+                            filter: glitchOn ? 'drop-shadow(0 0 18px rgba(57, 255, 20, 0.35)) drop-shadow(0 0 32px rgba(188, 19, 254, 0.2))' : 'none',
+                            zIndex: glitchOn ? 2 : 'auto',
+                        }}>
+                            {children}
+                        </div>
+                    </div>
+                );
+            };
+
+            // ============================================
+            // GARDEN SCREEN
+            // ============================================
+            if (gardenEditMode) {
+                // Garden collection editor (functions like home page but with garden colors)
+                return <div style={{ width: '100%', background: bg, color: text, minHeight: '100vh', padding: '2rem 0' }}>
+                    <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <button onClick={() => setGardenEditMode(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back to Garden</button>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                        </div>
+
+                        <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase' }}>
+                            ARCHIVED SPRITES
+                        </GlitchTitle>
+
+                        <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
+                            <button
+                                onClick={() => setStatsExpanded(e => !e)}
+                                style={{
+                                    width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
+                                    color: text, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                                }}
+                            >
+                                <span>Collection Status <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>({collected.filter(id => ARCHIVED_SPRITES.some(sp => id.startsWith(sp.name))).length}/{ARCHIVED_SPRITES.length * 3} collected)</span></span>
+                                <span style={{ fontSize: '1.2rem', transform: statsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
+                            </button>
+                            {statsExpanded && (
+                                <div style={{ padding: '0 2rem 2rem 2rem' }}>
+                                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                                        <Pie 
+                                            col={collected.filter(id => ARCHIVED_SPRITES.some(sp => id.startsWith(sp.name))).length} 
+                                            tot={ARCHIVED_SPRITES.length * 3} 
+                                            r={40} 
+                                            col_val={primary} 
+                                            format="fraction" 
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={() => setShowResetConfirm(true)}
+                                        style={{
+                                            width: '100%', padding: '0.85rem', borderRadius: '0.6rem',
+                                            background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer',
+                                            fontWeight: 900, fontSize: '0.85rem', letterSpacing: '0.02em', textTransform: 'uppercase'
+                                        }}
+                                    >
+                                        Reset Collection
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Grid of archived sprites */}
+                        <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
+                            {ARCHIVED_SPRITES.map(sp => {
+                                const archivedCollected = collected.filter(id => id.startsWith(sp.name + '-')).length;
+                                const c = ['Base', 'Gold', 'Cheat Master'].filter(v => collected.includes(sp.name + '-' + v)).length;
+                                return (
+                                    <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0, fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
+                                                <span style={{ width: compactView ? '7px' : '9px', height: compactView ? '7px' : '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                                <span style={{ overflowWrap: 'break-word' }}>{sp.name}</span>
+                                            </div>
+                                            <div style={{
+                                                width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
+                                                borderRadius: '50%', flexShrink: 0, position: 'relative',
+                                                background: `conic-gradient(${primary} ${(c/3)*100}%, ${cardBorder} ${(c/3)*100}%)`
+                                            }}>
+                                                <div style={{
+                                                    position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
+                                                    background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: compactView ? '0.65rem' : '0.8rem', fontWeight: 800, color: text
+                                                }}>
+                                                    {c}/3
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: compactView ? '0.4rem' : '0.75rem' }}>
+                                            {['Base', 'Gold', 'Cheat Master'].map(vv => {
+                                                const id = sp.name + '-' + vv;
+                                                const isC = collected.includes(id);
+                                                return (
+                                                    <div
+                                                        key={vv}
+                                                        onContextMenu={(e) => e.preventDefault()}
+                                                        onPointerDown={(e) => handlePointerDown(e, sp.name, vv)}
+                                                        onPointerUp={(e) => handlePointerUp(e, sp.name, vv)}
+                                                        onPointerCancel={(e) => handlePointerCancel(e, sp.name, vv)}
+                                                        onPointerLeave={(e) => handlePointerCancel(e, sp.name, vv)}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: compactView ? '62px' : '120px',
+                                                            borderRadius: '0.5rem',
+                                                            overflow: 'hidden',
+                                                            opacity: isC ? 1 : 0.3,
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.3s',
+                                                            background: 'rgba(0,0,0,0.1)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            touchAction: 'manipulation',
+                                                            WebkitTouchCallout: 'none'
+                                                        }}
+                                                    >
+                                                        <img 
+                                                            src={getImagePath(sp.name, vv)} 
+                                                            {...noCalloutImgProps}
+                                                            style={{
+                                                                ...noCalloutImgProps.style,
+                                                                width: '90%', 
+                                                                height: '90%', 
+                                                                objectFit: 'contain'
+                                                            }} 
+                                                            alt={vv}
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>;
+            }
+
+            if (garden) {
+                // Garden wandering screen
+                useEffect(() => {
+                    if (!gardenScatterItems.length) {
+                        setGardenScatterItems(generateGardenScatterItems());
+                    }
+                }, [garden]);
+
+                return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
+                        <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            <button onClick={() => setGardenEditMode(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>✎</button>
+                        </div>
+                    </div>
+
+                    <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.5rem 0', flexShrink: 0, textTransform: 'uppercase' }}>
+                        SPRITE GARDEN
+                    </GlitchTitle>
+
+                    <div ref={gardenStageRef} style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(255,255,255,0.1)', borderRadius: '1rem', overflow: 'hidden' }}>
+                        {gardenScatterItems.map((item) => (
+                            <div
+                                key={item.name}
+                                ref={el => { gardenItemRefs.current[item.name] = el; }}
+                                onClick={() => setGardenSelectedSprite(item.name)}
+                                style={{
+                                    position: 'absolute',
+                                    width: '42px',
+                                    height: '42px',
+                                    left: `${item.xPct}%`,
+                                    top: `${item.yPct}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    cursor: 'pointer',
+                                    animation: `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite, spriteHop ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite`,
+                                    '--x0': `${item.xPct}%`, '--y0': `${item.yPct}%`,
+                                    '--x1': `${item.wp[0].x}%`, '--y1': `${item.wp[0].y}%`,
+                                    '--x2': `${item.wp[1].x}%`, '--y2': `${item.wp[1].y}%`,
+                                    '--x3': `${item.wp[2].x}%`, '--y3': `${item.wp[2].y}%`
+                                }}
+                            >
+                                <img src={getImagePath(item.name, 'Base')} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {gardenSelectedSprite && (
+                        <div
+                            onClick={() => setGardenSelectedSprite(null)}
+                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, padding: '1rem' }}
+                        >
+                            <div
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ background: cardBg, border: `2px solid ${cardBorder}`, borderRadius: '1rem', padding: '2rem', maxWidth: '400px', maxHeight: '80vh', overflow: 'auto', textAlign: 'center' }}
+                            >
+                                <div style={{ width: '120px', height: '120px', margin: '0 auto 1.5rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
+                                    <img src={getImagePath(gardenSelectedSprite, 'Base')} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
+                                </div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 1rem 0', color: primary }}>{gardenSelectedSprite}</h2>
+                                
+                                {/* Variants collected */}
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.7, marginBottom: '0.5rem', textTransform: 'uppercase' }}>Variants Collected</div>
+                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                                        {['Base', 'Gold', 'Cheat Master'].map(v => {
+                                            const id = gardenSelectedSprite + '-' + v;
+                                            const isC = collected.includes(id);
+                                            const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
+                                            return (
+                                                <div
+                                                    key={v}
+                                                    style={{
+                                                        width: '60px',
+                                                        height: '60px',
+                                                        borderRadius: '0.5rem',
+                                                        overflow: 'hidden',
+                                                        opacity: isC ? 1 : 0.2,
+                                                        cursor: 'pointer',
+                                                        background: 'rgba(0,0,0,0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        border: `2px solid ${variantColor}`,
+                                                        position: 'relative'
+                                                    }}
+                                                    onPointerDown={(e) => handlePointerDown(e, gardenSelectedSprite, v)}
+                                                    onPointerUp={(e) => handlePointerUp(e, gardenSelectedSprite, v)}
+                                                    onPointerCancel={(e) => handlePointerCancel(e, gardenSelectedSprite, v)}
+                                                    onPointerLeave={(e) => handlePointerCancel(e, gardenSelectedSprite, v)}
+                                                    title={v}
+                                                >
+                                                    <img src={getImagePath(gardenSelectedSprite, v)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '90%', height: '90%', objectFit: 'contain' }} alt="" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    <div style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.6rem', fontWeight: 700, opacity: 0.7 }}>{v}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <button onClick={() => setGardenSelectedSprite(null)} style={{ width: '100%', padding: '0.75rem', background: primary, color: '#0f0515', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Close</button>
+                            </div>
+                        </div>
+                    )}
+                </div>;
+            }
+
+            // Main app view
             if (roulette) {
                 const pool = getRoulettePool();
                 const resultInfo = rouletteResult ? splitId(rouletteResult) : null;
                 const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake' || roulettePhase === 'settle';
                 const goBack = () => { resetRoulette(); setRoulette(false); };
 
-                return <div style={{ width: '100%', height: '100dvh', background: bgColor, color: textColor, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
+                return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
-                        <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.4rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.15rem 0', flexShrink: 0, textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>Sprite Roulette</h1>
+                    <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.4rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.15rem 0', flexShrink: 0, textTransform: 'uppercase' }}>
+                        Sprite Roulette
+                    </GlitchTitle>
                     <div style={{ opacity: 0.7, marginBottom: '1.25rem', fontSize: '0.9rem', flexShrink: 0 }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
 
                     {pool.length === 0 ? (
                         <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center', maxWidth: '320px' }}>
-                            {collected.length === 0 ? 'Collect a few sprites first, then come back to roll!' : 'No collected sprites match your current filters. Adjust filters on the home screen to roll.'}
+                            {col === 0 ? 'Collect a few sprites first, then come back to roll!' : 'No collected sprites match your current filters. Adjust filters on the home screen to roll.'}
                         </div>
                     ) : (
                         <>
                             <div ref={stageRef} style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0 }}>
-                                {/* Every collected sprite wanders the stage until Roll is pressed, then flies into the chest */}
                                 {(roulettePhase === 'idle' || roulettePhase === 'gather') && scatterItems.map((item) => {
                                     const info = splitId(item.id);
                                     const isGathering = roulettePhase === 'gather';
@@ -1053,7 +1320,6 @@
                                     );
                                 })}
 
-                                {/* Chest wrapper handles shake + shrink/shift; the two images crossfade inside it so the closed→open swap isn't an instant pop */}
                                 <div
                                     style={{
                                         position: 'absolute', top: '50%', left: '50%',
@@ -1062,7 +1328,7 @@
                                         height: roulettePhase === 'burst' ? '132px' : '150px',
                                         transition: 'width 0.45s ease-out, height 0.45s ease-out, transform 0.45s ease-out',
                                         animation: roulettePhase === 'shake' ? 'chestShake 0.5s ease-in-out 2' : 'none',
-                                        filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${masteredAccent})` : 'none'
+                                        filter: roulettePhase === 'burst' ? `drop-shadow(0 0 20px ${tertiary})` : 'none'
                                     }}
                                 >
                                     <img
@@ -1081,14 +1347,13 @@
                                     />
                                 </div>
 
-                                {/* Burst flash + soft star sparkles + final reveal */}
                                 {roulettePhase === 'burst' && resultInfo && (
                                     <>
-                                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out forwards' }} />
+                                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${tertiary}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out forwards' }} />
                                         {[0, 1, 2, 3, 4, 5].map(i => (
-                                            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', borderRadius: '50%', background: `radial-gradient(circle, ${masteredAccent} 0%, transparent 75%)`, filter: 'blur(1.5px)', '--rot': `${i * 60}deg`, animation: `sparkleFloat 1s ease-out ${i * 0.05}s forwards` }} />
+                                            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: '10px', height: '10px', borderRadius: '50%', background: `radial-gradient(circle, ${tertiary} 0%, transparent 75%)`, filter: 'blur(1.5px)', '--rot': `${i * 60}deg`, animation: `sparkleFloat 1s ease-out ${i * 0.05}s forwards` }} />
                                         ))}
-                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: '100px', height: '100px', animation: 'popInCentered 0.5s ease-out 0.15s both', filter: `drop-shadow(0 0 12px ${masteredAccent})` }}>
+                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: '100px', height: '100px', animation: 'popInCentered 0.5s ease-out 0.15s both', filter: `drop-shadow(0 0 12px ${tertiary})` }}>
                                             <img src={getImagePath(resultInfo.name, resultInfo.variant)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
                                         </div>
                                     </>
@@ -1097,7 +1362,7 @@
 
                             <div style={{ textAlign: 'center', marginBottom: '0.5rem', minHeight: '2.4rem', flexShrink: 0, visibility: (roulettePhase === 'burst' && resultInfo) ? 'visible' : 'hidden', animation: (roulettePhase === 'burst' && resultInfo) ? 'popIn 0.4s ease-out 0.3s both' : 'none' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo ? resultInfo.name : '\u00A0'}</div>
-                                <div style={{ fontSize: '0.9rem', color: accentColor }}>{resultInfo ? resultInfo.variant : '\u00A0'}</div>
+                                <div style={{ fontSize: '0.9rem', color: primary }}>{resultInfo ? resultInfo.variant : '\u00A0'}</div>
                             </div>
 
                             <button
@@ -1106,8 +1371,8 @@
                                 style={{
                                     padding: '0.75rem 2rem',
                                     flexShrink: 0,
-                                    background: isBusy ? cardBg : masteredAccent,
-                                    color: isBusy ? accentColor : 'white',
+                                    background: isBusy ? cardBg : tertiary,
+                                    color: isBusy ? primary : '#0f0515',
                                     border: 'none',
                                     borderRadius: '0.5rem',
                                     cursor: isBusy ? 'default' : 'pointer',
@@ -1136,10 +1401,10 @@
                                                 <div style={{
                                                     position: 'absolute', top: '-6px', right: '-6px',
                                                     width: '17px', height: '17px', borderRadius: '50%',
-                                                    background: accentColor, color: 'white',
+                                                    background: primary, color: '#0f0515',
                                                     fontSize: '0.6rem', fontWeight: 'bold',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    border: `1.5px solid ${bgColor}`
+                                                    border: `1.5px solid ${bg}`
                                                 }}>
                                                     {i + 1}
                                                 </div>
@@ -1155,25 +1420,25 @@
             }
 
             if (share) {
-                return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bgColor, color: textColor, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bg, color: text, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
-                        <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
+                        <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.6rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', border: `1.5px solid ${primary}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.6rem', flexShrink: 0 }}>
                         {[['full', 'Full Collection'], ['filtered', 'Filtered View']].map(([val, txt], i) => (
                             <button
                                 key={val}
                                 onClick={() => setShareMode(val)}
                                 style={{
                                     flex: 1, padding: '0.6rem 0.5rem', border: 'none', cursor: 'pointer',
-                                    borderLeft: i > 0 ? `1px solid ${shareMode === val ? 'rgba(255,255,255,0.4)' : accentColor}` : 'none',
-                                    background: shareMode === val ? accentColor : 'transparent',
-                                    color: shareMode === val ? 'white' : accentColor,
+                                    borderLeft: i > 0 ? `1px solid ${shareMode === val ? 'rgba(255,255,255,0.4)' : primary}` : 'none',
+                                    background: shareMode === val ? primary : 'transparent',
+                                    color: shareMode === val ? '#0f0515' : primary,
                                     fontWeight: 'bold', fontSize: '0.82rem'
                                 }}
                             >
@@ -1188,46 +1453,30 @@
                         style={{
                             width: '100%', padding: '0.75rem', marginBottom: '0.6rem', borderRadius: '0.75rem',
                             border: 'none', cursor: savingImage ? 'default' : 'pointer', flexShrink: 0,
-                            background: savingImage ? iconBg : 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)',
-                            color: savingImage ? accentColor : 'white',
-                            fontWeight: 900, fontSize: '0.95rem', letterSpacing: '0.02em',
-                            boxShadow: savingImage ? 'none' : '0 4px 16px rgba(168, 85, 247, 0.45)'
+                            background: savingImage ? icon : `linear-gradient(90deg, ${primary} 0%, ${secondary} 50%, ${tertiary} 100%)`,
+                            color: savingImage ? primary : '#0f0515',
+                            fontWeight: 900, fontSize: '0.95rem', letterSpacing: '0.02em'
                         }}
                     >
                         {savingImage ? 'Generating image…' : '✨ Share Collection'}
                     </button>
-                    
+
                     <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                        <svg viewBox="0 0 340 52" style={{ width: '100%', maxWidth: '340px', height: 'auto', display: 'block', filter: titleGlow }}>
-                            <defs>
-                                <linearGradient id="shareTitleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#06b6d4" />
-                                    <stop offset="50%" stopColor="#a855f7" />
-                                    <stop offset="100%" stopColor="#ec4899" />
-                                </linearGradient>
-                            </defs>
-                            <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle" fontFamily="'Anton', sans-serif" fontSize="36" fontWeight="400" letterSpacing="1" fill="url(#shareTitleGradient)">
-                                MY SPRITE VAULT
-                            </text>
-                        </svg>
+                        <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                            MY SPRITE VAULT
+                        </GlitchTitle>
                         {shareMode === 'filtered' && (
                             <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.85 }}>{getFilterSummaryText()}</div>
                         )}
                     </div>
 
-                    {/* This wrapper is whatever space is actually left on THIS device.
-                        The grid inside is measured against it and scaled down (never up)
-                        to fit exactly — no clipping, no scrolling, on any screen size. */}
                     <div ref={gridWrapperRef} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden' }}>
-                        <div ref={captureRef} style={{ background: bgColor, width: '100%', transform: savingImage ? 'none' : `scale(${gridScale})`, transformOrigin: 'top center' }}>
+                        <div ref={captureRef} style={{ background: bg, width: '100%', transform: savingImage ? 'none' : `scale(${gridScale})`, transformOrigin: 'top center' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
                                 {sprites.map(sp => {
-                                    // Full Collection ignores filters entirely (always the
-                                    // complete set); Filtered View mirrors whatever the
-                                    // Filters card and search box currently have active.
-                                    let variantsToShow = sp.v;
+                                    let variantsToShow = ALL_VARIANTS;
                                     if (shareMode === 'filtered') {
-                                        variantsToShow = sp.v.filter(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                        variantsToShow = ALL_VARIANTS.filter(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                                         if (variantsToShow.length === 0 || !matchesSearch(sp.name)) return null;
                                     }
                                     const collectedStatus = variantsToShow.map(vv => collected.includes(sp.name + '-' + vv));
@@ -1240,7 +1489,7 @@
                                             <div style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.3rem', overflowWrap: 'break-word', lineHeight: 1.15 }}>
                                                 {sp.name}
                                             </div>
-                                            <div style={{ fontSize: '0.65rem', color: accentColor, fontWeight: 500 }}>
+                                            <div style={{ fontSize: '0.65rem', color: primary, fontWeight: 500 }}>
                                                 {c}/{variantsToShow.length}
                                             </div>
                                         </div>
@@ -1252,7 +1501,8 @@
                 </div>;
             }
 
-            return <div style={{ width: '100%', background: bgColor, color: textColor, minHeight: '100vh', padding: '2rem 0' }}>
+            // Main home screen
+            return <div style={{ width: '100%', background: bg, color: text, minHeight: '100vh', padding: '2rem 0' }}>
                 {showMasterCollectorPopup && <MasterCollectorPopup onClose={() => setShowMasterCollectorPopup(false)} onEnable={() => setMasterCollectorActive(true)} />}
                 {showResetConfirm && <ResetConfirmPopup onClose={() => setShowResetConfirm(false)} onConfirm={resetCollection} />}
                 <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
@@ -1260,35 +1510,36 @@
                         <div />
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                             <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
-                                <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
+                                <button onClick={() => setShare(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="↑ to screenshot full collection">↑</button>
+                                <button onClick={() => setGarden(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🌲 to visit the sprite garden">🌲</button>
+                                <button onClick={openRoulette} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }} title="🎲 to roll a random collected sprite">🎲</button>
                             </div>
                             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                <div style={{ display: 'flex', border: `1.5px solid ${accentColor}`, borderRadius: '0.5rem', overflow: 'hidden', flexShrink: 0 }}>
+                                <div style={{ display: 'flex', border: `1.5px solid ${primary}`, borderRadius: '0.5rem', overflow: 'hidden', flexShrink: 0 }}>
                                     {[['cozy', 'Cozy'], ['compact', 'Compact'], ['list', 'List']].map(([val, txt], i) => (
                                         <button
                                             key={val}
                                             onClick={() => setViewMode(val)}
                                             style={{
                                                 padding: '0.5rem 0.7rem', border: 'none', cursor: 'pointer',
-                                                borderLeft: i > 0 ? `1px solid ${viewMode === val ? 'rgba(255,255,255,0.4)' : accentColor}` : 'none',
-                                                background: viewMode === val ? accentColor : 'transparent',
-                                                color: viewMode === val ? 'white' : accentColor,
-                                                fontWeight: 'bold', fontSize: '0.78rem', whiteSpace: 'nowrap'
+                                                borderLeft: i > 0 ? `1px solid ${viewMode === val ? 'rgba(255,255,255,0.4)' : primary}` : 'none',
+                                                background: viewMode === val ? primary : 'transparent',
+                                                color: viewMode === val ? '#0f0515' : primary,
+                                                fontWeight: 'bold', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0
                                             }}
                                         >
                                             {txt}
                                         </button>
                                     ))}
                                 </div>
-                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: iconBg, color: accentColor, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>{dark ? '☀️' : '🌙'}</button>
-                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? '#a855f7' : iconBg, color: masterCollectorActive ? 'white' : accentColor, border: `2px solid #a855f7`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', flexShrink: 0 }}>✨ Master Collector</button>}
+                                <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>{dark ? '☀️' : '🌙'}</button>
+                                {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', flexShrink: 0 }}>✨ Master Collector</button>}
                             </div>
                         </div>
                     </div>
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, boxShadow: cardGlow }}>
-                        <span style={{ color: accentColor, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: masteredAccent, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: accentColor, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: accentColor, fontWeight: 'bold' }}>🎲</span> to roll a random Sprite
+                        <span style={{ color: primary, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: tertiary, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: primary, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: primary, fontWeight: 'bold' }}>🌲</span> for the garden • <span style={{ color: primary, fontWeight: 'bold' }}>🎲</span> to roll
                     </div>
 
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
@@ -1297,7 +1548,7 @@
                             style={{
                                 width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
-                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                                color: text, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
                             }}
                         >
                             <span>Color Key</span>
@@ -1306,26 +1557,29 @@
                         {keyExpanded && (
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                                    {ALL_VARIANTS.map(v => (
-                                        <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.15)', border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.35rem 0.7rem' }}>
-                                            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: VARIANT_COLORS[v] || '#94a3b8', flexShrink: 0 }} />
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{v}</span>
-                                        </div>
-                                    ))}
+                                    {ALL_VARIANTS.map(v => {
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
+                                        return (
+                                            <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.15)', border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.35rem 0.7rem' }}>
+                                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: variantColor, flexShrink: 0 }} />
+                                                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{v}</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                                 <div style={{ fontSize: '0.75rem', opacity: 0.75, lineHeight: 1.6 }}>
                                     <span style={{ fontWeight: 700 }}>Full color</span> = collected &nbsp;•&nbsp;
                                     <span style={{ fontWeight: 700 }}>Faded</span> = uncollected &nbsp;•&nbsp;
-                                    <span style={{ fontWeight: 700, color: masteredAccent }}>Gold ring</span> = mastered &nbsp;•&nbsp;
+                                    <span style={{ fontWeight: 700, color: tertiary }}>Gold ring</span> = mastered &nbsp;•&nbsp;
                                     <span style={{ fontWeight: 700 }}>Hatched</span> = doesn't apply right now
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase', filter: titleGlow, background: 'linear-gradient(90deg, #06b6d4 0%, #a855f7 50%, #ec4899 100%)', backgroundSize: '100% 100%', backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', color: '#06b6d4' }}>
+                    <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
-                    </h1>
+                    </GlitchTitle>
                     
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
@@ -1333,7 +1587,7 @@
                             style={{
                                 width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
-                                color: textColor, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
+                                color: text, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
                             }}
                         >
                             <span>Collection Status <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>({col}/{tot} collected, {mas}/{tot} mastered)</span></span>
@@ -1344,17 +1598,17 @@
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem' }}>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
-                                        <Pie col={col} tot={tot} r={40} col_val={accentColor} format="fraction" />
+                                        <Pie col={col} tot={tot} r={40} col_val={primary} format="fraction" />
                                         {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'fraction')}
                                     </div>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
-                                        <Pie col={mas} tot={tot} r={40} col_val={masteredAccent} format="fraction" />
+                                        <Pie col={mas} tot={tot} r={40} col_val={tertiary} format="fraction" />
                                         {renderVariantChips(v => mastered.filter(id => splitId(id).variant === v).length, 'fraction')}
                                     </div>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
-                                        <Pie col={col} tot={tot} r={40} col_val={accentColor} format="percentage" />
+                                        <Pie col={col} tot={tot} r={40} col_val={primary} format="percentage" />
                                         {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
                                     </div>
                                 </div>
@@ -1381,7 +1635,7 @@
                                 <div
                                     onClick={() => setFiltersExpanded(e => !e)}
                                     style={{
-                                        cursor: 'pointer', color: textColor, fontWeight: 900, fontSize: '1rem',
+                                        cursor: 'pointer', color: text, fontWeight: 900, fontSize: '1rem',
                                         textTransform: 'uppercase', letterSpacing: '0.03em'
                                     }}
                                 >
@@ -1392,7 +1646,7 @@
                                         onClick={clearFilters}
                                         style={{
                                             padding: '0.3rem 0.7rem', borderRadius: '999px', cursor: 'pointer',
-                                            background: 'transparent', color: textColor, border: `1.5px dashed ${cardBorder}`,
+                                            background: 'transparent', color: text, border: `1.5px dashed ${cardBorder}`,
                                             fontSize: '0.7rem', fontWeight: 700, opacity: 0.85, flexShrink: 0
                                         }}
                                     >
@@ -1403,7 +1657,7 @@
                             <span
                                 onClick={() => setFiltersExpanded(e => !e)}
                                 style={{ fontSize: '1.2rem', cursor: 'pointer', padding: '0.5rem', margin: '-0.5rem', flexShrink: 0, transform: filtersExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
-                                >▾</span>
+                            >▾</span>
                         </div>
                         {filtersExpanded && (
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
@@ -1416,10 +1670,7 @@
                                         placeholder="Search sprites..."
                                         style={{
                                             width: '100%', padding: '0.7rem 2.5rem', borderRadius: '0.6rem',
-                                            background: cardBg, border: `1px solid ${cardBorder}`, color: textColor,
-                                            /* iOS Safari auto-zooms the page on focus for any input with a
-                                               font-size under 16px — this keeps it at exactly the threshold
-                                               so tapping in doesn't trigger that zoom. */
+                                            background: cardBg, border: `1px solid ${cardBorder}`, color: text,
                                             fontSize: '16px', boxSizing: 'border-box'
                                         }}
                                     />
@@ -1429,7 +1680,7 @@
                                             style={{
                                                 position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)',
                                                 background: 'transparent', border: 'none', cursor: 'pointer',
-                                                color: textColor, opacity: 0.6, fontSize: '1rem', padding: '0.3rem'
+                                                color: text, opacity: 0.6, fontSize: '1rem', padding: '0.3rem'
                                             }}
                                         >
                                             ✕
@@ -1437,8 +1688,8 @@
                                     )}
                                 </div>
 
-                                {renderStatusFilter('Collected', filterCollectedMode, handleSetCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', accentColor, filterMasteredMode === 'mastered', 'Mastered items are always collected')}
-                                {renderStatusFilter('Mastered', filterMasteredMode, handleSetMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', masteredAccent, filterCollectedMode === 'uncollected', 'Uncollected items are never mastered')}
+                                {renderStatusFilter('Collected', filterCollectedMode, handleSetCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', primary, filterMasteredMode === 'mastered', 'Mastered items are always collected')}
+                                {renderStatusFilter('Mastered', filterMasteredMode, handleSetMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', tertiary, filterCollectedMode === 'uncollected', 'Uncollected items are never mastered')}
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.4rem' }}>
                                     <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Variant</div>
@@ -1446,7 +1697,7 @@
                                         onClick={() => setShowVariantHint(h => !h)}
                                         style={{
                                             width: '15px', height: '15px', borderRadius: '50%', border: `1px solid ${cardBorder}`,
-                                            background: 'transparent', color: textColor, fontSize: '0.62rem', fontWeight: 700,
+                                            background: 'transparent', color: text, fontSize: '0.62rem', fontWeight: 700,
                                             cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             opacity: 0.6, lineHeight: 1, fontStyle: 'italic', fontFamily: 'Georgia, serif'
                                         }}
@@ -1463,6 +1714,7 @@
                                     {ALL_VARIANTS.map(v => {
                                         const isIncluded = filterVariants.includes(v);
                                         const isExcluded = filterExcludedVariants.includes(v);
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
                                         return (
                                             <button
                                                 key={v}
@@ -1474,9 +1726,9 @@
                                                 style={{
                                                     padding: '0.5rem 0.9rem', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem',
                                                     touchAction: 'manipulation', WebkitTouchCallout: 'none',
-                                                    background: isExcluded ? '#ef4444' : (isIncluded ? accentColor : 'transparent'),
-                                                    color: (isExcluded || isIncluded) ? 'white' : accentColor,
-                                                    border: `1.5px solid ${isExcluded ? '#ef4444' : accentColor}`,
+                                                    background: isExcluded ? '#ef4444' : (isIncluded ? primary : 'transparent'),
+                                                    color: (isExcluded || isIncluded) ? '#0f0515' : primary,
+                                                    border: `1.5px solid ${isExcluded ? '#ef4444' : primary}`,
                                                     textDecoration: isExcluded ? 'line-through' : 'none'
                                                 }}
                                             >
@@ -1492,12 +1744,12 @@
                     {listView ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {sprites.map(sp => {
-                                const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
-                                const allMastered = sp.v.length > 0 && m === sp.v.length;
-                                const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                                const m = ALL_VARIANTS.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                                const allMastered = ALL_VARIANTS.length > 0 && m === ALL_VARIANTS.length;
+                                const anyVariantMatches = ALL_VARIANTS.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                                 if (!anyVariantMatches || !matchesSearch(sp.name)) return null;
                                 return (
-                                    <div key={sp.name} style={{ background: cardBg, padding: '0.4rem 0.6rem', borderRadius: '0.6rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: isMasterCollector ? cardGlow : 'none' }}>
+                                    <div key={sp.name} style={{ background: cardBg, padding: '0.4rem 0.6rem', borderRadius: '0.6rem', border: allMastered ? `2px solid ${tertiary}` : `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: isMasterCollector ? cardGlow : 'none' }}>
                                         <div style={{ width: '38px', height: '38px', borderRadius: '0.4rem', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.1)' }}>
                                             <img
                                                 src={getImagePath(sp.name, 'Base')}
@@ -1513,16 +1765,6 @@
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
                                             {ALL_VARIANTS.map((variant, i) => {
-                                                // Relying on the parent's overflow:hidden to round the end
-                                                // segments isn't reliable once a segment has its own nested
-                                                // layers (the mastered trim/buffer/fill), so the end corners
-                                                // are rounded explicitly here instead, at every layer. Each
-                                                // nested layer is inset by 2px of padding from the one
-                                                // around it, so its radius has to shrink by 2px too, or the
-                                                // corners stop being concentric and the inner layers bulge.
-                                                // Bars are fixed-length (every ALL_VARIANTS slot always gets
-                                                // a segment) so isFirst/isLast are stable across every row —
-                                                // that fixed length is what keeps rows scannable.
                                                 const isFirst = i === 0;
                                                 const isLast = i === ALL_VARIANTS.length - 1;
                                                 const makeEndRadius = (px) => ({
@@ -1531,27 +1773,21 @@
                                                     borderTopRightRadius: isLast ? `${px}px` : 0,
                                                     borderBottomRightRadius: isLast ? `${px}px` : 0
                                                 });
-                                                const endRadius = makeEndRadius(6.4);   // segment itself — matches the container's 0.4rem
-                                                const bufferRadius = makeEndRadius(4.4); // black buffer, inset 2px from the segment
-                                                const fillRadius = makeEndRadius(2.4);   // color fill, inset 2px further
+                                                const endRadius = makeEndRadius(6.4);
+                                                const bufferRadius = makeEndRadius(4.4);
+                                                const fillRadius = makeEndRadius(2.4);
 
-                                                const applicable = sp.v.includes(variant);
+                                                const applicable = true; // All sprites have all 3 variants
                                                 const id = sp.name + '-' + variant;
                                                 const isC = collected.includes(id);
                                                 const isM = mastered.includes(id);
                                                 const matches = applicable && matchesFilters(variant, isC, isM);
 
-                                                // Hatch means exactly one thing: "not relevant right now."
-                                                // That covers both a variant this sprite doesn't have at all,
-                                                // and one that exists but doesn't match the active filters —
-                                                // same visual language for both, so a segment only ever means
-                                                // one of two things: hatched (skip it) or colored (here's its
-                                                // real status via color/opacity/trim).
                                                 if (!matches) {
                                                     return (
                                                         <div
                                                             key={variant}
-                                                            title={applicable ? `${variant} — doesn't match current filters` : `${variant} — not part of this sprite`}
+                                                            title={`${variant} — doesn't match current filters`}
                                                             style={{
                                                                 flex: 1, height: '100%',
                                                                 borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
@@ -1562,7 +1798,7 @@
                                                     );
                                                 }
 
-                                                const color = VARIANT_COLORS[variant] || '#94a3b8';
+                                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : '#94a3b8');
 
                                                 return (
                                                     <div
@@ -1578,19 +1814,15 @@
                                                             borderLeft: i > 0 ? `1px solid ${cardBorder}` : 'none',
                                                             cursor: 'pointer', touchAction: 'manipulation', WebkitTouchCallout: 'none',
                                                             opacity: isC ? 1 : 0.3,
-                                                            background: isM ? masteredAccent : color,
+                                                            background: isM ? tertiary : variantColor,
                                                             padding: isM ? '2px' : 0,
                                                             overflow: 'hidden',
                                                             ...endRadius
                                                         }}
                                                     >
-                                                        {/* Mastered = gold trim (outer bg) + black buffer + color fill,
-                                                            same three-layer treatment as the dots on the Vault page.
-                                                            Each layer gets the same corner rounding so the trim
-                                                            doesn't square off inside a rounded segment. */}
                                                         {isM && (
                                                             <div style={{ width: '100%', height: '100%', background: '#000', padding: '2px', boxSizing: 'border-box', overflow: 'hidden', ...bufferRadius }}>
-                                                                <div style={{ width: '100%', height: '100%', background: color, ...fillRadius }} />
+                                                                <div style={{ width: '100%', height: '100%', background: variantColor, ...fillRadius }} />
                                                             </div>
                                                         )}
                                                     </div>
@@ -1603,21 +1835,19 @@
                         </div>
                     ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
-                        {(() => {
-                            const maxTileSlots = Math.ceil(Math.max(...sprites.map(sp => sp.v.length)) / 2) * 2;
-                            return sprites.map(sp => {
-                            const c = sp.v.filter(vv => collected.includes(sp.name + '-' + vv)).length;
-                            const m = sp.v.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
-                            const cardPct = sp.v.length > 0 ? (c / sp.v.length) * 100 : 0;
-                            const allMastered = sp.v.length > 0 && m === sp.v.length;
-                            const ringColor = allMastered ? masteredAccent : accentColor;
+                        {sprites.map(sp => {
+                            const c = ALL_VARIANTS.filter(vv => collected.includes(sp.name + '-' + vv)).length;
+                            const m = ALL_VARIANTS.filter(vv => mastered.includes(sp.name + '-' + vv)).length;
+                            const cardPct = ALL_VARIANTS.length > 0 ? (c / ALL_VARIANTS.length) * 100 : 0;
+                            const allMastered = ALL_VARIANTS.length > 0 && m === ALL_VARIANTS.length;
+                            const ringColor = allMastered ? tertiary : primary;
                             const cardShadows = [];
                             if (isMasterCollector) cardShadows.push(cardGlow);
-                            if (allMastered) cardShadows.push(`0 0 16px ${masteredAccent}99`);
-                            const anyVariantMatches = sp.v.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
+                            if (allMastered) cardShadows.push(`0 0 16px ${tertiary}99`);
+                            const anyVariantMatches = ALL_VARIANTS.some(vv => matchesFilters(vv, collected.includes(sp.name + '-' + vv), mastered.includes(sp.name + '-' + vv)));
                             if (!anyVariantMatches || !matchesSearch(sp.name)) return null;
                             return (
-                                <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${masteredAccent}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
+                                <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${tertiary}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0, fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
                                             <span style={{ width: compactView ? '7px' : '9px', height: compactView ? '7px' : '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
@@ -1632,15 +1862,15 @@
                                             <div style={{
                                                 position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
                                                 background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: compactView ? '0.65rem' : '0.8rem', fontWeight: 800, color: textColor
+                                                fontSize: compactView ? '0.65rem' : '0.8rem', fontWeight: 800, color: text
                                             }}>
-                                                {c}/{sp.v.length}
+                                                {c}/{ALL_VARIANTS.length}
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: compactView ? '0.4rem' : '0.75rem' }}>
-                                        {sp.v.map(vv => {
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: compactView ? '0.4rem' : '0.75rem' }}>
+                                        {ALL_VARIANTS.map(vv => {
                                             const id = sp.name + '-' + vv;
                                             const isC = collected.includes(id);
                                             const isM = mastered.includes(id);
@@ -1678,7 +1908,7 @@
                                                             width: '90%', 
                                                             height: '90%', 
                                                             objectFit: 'contain',
-                                                            filter: isM ? `drop-shadow(0 0 6px ${masteredAccent})` : 'none'
+                                                            filter: isM ? `drop-shadow(0 0 6px ${tertiary})` : 'none'
                                                         }} 
                                                         alt={vv}
                                                         onError={(e) => { e.target.style.display = 'none'; }}
@@ -1686,14 +1916,10 @@
                                                 </div>
                                             );
                                         })}
-                                        {Array.from({ length: Math.max(0, maxTileSlots - sp.v.length) }).map((_, idx) => (
-                                            <div key={`placeholder-${idx}`} style={{ width: '100%', height: compactView ? '62px' : '120px', visibility: 'hidden' }} />
-                                        ))}
                                     </div>
                                 </div>
                             );
-                        });
-                        })()}
+                        })}
                     </div>
                     )}
                 </div>
