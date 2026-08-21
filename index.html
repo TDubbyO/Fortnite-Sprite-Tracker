@@ -14,6 +14,23 @@
     <style>
         * { box-sizing: border-box; }
         html, body { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+        body::before {
+            content: '01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00 01 10 11 00';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: rgba(57, 255, 20, 0.02);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+            line-height: 1.4;
+        }
         @keyframes chestShake {
             0%, 100% { transform: translate(-50%, -50%) translateX(0) rotate(0deg); }
             20% { transform: translate(-50%, -50%) translateX(-6px) rotate(-3deg); }
@@ -224,12 +241,12 @@
 
         const MasterCollectorPopup = ({ onClose, onEnable }) => (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                <div style={{ background: 'linear-gradient(135deg, #0f0515, #1a0f2e)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #FF006E' }}>
+                <div style={{ background: 'linear-gradient(135deg, #0f0515, #1a0f2e)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #00FFFF' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>✨</div>
                     <h2 style={{ color: '#39FF14', fontSize: '2rem', fontWeight: 900, margin: '1rem 0' }}>Master Collector!</h2>
                     <p style={{ color: '#e8f0ff', fontSize: '1rem', marginBottom: '2rem' }}>All sprites collected!</p>
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #FF006E', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
+                        <button onClick={onClose} style={{ padding: '0.75rem 1.5rem', background: 'rgba(255,255,255,0.2)', color: 'white', border: '1px solid #00FFFF', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Later</button>
                         <button onClick={() => { onEnable(); onClose(); }} style={{ padding: '0.75rem 1.5rem', background: '#39FF14', color: '#0f0515', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Activate ✨</button>
                     </div>
                 </div>
@@ -299,7 +316,6 @@
             
             // Garden state
             const [garden, setGarden] = useState(false);
-            const [gardenEditMode, setGardenEditMode] = useState(false);
             const [gardenSelectedSprite, setGardenSelectedSprite] = useState(null);
             const [gardenScatterItems, setGardenScatterItems] = useState([]);
             const gardenStageRef = useRef(null);
@@ -357,53 +373,54 @@
             // ============================================
             const getDarkModeColors = () => ({
                 bg: '#1a0f2e',
-                text: '#e8f0ff',
+                text: '#a8c8f0',
                 primary: '#39FF14',
-                secondary: '#BC13FE',
-                tertiary: '#FF006E',
-                cardBg: 'rgba(88, 19, 254, 0.15)',
-                cardBorder: '#BC13FE',
-                cardGlow: '0 0 20px rgba(57, 255, 20, 0.4)',
-                icon: 'rgba(57, 255, 20, 0.25)',
+                secondary: '#00FFFF',
+                tertiary: '#00FFFF',
+                cardBg: 'rgba(57, 255, 20, 0.08)',
+                cardBorder: '#39FF14',
+                cardGlow: 'none',
+                icon: 'rgba(57, 255, 20, 0.15)',
             });
 
             const getLightModeColors = () => ({
-                bg: '#f0f4f8',
-                text: '#1a0f2e',
-                primary: '#39FF14',
-                secondary: '#8B00FF',
-                tertiary: '#FF006E',
-                cardBg: 'rgba(139, 0, 255, 0.08)',
-                cardBorder: '#BC13FE',
+                bg: '#e8f0f8',
+                text: '#0a1428',
+                primary: '#22aa00',
+                secondary: '#00BBDD',
+                tertiary: '#00BBDD',
+                cardBg: 'rgba(34, 170, 0, 0.08)',
+                cardBorder: '#22aa00',
                 cardGlow: 'none',
-                icon: 'rgba(57, 255, 20, 0.1)',
+                icon: 'rgba(34, 170, 0, 0.12)',
             });
 
             const getMasterModeColors = () => ({
                 bg: '#0f0515',
-                text: '#FF006E',
+                text: '#39FF14',
                 primary: '#39FF14',
-                secondary: '#FF006E',
-                tertiary: '#39FF14',
-                cardBg: 'rgba(255, 0, 110, 0.12)',
-                cardBorder: '2px solid transparent; background: linear-gradient(rgba(255, 0, 110, 0.2), rgba(57, 255, 20, 0.2)) padding-box',
-                cardGlow: '0 0 25px rgba(255, 0, 110, 0.5), 0 0 15px rgba(57, 255, 20, 0.3)',
+                secondary: '#00FFFF',
+                tertiary: '#00FFFF',
+                cardBg: 'rgba(57, 255, 20, 0.15)',
+                cardBorder: '#39FF14',
+                cardGlow: '0 0 20px rgba(57, 255, 20, 0.6)',
                 icon: 'rgba(57, 255, 20, 0.3)',
             });
 
             const getGardenColors = () => ({
-                bg: 'linear-gradient(135deg, #87ceeb 0%, #a8d8a8 100%)',
-                text: '#2d5016',
-                primary: '#7ec850',
-                secondary: '#6ba3d4',
-                cardBg: 'rgba(255, 255, 255, 0.7)',
-                cardBorder: '#7ec850',
+                bg: '#2d5a52',
+                text: '#f0f8f6',
+                primary: '#39FF14',
+                secondary: '#00FFDD',
+                tertiary: '#00FFDD',
+                cardBg: 'rgba(57, 255, 20, 0.15)',
+                cardBorder: '#39FF14',
                 cardGlow: 'none',
-                icon: 'rgba(126, 200, 80, 0.2)',
+                icon: 'rgba(57, 255, 20, 0.25)',
             });
 
             let colors;
-            if (garden || gardenEditMode) {
+            if (garden) {
                 colors = getGardenColors();
             } else if (isMasterCollector) {
                 colors = getMasterModeColors();
@@ -526,7 +543,7 @@
                                         cursor: rowDisabled ? 'default' : 'pointer',
                                         borderLeft: i > 0 ? `1px solid ${rowDisabled ? 'rgba(148,163,184,0.35)' : (mode === val ? 'rgba(255,255,255,0.4)' : color)}` : 'none',
                                         background: rowDisabled ? HATCH_PATTERN : (mode === val ? color : 'transparent'),
-                                        color: rowDisabled ? 'rgba(148,163,184,0.75)' : (mode === val ? 'white' : text),
+                                        color: rowDisabled ? 'rgba(148,163,184,0.75)' : (mode === val ? '#0a1428' : text),
                                         fontWeight: 'bold', fontSize: '0.78rem'
                                     }}
                                 >
@@ -631,9 +648,9 @@
                     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
                     const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, 0);
-                    gradient.addColorStop(0, '#39FF14');
-                    gradient.addColorStop(0.5, '#BC13FE');
-                    gradient.addColorStop(1, '#FF006E');
+                    gradient.addColorStop(0, '#22BB00');
+                    gradient.addColorStop(0.5, '#39FF14');
+                    gradient.addColorStop(1, '#00FFFF');
                     ctx.fillStyle = gradient;
                     ctx.font = titleFont;
                     ctx.textAlign = 'center';
@@ -953,22 +970,36 @@
             // GLITCH TITLE COMPONENT
             // ============================================
             const GlitchTitle = ({ children, style = {} }) => {
+                const handleClick = () => {
+                    setGlitchOn(true);
+                    setTimeout(() => setGlitchOn(false), 2000);
+                };
+
                 return (
                     <div
-                        onClick={() => setGlitchOn(!glitchOn)}
+                        onClick={handleClick}
                         style={{
                             cursor: 'pointer',
                             position: 'relative',
+                            background: 'radial-gradient(ellipse at 50% 50%, #39FF14 45%, #22BB00 100%)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            fontSize: 'inherit',
+                            fontFamily: 'inherit',
+                            fontWeight: 'inherit',
+                            letterSpacing: 'inherit',
+                            textTransform: 'inherit',
                             ...style
                         }}
-                        title="Click to toggle glitch effect"
+                        title="Click to trigger glitch"
                     >
                         {glitchOn && (
                             <>
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                                    background: 'radial-gradient(ellipse at 50% 50%, #39FF14 45%, #22BB00 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -985,7 +1016,7 @@
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                                    background: 'radial-gradient(ellipse at 50% 50%, #39FF14 45%, #22BB00 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -996,28 +1027,28 @@
                                     fontWeight: 'inherit',
                                     letterSpacing: 'inherit',
                                     textTransform: 'inherit',
-                                    opacity: 0.8,
+                                    opacity: 0.6,
                                 }}>
                                     {children}
                                 </div>
                             </>
                         )}
-                        <div style={{
-                            background: 'linear-gradient(90deg, #39FF14 0%, #BC13FE 50%, #FF006E 100%)',
+                        <span style={{
+                            background: 'radial-gradient(ellipse at 50% 50%, #39FF14 45%, #22BB00 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
-                            color: '#39FF14',
                             fontSize: 'inherit',
                             fontFamily: 'inherit',
                             fontWeight: 'inherit',
                             letterSpacing: 'inherit',
                             textTransform: 'inherit',
-                            filter: glitchOn ? 'drop-shadow(0 0 18px rgba(57, 255, 20, 0.35)) drop-shadow(0 0 32px rgba(188, 19, 254, 0.2))' : 'none',
+                            filter: glitchOn ? 'drop-shadow(0 0 10px rgba(57, 255, 20, 0.8))' : 'none',
                             zIndex: glitchOn ? 2 : 'auto',
+                            display: 'block'
                         }}>
                             {children}
-                        </div>
+                        </span>
                     </div>
                 );
             };
@@ -1025,155 +1056,25 @@
             // ============================================
             // GARDEN SCREEN
             // ============================================
-            if (gardenEditMode) {
-                // Garden collection editor (functions like home page but with garden colors)
-                return <div style={{ width: '100%', background: bg, color: text, minHeight: '100vh', padding: '2rem 0' }}>
-                    <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <button onClick={() => setGardenEditMode(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back to Garden</button>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                        </div>
-
-                        <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase' }}>
-                            ARCHIVED SPRITES
-                        </GlitchTitle>
-
-                        <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
-                            <button
-                                onClick={() => setStatsExpanded(e => !e)}
-                                style={{
-                                    width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    padding: '1rem 1.5rem', background: 'transparent', border: 'none', cursor: 'pointer',
-                                    color: text, fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.03em'
-                                }}
-                            >
-                                <span>Collection Status <span style={{ opacity: 0.6, fontWeight: 700, textTransform: 'none', letterSpacing: 'normal' }}>({collected.filter(id => ARCHIVED_SPRITES.some(sp => id.startsWith(sp.name))).length}/{ARCHIVED_SPRITES.length * 3} collected)</span></span>
-                                <span style={{ fontSize: '1.2rem', transform: statsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▾</span>
-                            </button>
-                            {statsExpanded && (
-                                <div style={{ padding: '0 2rem 2rem 2rem' }}>
-                                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                                        <Pie 
-                                            col={collected.filter(id => ARCHIVED_SPRITES.some(sp => id.startsWith(sp.name))).length} 
-                                            tot={ARCHIVED_SPRITES.length * 3} 
-                                            r={40} 
-                                            col_val={primary} 
-                                            format="fraction" 
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={() => setShowResetConfirm(true)}
-                                        style={{
-                                            width: '100%', padding: '0.85rem', borderRadius: '0.6rem',
-                                            background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer',
-                                            fontWeight: 900, fontSize: '0.85rem', letterSpacing: '0.02em', textTransform: 'uppercase'
-                                        }}
-                                    >
-                                        Reset Collection
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Grid of archived sprites */}
-                        <div style={{ display: 'grid', gridTemplateColumns: compactView ? 'repeat(auto-fill, minmax(170px, 1fr))' : 'repeat(auto-fill, minmax(300px, 1fr))', gap: compactView ? '0.75rem' : '1.5rem' }}>
-                            {ARCHIVED_SPRITES.map(sp => {
-                                const archivedCollected = collected.filter(id => id.startsWith(sp.name + '-')).length;
-                                const c = ['Base', 'Gold', 'Cheat Master'].filter(v => collected.includes(sp.name + '-' + v)).length;
-                                return (
-                                    <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0, fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
-                                                <span style={{ width: compactView ? '7px' : '9px', height: compactView ? '7px' : '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
-                                                <span style={{ overflowWrap: 'break-word' }}>{sp.name}</span>
-                                            </div>
-                                            <div style={{
-                                                width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
-                                                borderRadius: '50%', flexShrink: 0, position: 'relative',
-                                                background: `conic-gradient(${primary} ${(c/3)*100}%, ${cardBorder} ${(c/3)*100}%)`
-                                            }}>
-                                                <div style={{
-                                                    position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
-                                                    background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: compactView ? '0.65rem' : '0.8rem', fontWeight: 800, color: text
-                                                }}>
-                                                    {c}/3
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: compactView ? '0.4rem' : '0.75rem' }}>
-                                            {['Base', 'Gold', 'Cheat Master'].map(vv => {
-                                                const id = sp.name + '-' + vv;
-                                                const isC = collected.includes(id);
-                                                return (
-                                                    <div
-                                                        key={vv}
-                                                        onContextMenu={(e) => e.preventDefault()}
-                                                        onPointerDown={(e) => handlePointerDown(e, sp.name, vv)}
-                                                        onPointerUp={(e) => handlePointerUp(e, sp.name, vv)}
-                                                        onPointerCancel={(e) => handlePointerCancel(e, sp.name, vv)}
-                                                        onPointerLeave={(e) => handlePointerCancel(e, sp.name, vv)}
-                                                        style={{
-                                                            width: '100%',
-                                                            height: compactView ? '62px' : '120px',
-                                                            borderRadius: '0.5rem',
-                                                            overflow: 'hidden',
-                                                            opacity: isC ? 1 : 0.3,
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.3s',
-                                                            background: 'rgba(0,0,0,0.1)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            touchAction: 'manipulation',
-                                                            WebkitTouchCallout: 'none'
-                                                        }}
-                                                    >
-                                                        <img 
-                                                            src={getImagePath(sp.name, vv)} 
-                                                            {...noCalloutImgProps}
-                                                            style={{
-                                                                ...noCalloutImgProps.style,
-                                                                width: '90%', 
-                                                                height: '90%', 
-                                                                objectFit: 'contain'
-                                                            }} 
-                                                            alt={vv}
-                                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>;
-            }
+            useEffect(() => {
+                if (garden && !gardenScatterItems.length) {
+                    setGardenScatterItems(generateGardenScatterItems());
+                }
+            }, [garden]);
 
             if (garden) {
                 // Garden wandering screen
-                useEffect(() => {
-                    if (!gardenScatterItems.length) {
-                        setGardenScatterItems(generateGardenScatterItems());
-                    }
-                }, [garden]);
-
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            <button onClick={() => setGardenEditMode(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>✎</button>
                         </div>
                     </div>
 
-                    <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.5rem 0', flexShrink: 0, textTransform: 'uppercase' }}>
+                    <div style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.5rem 0', flexShrink: 0, textTransform: 'uppercase', color: secondary }}>
                         SPRITE GARDEN
-                    </GlitchTitle>
+                    </div>
 
                     <div ref={gardenStageRef} style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(255,255,255,0.1)', borderRadius: '1rem', overflow: 'hidden' }}>
                         {gardenScatterItems.map((item) => (
@@ -1453,7 +1354,7 @@
                         style={{
                             width: '100%', padding: '0.75rem', marginBottom: '0.6rem', borderRadius: '0.75rem',
                             border: 'none', cursor: savingImage ? 'default' : 'pointer', flexShrink: 0,
-                            background: savingImage ? icon : `linear-gradient(90deg, ${primary} 0%, ${secondary} 50%, ${tertiary} 100%)`,
+                            background: savingImage ? icon : primary,
                             color: savingImage ? primary : '#0f0515',
                             fontWeight: 900, fontSize: '0.95rem', letterSpacing: '0.02em'
                         }}
@@ -1539,7 +1440,7 @@
                     </div>
 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, boxShadow: cardGlow }}>
-                        <span style={{ color: primary, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: tertiary, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: primary, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: primary, fontWeight: 'bold' }}>🌲</span> for the garden • <span style={{ color: primary, fontWeight: 'bold' }}>🎲</span> to roll
+                        <span style={{ color: primary, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: secondary, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: primary, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: primary, fontWeight: 'bold' }}>🌲</span> for the garden • <span style={{ color: primary, fontWeight: 'bold' }}>🎲</span> to roll
                     </div>
 
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
@@ -1570,7 +1471,7 @@
                                 <div style={{ fontSize: '0.75rem', opacity: 0.75, lineHeight: 1.6 }}>
                                     <span style={{ fontWeight: 700 }}>Full color</span> = collected &nbsp;•&nbsp;
                                     <span style={{ fontWeight: 700 }}>Faded</span> = uncollected &nbsp;•&nbsp;
-                                    <span style={{ fontWeight: 700, color: tertiary }}>Gold ring</span> = mastered &nbsp;•&nbsp;
+                                    <span style={{ fontWeight: 700, color: secondary }}>Cyan ring</span> = mastered &nbsp;•&nbsp;
                                     <span style={{ fontWeight: 700 }}>Hatched</span> = doesn't apply right now
                                 </div>
                             </div>
@@ -1856,13 +1757,13 @@
                                         <div style={{
                                             width: compactView ? '24px' : '32px', height: compactView ? '24px' : '32px',
                                             borderRadius: '50%', flexShrink: 0, position: 'relative',
-                                            background: `conic-gradient(${ringColor} ${cardPct}%, ${cardBorder} ${cardPct}%)`,
+                                            background: `conic-gradient(${ringColor} 0%, ${ringColor} ${cardPct}%, rgba(0,0,0,0.2) ${cardPct}%, rgba(0,0,0,0.2) 100%)`,
                                             boxShadow: cardPct === 100 ? `0 0 6px ${ringColor}` : 'none'
                                         }}>
                                             <div style={{
                                                 position: 'absolute', inset: compactView ? '3px' : '4px', borderRadius: '50%',
-                                                background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: compactView ? '0.65rem' : '0.8rem', fontWeight: 800, color: text
+                                                background: '#1a0f2e', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: compactView ? '0.45rem' : '0.55rem', fontWeight: 800, color: text, zIndex: 10
                                             }}>
                                                 {c}/{ALL_VARIANTS.length}
                                             </div>
