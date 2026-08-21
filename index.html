@@ -316,6 +316,8 @@
             
             // Garden state
             const [garden, setGarden] = useState(false);
+            const [gardenEditMode, setGardenEditMode] = useState(false);
+            const [gardenCollection, setGardenCollection] = useState(() => JSON.parse(localStorage.getItem('gardenCollection') || '[]'));
             const [gardenSelectedSprite, setGardenSelectedSprite] = useState(null);
             const [gardenScatterItems, setGardenScatterItems] = useState([]);
             const gardenStageRef = useRef(null);
@@ -326,6 +328,7 @@
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
+            useEffect(() => { localStorage.setItem('gardenCollection', JSON.stringify(gardenCollection)); }, [gardenCollection]);
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(masterCollectorSeen)); }, [masterCollectorSeen]);
             useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(masterCollectorActive)); }, [masterCollectorActive]);
@@ -420,7 +423,7 @@
             });
 
             let colors;
-            if (garden) {
+            if (garden || gardenEditMode) {
                 colors = getGardenColors();
             } else if (isMasterCollector) {
                 colors = getMasterModeColors();
@@ -1056,19 +1059,94 @@
             // ============================================
             // GARDEN SCREEN
             // ============================================
-            useEffect(() => {
-                if (garden && !gardenScatterItems.length) {
-                    setGardenScatterItems(generateGardenScatterItems());
-                }
-            }, [garden]);
+            if (gardenEditMode) {
+                return <div style={{ width: '100%', minHeight: '100vh', background: bg, color: text, padding: '2rem 1rem' }}>
+                    <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <button onClick={() => setGardenEditMode(false)} style={{ padding: '0.5rem 1rem', background: `rgba(57, 255, 20, 0.15)`, color: primary, border: `1px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 700 }}>← Back to Garden</button>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: `rgba(57, 255, 20, 0.15)`, color: primary, border: `1px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                        </div>
 
-            if (garden) {
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Archived Sprites</h1>
+                            <p style={{ opacity: 0.7, fontSize: '0.95rem', margin: 0 }}>Select which sprites appear in your Garden</p>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                            {ARCHIVED_SPRITES.map(sp => {
+                                const archivedIds = ['Base', 'Gold', 'Cheat Master'].map(v => sp.name + '-' + v);
+                                const collectedCount = archivedIds.filter(id => gardenCollection.includes(id)).length;
+                                
+                                return (
+                                    <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                                <span style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</span>
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{collectedCount}/3</div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
+                                            {['Base', 'Gold', 'Cheat Master'].map(v => {
+                                                const id = sp.name + '-' + v;
+                                                const isCollected = gardenCollection.includes(id);
+                                                
+                                                return (
+                                                    <div
+                                                        key={v}
+                                                        onClick={() => {
+                                                            setGardenCollection(prev => 
+                                                                isCollected 
+                                                                    ? prev.filter(x => x !== id)
+                                                                    : [...prev, id]
+                                                            );
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            aspectRatio: '1',
+                                                            borderRadius: '0.5rem',
+                                                            overflow: 'hidden',
+                                                            opacity: isCollected ? 1 : 0.3,
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s',
+                                                            background: 'rgba(0,0,0,0.1)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: isCollected ? `2px solid ${primary}` : '1px solid transparent'
+                                                        }}
+                                                    >
+                                                        <img 
+                                                            src={getImagePath(sp.name, v)} 
+                                                            style={{
+                                                                width: '90%', 
+                                                                height: '90%', 
+                                                                objectFit: 'contain'
+                                                            }} 
+                                                            alt={v}
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>;
+            }
+
+            useEffect(() => {
                 // Garden wandering screen
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
+                            <button onClick={() => setGardenEditMode(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>✎</button>
                         </div>
                     </div>
 
