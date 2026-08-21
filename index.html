@@ -315,20 +315,11 @@
             const [rollHistory, setRollHistory] = useState(() => JSON.parse(localStorage.getItem('rollHistory') || '[]'));
             
             // Garden state
-            const [garden, setGarden] = useState(false);
-            const [gardenEditMode, setGardenEditMode] = useState(false);
-            const [gardenCollection, setGardenCollection] = useState(() => JSON.parse(localStorage.getItem('gardenCollection') || '[]'));
-            const [gardenSelectedSprite, setGardenSelectedSprite] = useState(null);
-            const [gardenScatterItems, setGardenScatterItems] = useState([]);
-            const gardenStageRef = useRef(null);
-            const gardenItemRefs = useRef({});
-            
             // Glitch effect toggle
             const [glitchOn, setGlitchOn] = useState(() => JSON.parse(localStorage.getItem('glitchOn') || 'false'));
 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
-            useEffect(() => { localStorage.setItem('gardenCollection', JSON.stringify(gardenCollection)); }, [gardenCollection]);
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
             useEffect(() => { localStorage.setItem('mythic', JSON.stringify(masterCollectorSeen)); }, [masterCollectorSeen]);
             useEffect(() => { localStorage.setItem('mythicActive', JSON.stringify(masterCollectorActive)); }, [masterCollectorActive]);
@@ -423,9 +414,7 @@
             });
 
             let colors;
-            if (garden || gardenEditMode) {
-                colors = getGardenColors();
-            } else if (isMasterCollector) {
+            if (isMasterCollector) {
                 colors = getMasterModeColors();
             } else if (dark) {
                 colors = getDarkModeColors();
@@ -1055,196 +1044,6 @@
                     </div>
                 );
             };
-
-            // ============================================
-            // GARDEN SCREEN
-            // ============================================
-            if (gardenEditMode) {
-                return <div style={{ width: '100%', minHeight: '100vh', background: bg, color: text, padding: '2rem 1rem' }}>
-                    <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                            <button onClick={() => setGardenEditMode(false)} style={{ padding: '0.5rem 1rem', background: `rgba(57, 255, 20, 0.15)`, color: primary, border: `1px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 700 }}>← Back to Garden</button>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: `rgba(57, 255, 20, 0.15)`, color: primary, border: `1px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                        </div>
-
-                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                            <h1 style={{ fontSize: '2.5rem', fontWeight: 700, margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Archived Sprites</h1>
-                            <p style={{ opacity: 0.7, fontSize: '0.95rem', margin: 0 }}>Select which sprites appear in your Garden</p>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                            {ARCHIVED_SPRITES.map(sp => {
-                                const archivedIds = ['Base', 'Gold', 'Cheat Master'].map(v => sp.name + '-' + v);
-                                const collectedCount = archivedIds.filter(id => gardenCollection.includes(id)).length;
-                                
-                                return (
-                                    <div key={sp.name} style={{ background: cardBg, padding: '1.5rem', borderRadius: '0.75rem', border: `1px solid ${cardBorder}` }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
-                                                <span style={{ fontSize: '1.125rem', fontWeight: 700 }}>{sp.name}</span>
-                                            </div>
-                                            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{collectedCount}/3</div>
-                                        </div>
-
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-                                            {['Base', 'Gold', 'Cheat Master'].map(v => {
-                                                const id = sp.name + '-' + v;
-                                                const isCollected = gardenCollection.includes(id);
-                                                
-                                                return (
-                                                    <div
-                                                        key={v}
-                                                        onClick={() => {
-                                                            setGardenCollection(prev => 
-                                                                isCollected 
-                                                                    ? prev.filter(x => x !== id)
-                                                                    : [...prev, id]
-                                                            );
-                                                        }}
-                                                        style={{
-                                                            width: '100%',
-                                                            aspectRatio: '1',
-                                                            borderRadius: '0.5rem',
-                                                            overflow: 'hidden',
-                                                            opacity: isCollected ? 1 : 0.3,
-                                                            cursor: 'pointer',
-                                                            transition: 'all 0.2s',
-                                                            background: 'rgba(0,0,0,0.1)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            border: isCollected ? `2px solid ${primary}` : '1px solid transparent'
-                                                        }}
-                                                    >
-                                                        <img 
-                                                            src={getImagePath(sp.name, v)} 
-                                                            style={{
-                                                                width: '90%', 
-                                                                height: '90%', 
-                                                                objectFit: 'contain'
-                                                            }} 
-                                                            alt={v}
-                                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>;
-            }
-
-            useEffect(() => {
-                if (garden && !gardenScatterItems.length) {
-                    setGardenScatterItems(generateGardenScatterItems());
-                }
-            }, [garden]);
-
-            if (garden) {
-                // Garden wandering screen
-                return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
-                    <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
-                        <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            <button onClick={() => setGardenEditMode(true)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>✎</button>
-                        </div>
-                    </div>
-
-                    <div style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.5rem 0', flexShrink: 0, textTransform: 'uppercase', color: secondary }}>
-                        SPRITE GARDEN
-                    </div>
-
-                    <div ref={gardenStageRef} style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(255,255,255,0.1)', borderRadius: '1rem', overflow: 'hidden' }}>
-                        {gardenScatterItems.map((item) => (
-                            <div
-                                key={item.name}
-                                ref={el => { gardenItemRefs.current[item.name] = el; }}
-                                onClick={() => setGardenSelectedSprite(item.name)}
-                                style={{
-                                    position: 'absolute',
-                                    width: '42px',
-                                    height: '42px',
-                                    left: `${item.xPct}%`,
-                                    top: `${item.yPct}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    cursor: 'pointer',
-                                    animation: `roam ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite, spriteHop ${item.roamDuration}s ease-in-out ${item.roamDelay}s infinite`,
-                                    '--x0': `${item.xPct}%`, '--y0': `${item.yPct}%`,
-                                    '--x1': `${item.wp[0].x}%`, '--y1': `${item.wp[0].y}%`,
-                                    '--x2': `${item.wp[1].x}%`, '--y2': `${item.wp[1].y}%`,
-                                    '--x3': `${item.wp[2].x}%`, '--y3': `${item.wp[2].y}%`
-                                }}
-                            >
-                                <img src={getImagePath(item.name, 'Base')} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
-                            </div>
-                        ))}
-                    </div>
-
-                    {gardenSelectedSprite && (
-                        <div
-                            onClick={() => setGardenSelectedSprite(null)}
-                            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, padding: '1rem' }}
-                        >
-                            <div
-                                onClick={(e) => e.stopPropagation()}
-                                style={{ background: cardBg, border: `2px solid ${cardBorder}`, borderRadius: '1rem', padding: '2rem', maxWidth: '400px', maxHeight: '80vh', overflow: 'auto', textAlign: 'center' }}
-                            >
-                                <div style={{ width: '120px', height: '120px', margin: '0 auto 1.5rem', borderRadius: '0.5rem', overflow: 'hidden', background: 'rgba(0,0,0,0.1)' }}>
-                                    <img src={getImagePath(gardenSelectedSprite, 'Base')} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '100%', height: '100%', objectFit: 'contain' }} alt="" />
-                                </div>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 1rem 0', color: primary }}>{gardenSelectedSprite}</h2>
-                                
-                                {/* Variants collected */}
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, opacity: 0.7, marginBottom: '0.5rem', textTransform: 'uppercase' }}>Variants Collected</div>
-                                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                                        {['Base', 'Gold', 'Cheat Master'].map(v => {
-                                            const id = gardenSelectedSprite + '-' + v;
-                                            const isC = collected.includes(id);
-                                            const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
-                                            return (
-                                                <div
-                                                    key={v}
-                                                    style={{
-                                                        width: '60px',
-                                                        height: '60px',
-                                                        borderRadius: '0.5rem',
-                                                        overflow: 'hidden',
-                                                        opacity: isC ? 1 : 0.2,
-                                                        cursor: 'pointer',
-                                                        background: 'rgba(0,0,0,0.1)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        border: `2px solid ${variantColor}`,
-                                                        position: 'relative'
-                                                    }}
-                                                    onPointerDown={(e) => handlePointerDown(e, gardenSelectedSprite, v)}
-                                                    onPointerUp={(e) => handlePointerUp(e, gardenSelectedSprite, v)}
-                                                    onPointerCancel={(e) => handlePointerCancel(e, gardenSelectedSprite, v)}
-                                                    onPointerLeave={(e) => handlePointerCancel(e, gardenSelectedSprite, v)}
-                                                    title={v}
-                                                >
-                                                    <img src={getImagePath(gardenSelectedSprite, v)} {...noCalloutImgProps} style={{ ...noCalloutImgProps.style, width: '90%', height: '90%', objectFit: 'contain' }} alt="" onError={(e) => { e.target.style.display = 'none'; }} />
-                                                    <div style={{ position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.6rem', fontWeight: 700, opacity: 0.7 }}>{v}</div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                <button onClick={() => setGardenSelectedSprite(null)} style={{ width: '100%', padding: '0.75rem', background: primary, color: '#0f0515', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>Close</button>
-                            </div>
-                        </div>
-                    )}
-                </div>;
-            }
 
             // Main app view
             if (roulette) {
