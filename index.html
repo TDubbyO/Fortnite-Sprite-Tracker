@@ -23,6 +23,21 @@
             height: 100%;
             z-index: -1;
             pointer-events: none;
+            background-image: 
+                repeating-linear-gradient(0deg, 
+                    rgba(57, 255, 20, 0.12) 0px, 
+                    rgba(57, 255, 20, 0.12) 1px, 
+                    transparent 1px, 
+                    transparent 24px
+                ),
+                repeating-linear-gradient(90deg, 
+                    rgba(57, 255, 20, 0.12) 0px, 
+                    rgba(57, 255, 20, 0.12) 1px, 
+                    transparent 1px, 
+                    transparent 24px
+                );
+            background-size: 24px 24px;
+            background-position: 0 0;
         }
         body::after {
             content: '';
@@ -287,7 +302,6 @@
             const [frozenPositions, setFrozenPositions] = useState({});
             const stageRef = useRef(null);
             const captureRef = useRef(null);
-            const canvasRef = useRef(null);
             const gridWrapperRef = useRef(null);
             const [gridScale, setGridScale] = useState(1);
             const [savingImage, setSavingImage] = useState(false);
