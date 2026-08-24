@@ -944,56 +944,6 @@
                 return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
             }, []);
 
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-
-                const ctx = canvas.getContext('2d');
-                const squareSize = 20;
-                const columns = Math.ceil(window.innerWidth / squareSize);
-                const drops = Array(columns).fill(0).map(() => Math.random() * -50);
-
-                const resizeCanvas = () => {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                };
-
-                resizeCanvas();
-                window.addEventListener('resize', resizeCanvas);
-
-                let animationId;
-                const animate = () => {
-                    ctx.fillStyle = 'rgba(26, 15, 46, 0.05)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    ctx.fillStyle = 'rgba(57, 255, 20, 0.08)';
-                    ctx.strokeStyle = 'rgba(57, 255, 20, 0.12)';
-                    ctx.lineWidth = 1;
-
-                    for (let i = 0; i < drops.length; i++) {
-                        const x = i * squareSize;
-                        const y = drops[i] * squareSize;
-
-                        ctx.fillRect(x, y, squareSize - 2, squareSize - 2);
-                        ctx.strokeRect(x, y, squareSize - 2, squareSize - 2);
-
-                        drops[i]++;
-                        if (y > canvas.height && Math.random() > 0.95) {
-                            drops[i] = -10;
-                        }
-                    }
-
-                    animationId = requestAnimationFrame(animate);
-                };
-
-                animate();
-
-                return () => {
-                    window.removeEventListener('resize', resizeCanvas);
-                    cancelAnimationFrame(animationId);
-                };
-            }, []);
-
             const toggle = (n, v) => {
                 const id = n + '-' + v;
                 setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -1348,7 +1298,6 @@
 
             // Main home screen
             return <div style={{ width: '100%', background: bg, color: text, minHeight: '100vh', padding: '2rem 0' }}>
-                <canvas ref={canvasRef} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, pointerEvents: 'none' }} />
                 {showMasterCollectorPopup && <MasterCollectorPopup onClose={() => setShowMasterCollectorPopup(false)} onEnable={() => setMasterCollectorActive(true)} />}
                 {showResetConfirm && <ResetConfirmPopup onClose={() => setShowResetConfirm(false)} onConfirm={resetCollection} />}
                 <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0 2rem' }}>
