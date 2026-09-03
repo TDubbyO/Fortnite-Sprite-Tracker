@@ -497,11 +497,10 @@
             const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master'];
 
             const getVariantsForSprite = (spriteName) => {
-                return spriteName === 'Crown' 
-                    ? ['Base', 'Gold', 'Cheat Master', 'Loot Hacker']
-                    : ALL_VARIANTS;
+                if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
+                if (spriteName === 'Mega-Man') return ['Base'];
+                return ALL_VARIANTS;
             };
-
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterExcludedVariants.includes(variant)) return false;
                 if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
