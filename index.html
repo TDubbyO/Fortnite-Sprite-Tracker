@@ -117,7 +117,7 @@
         const { useState, useEffect, useRef } = React;
 
         // ============================================
-        // NEW SEASON SPRITES (12 sprites, 3 variants each)
+        // NEW SEASON SPRITES (17 sprites, 3 variants each + Crown has 4)
         // ============================================
         const BASE_SPRITES = [
             { name: 'Jackrabbit', color: '#7ec850' },
@@ -132,6 +132,10 @@
             { name: 'Crown', color: '#d4af37' },
             { name: '8-Bit', color: '#ff4500' },
             { name: 'Storm Scout', color: '#a9a9a9' },
+            { name: 'Overshield', color: '#2b5f8f' },
+            { name: 'Mega-Man', color: '#4db8d4' },
+            { name: 'X-Ray', color: '#d84040' },
+            { name: 'Onigiri', color: '#8b7355' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -488,7 +492,7 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master'];
+            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
 
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterExcludedVariants.includes(variant)) return false;
