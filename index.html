@@ -296,6 +296,7 @@
             const [scatterItems, setScatterItems] = useState([]);
             const [rouletteResult, setRouletteResult] = useState(null);
             const [garden, setGarden] = useState(false);
+            const [gardenScatterItems, setGardenScatterItems] = useState([]);
             const rouletteTimeoutRef = useRef(null);
             const [frozenPositions, setFrozenPositions] = useState({});
             const stageRef = useRef(null);
@@ -410,17 +411,31 @@
                 icon: 'rgba(57, 255, 20, 0.3)',
             });
 
-            const getGardenColors = () => ({
-                bg: '#3d5a47',
-                text: '#f5f1e8',
-                primary: '#6b8e7f',
-                secondary: '#4a90b8',
-                tertiary: '#8b7355',
-                cardBg: 'rgba(107, 142, 127, 0.12)',
-                cardBorder: '#6b8e7f',
+            const getGardenColorsDark = () => ({
+                bg: '#3f4d44',
+                text: '#f4f1ed',
+                primary: '#5a7a6f',
+                secondary: '#4a8ab5',
+                tertiary: '#96846f',
+                cardBg: 'rgba(90, 122, 111, 0.12)',
+                cardBorder: '#5a7a6f',
                 cardGlow: 'none',
-                icon: 'rgba(107, 142, 127, 0.25)',
+                icon: 'rgba(90, 122, 111, 0.25)',
             });
+
+            const getGardenColorsLight = () => ({
+                bg: '#e8f0eb',
+                text: '#2d3a35',
+                primary: '#6b8976',
+                secondary: '#5b9cc4',
+                tertiary: '#a39577',
+                cardBg: 'rgba(107, 137, 118, 0.12)',
+                cardBorder: '#6b8976',
+                cardGlow: 'none',
+                icon: 'rgba(107, 137, 118, 0.25)',
+            });
+
+            const getGardenColors = () => dark ? getGardenColorsDark() : getGardenColorsLight();
 
             let colors;
             if (garden) {
@@ -950,6 +965,28 @@
                 return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
             }, []);
 
+            useEffect(() => {
+                if (garden && gardenScatterItems.length === 0) {
+                    const allGardenSprites = [...sprites, ...ARCHIVED_SPRITES];
+                    const collectedBaseSprites = allGardenSprites.filter(sp => collected.includes(sp.name + '-Base'));
+                    
+                    const items = collectedBaseSprites.map(sp => ({
+                        name: sp.name,
+                        xPct: Math.random() * 80 + 10,
+                        yPct: Math.random() * 70 + 10,
+                        roamDuration: 18 + Math.random() * 10,
+                        roamDelay: Math.random() * 2,
+                        wp: [
+                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 },
+                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 },
+                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 }
+                        ]
+                    }));
+                    
+                    setGardenScatterItems(items);
+                }
+            }, [garden, collected]);
+
             const toggle = (n, v) => {
                 const id = n + '-' + v;
                 setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -1221,27 +1258,6 @@
             }
 
             if (garden) {
-                // Combine current and archived sprites
-                const allGardenSprites = [...sprites, ...ARCHIVED_SPRITES];
-                
-                // Generate scatter items for garden sprites
-                const generateGardenScatterItems = () => {
-                    return allGardenSprites.map(sp => ({
-                        name: sp.name,
-                        xPct: Math.random() * 80 + 10,
-                        yPct: Math.random() * 70 + 10,
-                        roamDuration: 9 + Math.random() * 7,
-                        roamDelay: Math.random() * 2,
-                        wp: [
-                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 },
-                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 },
-                            { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 }
-                        ]
-                    }));
-                };
-
-                const gardenItems = generateGardenScatterItems();
-
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
@@ -1252,8 +1268,8 @@
                         SPRITE GARDEN
                     </div>
 
-                    <div style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(74, 144, 184, 0.15)', borderRadius: '1rem', overflow: 'hidden', border: `1px solid rgba(107, 142, 127, 0.3)` }}>
-                        {gardenItems.map((item) => (
+                    <div style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(91, 156, 196, 0.12)', borderRadius: '1rem', overflow: 'hidden', border: `1px solid rgba(90, 122, 111, 0.3)` }}>
+                        {gardenScatterItems.map((item) => (
                             <div
                                 key={item.name}
                                 style={{
@@ -1277,7 +1293,7 @@
                     </div>
 
                     <div style={{ fontSize: '0.9rem', opacity: 0.75, textAlign: 'center' }}>
-                        {allGardenSprites.length} sprites exploring the garden
+                        {gardenScatterItems.length} sprites exploring the garden
                     </div>
                 </div>;
             }
