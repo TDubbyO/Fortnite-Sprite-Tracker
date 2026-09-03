@@ -411,19 +411,21 @@
             });
 
             const getGardenColors = () => ({
-                bg: '#2d5a52',
-                text: '#f0f8f6',
-                primary: '#39FF14',
-                secondary: '#00FFDD',
-                tertiary: '#00FFDD',
-                cardBg: 'rgba(57, 255, 20, 0.15)',
-                cardBorder: '#39FF14',
+                bg: '#3d5a47',
+                text: '#f5f1e8',
+                primary: '#6b8e7f',
+                secondary: '#4a90b8',
+                tertiary: '#8b7355',
+                cardBg: 'rgba(107, 142, 127, 0.12)',
+                cardBorder: '#6b8e7f',
                 cardGlow: 'none',
-                icon: 'rgba(57, 255, 20, 0.25)',
+                icon: 'rgba(107, 142, 127, 0.25)',
             });
 
             let colors;
-            if (isMasterCollector) {
+            if (garden) {
+                colors = getGardenColors();
+            } else if (isMasterCollector) {
                 colors = getMasterModeColors();
             } else if (dark) {
                 colors = getDarkModeColors();
@@ -1228,7 +1230,7 @@
                         name: sp.name,
                         xPct: Math.random() * 80 + 10,
                         yPct: Math.random() * 70 + 10,
-                        roamDuration: Math.random() * 8 + 6,
+                        roamDuration: 9 + Math.random() * 7,
                         roamDelay: Math.random() * 2,
                         wp: [
                             { x: Math.random() * 80 + 10, y: Math.random() * 70 + 10 },
@@ -1250,7 +1252,7 @@
                         SPRITE GARDEN
                     </div>
 
-                    <div style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(255,255,255,0.05)', borderRadius: '1rem', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(74, 144, 184, 0.15)', borderRadius: '1rem', overflow: 'hidden', border: `1px solid rgba(107, 142, 127, 0.3)` }}>
                         {gardenItems.map((item) => (
                             <div
                                 key={item.name}
