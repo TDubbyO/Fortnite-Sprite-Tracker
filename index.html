@@ -479,10 +479,7 @@ Index · HTML
                             {variants.map((variant, idx) => {
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
-                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : '#94a3b8');
-                                
-                                return (
-                                    <div
+                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : '#94a3b8'));
                                         key={variant}
                                         title={variant}
                                         style={{
@@ -1442,7 +1439,7 @@ Index · HTML
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                                     {ALL_VARIANTS.map(v => {
-                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : '#94a3b8'));
                                         return (
                                             <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.15)', border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.35rem 0.7rem' }}>
                                                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: variantColor, flexShrink: 0 }} />
@@ -1596,7 +1593,7 @@ Index · HTML
                                     {ALL_VARIANTS.map(v => {
                                         const isIncluded = filterVariants.includes(v);
                                         const isExcluded = filterExcludedVariants.includes(v);
-                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : '#94a3b8');
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : '#94a3b8'));
                                         return (
                                             <button
                                                 key={v}
@@ -1681,7 +1678,7 @@ Index · HTML
                                                     );
                                                 }
  
-                                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : '#94a3b8');
+                                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : '#94a3b8'));
  
                                                 return (
                                                     <div
