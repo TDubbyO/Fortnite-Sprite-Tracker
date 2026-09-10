@@ -1,3 +1,6 @@
+
+
+Index · HTML
 <!DOCTYPE html>
 <html>
 <head>
@@ -115,7 +118,7 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
-
+ 
         // ============================================
         // NEW SEASON SPRITES (17 sprites, 3 variants each + Crown has 4)
         // ============================================
@@ -137,9 +140,9 @@
             { name: 'X-Ray', color: '#d84040' },
             { name: 'Onigiri', color: '#8b7355' },
         ];
-
+ 
         const sprites = BASE_SPRITES;
-
+ 
         // ============================================
         // ARCHIVED SPRITES (25 old sprites)
         // ============================================
@@ -170,14 +173,14 @@
             { name: "Lootin' Llama", color: '#f472b6' },
             { name: 'Peeky Peely', color: '#eab308' },
         ];
-
+ 
         const VARIANT_FILE_SUFFIX = {
             Base: 'base',
             Gold: 'gold',
             'Cheat Master': 'cheat-master',
             'Loot Hacker': 'loot-hacker'
         };
-
+ 
         const getImagePath = (spriteName, variant) => {
             const nameMap = {
                 'Jackrabbit': 'Jackrabbit', 'Shadow': 'Shadow', 'Bush': 'Bush',
@@ -196,15 +199,15 @@
             const suffix = VARIANT_FILE_SUFFIX[variant] || variant.toLowerCase();
             return `/images/${mappedName}-${suffix}.webp`;
         };
-
+ 
         const CHEST_CLOSED = '/images/Chest-closed.png';
         const CHEST_OPEN = '/images/Chest-open.png';
-
+ 
         const splitId = (id) => {
             const idx = id.lastIndexOf('-');
             return { name: id.slice(0, idx), variant: id.slice(idx + 1) };
         };
-
+ 
         const noCalloutImgProps = {
             draggable: false,
             onDragStart: (e) => e.preventDefault(),
@@ -217,7 +220,7 @@
                 pointerEvents: 'none'
             }
         };
-
+ 
         const Pie = ({ col, tot, r, col_val, format }) => {
             const pct = tot > 0 ? (col / tot) * 100 : 0;
             const id = `m${Math.random().toString(36).substr(2, 9)}`;
@@ -246,7 +249,7 @@
                 </svg>
             );
         };
-
+ 
         const MasterCollectorPopup = ({ onClose, onEnable }) => (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div style={{ background: 'linear-gradient(135deg, #0f0515, #1a0f2e)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #00FFFF' }}>
@@ -260,7 +263,7 @@
                 </div>
             </div>
         );
-
+ 
         const ResetConfirmPopup = ({ onClose, onConfirm }) => (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div style={{ background: 'linear-gradient(135deg, #2a0a0a, #4d0f0f)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '380px', border: '2px solid #ef4444' }}>
@@ -274,7 +277,7 @@
                 </div>
             </div>
         );
-
+ 
         function App() {
             const [collected, setCollected] = useState(() => JSON.parse(localStorage.getItem('c') || '[]'));
             const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
@@ -327,7 +330,7 @@
             // Garden state
             // Glitch effect toggle
             const [glitchOn, setGlitchOn] = useState(() => JSON.parse(localStorage.getItem('glitchOn') || 'false'));
-
+ 
             useEffect(() => { localStorage.setItem('c', JSON.stringify(collected)); }, [collected]);
             useEffect(() => { localStorage.setItem('m', JSON.stringify(mastered)); }, [mastered]);
             useEffect(() => { localStorage.setItem('t', JSON.stringify(dark)); }, [dark]);
@@ -343,7 +346,7 @@
             useEffect(() => { localStorage.setItem('filtersExpanded', JSON.stringify(filtersExpanded)); }, [filtersExpanded]);
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
             useEffect(() => { localStorage.setItem('glitchOn', JSON.stringify(glitchOn)); }, [glitchOn]);
-
+ 
             const tot = sprites.length * 3; // 12 sprites × 3 variants = 36
             const col = collected.filter(id => {
                 const { name } = splitId(id);
@@ -355,7 +358,7 @@
             }).length;
             const masterCollectorUnlocked = col === tot && tot > 0;
             const isMasterCollector = masterCollectorUnlocked && masterCollectorActive;
-
+ 
             useEffect(() => {
                 if (masterCollectorUnlocked && !masterCollectorSeen) {
                     setMasterCollectorSeen(true);
@@ -365,13 +368,13 @@
                     }
                 }
             }, [masterCollectorUnlocked, masterCollectorSeen]);
-
+ 
             useEffect(() => {
                 if (masterCollectorActive && col < tot) {
                     setMasterCollectorActive(false);
                 }
             }, [col, tot, masterCollectorActive]);
-
+ 
             // ============================================
             // COLOR SYSTEM
             // ============================================
@@ -386,7 +389,7 @@
                 cardGlow: 'none',
                 icon: 'rgba(57, 255, 20, 0.15)',
             });
-
+ 
             const getLightModeColors = () => ({
                 bg: '#e8f0f8',
                 text: '#0a1428',
@@ -398,7 +401,7 @@
                 cardGlow: 'none',
                 icon: 'rgba(34, 170, 0, 0.12)',
             });
-
+ 
             const getMasterModeColors = () => ({
                 bg: '#0f0515',
                 text: '#39FF14',
@@ -410,7 +413,7 @@
                 cardGlow: '0 0 20px rgba(57, 255, 20, 0.6)',
                 icon: 'rgba(57, 255, 20, 0.3)',
             });
-
+ 
             const getGardenColorsDark = () => ({
                 bg: '#3f4d44',
                 text: '#f4f1ed',
@@ -422,7 +425,7 @@
                 cardGlow: 'none',
                 icon: 'rgba(90, 122, 111, 0.25)',
             });
-
+ 
             const getGardenColorsLight = () => ({
                 bg: '#e8f0eb',
                 text: '#2d3a35',
@@ -434,9 +437,9 @@
                 cardGlow: 'none',
                 icon: 'rgba(107, 137, 118, 0.25)',
             });
-
+ 
             const getGardenColors = () => dark ? getGardenColorsDark() : getGardenColorsLight();
-
+ 
             let colors;
             if (garden) {
                 colors = getGardenColors();
@@ -447,9 +450,9 @@
             } else {
                 colors = getLightModeColors();
             }
-
+ 
             const { bg, text, primary, secondary, tertiary, cardBg, cardBorder, cardGlow, icon } = colors;
-
+ 
             const CompositeImage = ({ spriteName, variants, collectedStatus, masteredStatus, fullOpacity = false }) => {
                 return (
                     <div style={{ textAlign: 'center' }}>
@@ -511,15 +514,17 @@
                     </div>
                 );
             };
-
+ 
             const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master'];
-
+ 
             const getVariantsForSprite = (spriteName) => {
-                return spriteName === 'Crown' 
-                    ? ['Base', 'Gold', 'Cheat Master', 'Loot Hacker']
-                    : ALL_VARIANTS;
+                if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
+                if (spriteName === 'Mega-Man') return ['Base'];
+                const fourVariantSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch'];
+                if (fourVariantSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
+                return ALL_VARIANTS;
             };
-
+ 
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterExcludedVariants.includes(variant)) return false;
                 if (filterVariants.length > 0 && !filterVariants.includes(variant)) return false;
@@ -529,9 +534,9 @@
                 if (filterMasteredMode === 'unmastered' && isMastered) return false;
                 return true;
             };
-
+ 
             const hasActiveFilters = filterCollectedMode !== 'all' || filterMasteredMode !== 'all' || filterVariants.length > 0 || filterExcludedVariants.length > 0;
-
+ 
             const renderVariantChips = (numeratorFn, format) => (
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.35rem', marginTop: '0.6rem' }}>
                     {ALL_VARIANTS.map(v => {
@@ -547,9 +552,9 @@
                     })}
                 </div>
             );
-
+ 
             const HATCH_PATTERN = 'repeating-linear-gradient(45deg, rgba(148,163,184,0.22), rgba(148,163,184,0.22) 4px, transparent 4px, transparent 8px)';
-
+ 
             const renderStatusFilter = (label, mode, setMode, positiveVal, positiveLabel, negativeVal, negativeLabel, color, rowDisabled = false, disabledReason) => {
                 const options = [['all', 'All'], [positiveVal, positiveLabel], [negativeVal, negativeLabel]];
                 return (
@@ -578,36 +583,36 @@
                     </div>
                 );
             };
-
+ 
             const handleSetCollectedMode = (val) => {
                 setFilterCollectedMode(val);
                 if (val === 'uncollected') setFilterMasteredMode('all');
             };
-
+ 
             const handleSetMasteredMode = (val) => {
                 setFilterMasteredMode(val);
                 if (val === 'mastered') setFilterCollectedMode('all');
             };
-
+ 
             const toggleVariantFilter = (variant) => {
                 setFilterExcludedVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : v);
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
-
+ 
             const toggleVariantExclude = (variant) => {
                 setFilterVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : v);
                 setFilterExcludedVariants(v => v.includes(variant) ? v.filter(x => x !== variant) : [...v, variant]);
             };
-
+ 
             const clearFilters = () => {
                 setFilterCollectedMode('all');
                 setFilterMasteredMode('all');
                 setFilterVariants([]);
                 setFilterExcludedVariants([]);
             };
-
+ 
             const matchesSearch = (name) => !searchQuery.trim() || name.toLowerCase().includes(searchQuery.trim().toLowerCase());
-
+ 
             const getFilterSummaryText = () => {
                 const parts = [];
                 if (filterCollectedMode !== 'all') parts.push(filterCollectedMode === 'collected' ? 'Collected' : 'Uncollected');
@@ -617,16 +622,16 @@
                 if (searchQuery.trim()) parts.push(`"${searchQuery.trim()}"`);
                 return parts.length > 0 ? parts.join(' • ') : 'All Sprites';
             };
-
+ 
             const resetCollection = () => {
                 setCollected([]);
                 setMastered([]);
                 setMasterCollectorSeen(false);
                 setShowResetConfirm(false);
             };
-
+ 
             const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
-
+ 
             const saveCollectionImage = async () => {
                 if (!captureRef.current || savingImage) return;
                 setSavingImage(true);
@@ -641,36 +646,36 @@
                         setSavingImage(false);
                         return;
                     }
-
+ 
                     const imgs = Array.from(captureRef.current.querySelectorAll('img'));
                     await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
                         img.addEventListener('load', res, { once: true });
                         img.addEventListener('error', res, { once: true });
                     })));
-
+ 
                     void captureRef.current.offsetHeight;
-
+ 
                     const gridCanvas = await window.html2canvas(captureRef.current, {
                         backgroundColor: typeof bg === 'string' && !bg.includes('gradient') ? bg : '#1a0f2e',
                         scale: 2,
                         useCORS: true,
                         logging: false
                     });
-
+ 
                     const titleHeight = Math.round(gridCanvas.width / (shareMode === 'filtered' ? 4.3 : 5.2));
                     const titleFontSize = Math.round(gridCanvas.width / 10.5);
                     const titleFont = `400 ${titleFontSize}px "Anton"`;
                     const subtitleFontSize = Math.round(gridCanvas.width / 30);
                     const subtitleFont = `600 ${subtitleFontSize}px -apple-system, sans-serif`;
                     try { await document.fonts.load(titleFont); } catch (err) {}
-
+ 
                     const finalCanvas = document.createElement('canvas');
                     finalCanvas.width = gridCanvas.width;
                     finalCanvas.height = gridCanvas.height + titleHeight;
                     const ctx = finalCanvas.getContext('2d');
                     ctx.fillStyle = '#1a0f2e';
                     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-
+ 
                     const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, 0);
                     gradient.addColorStop(0, '#22BB00');
                     gradient.addColorStop(0.5, '#39FF14');
@@ -680,15 +685,15 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('MY SPRITE VAULT', finalCanvas.width / 2, titleHeight * (shareMode === 'filtered' ? 0.38 : 0.5));
-
+ 
                     if (shareMode === 'filtered') {
                         ctx.fillStyle = '#e8f0ff';
                         ctx.font = subtitleFont;
                         ctx.fillText(getFilterSummaryText(), finalCanvas.width / 2, titleHeight * 0.74);
                     }
-
+ 
                     ctx.drawImage(gridCanvas, 0, titleHeight);
-
+ 
                     const canvas = finalCanvas;
                     canvas.toBlob(async (blob) => {
                         if (!blob) { setSavingImage(false); return; }
@@ -719,7 +724,7 @@
                     setSavingImage(false);
                 }
             };
-
+ 
             const CHEST_EXCLUDE_RADIUS = 21;
             const keepClearOfChest = (x, y) => {
                 const dx = x - 50, dy = y - 50;
@@ -732,7 +737,7 @@
                     y: clamp(50 + Math.sin(angle) * pushed, 4, 92)
                 };
             };
-
+ 
             const generateScatterItems = (pool) => {
                 const staggerStep = Math.max(6, Math.min(30, Math.floor(360 / pool.length)));
                 return pool.map(id => {
@@ -751,7 +756,7 @@
                     };
                 });
             };
-
+ 
             const generateGardenScatterItems = () => {
                 return ARCHIVED_SPRITES.map(sp => {
                     const home = { x: 10 + Math.random() * 80, y: 10 + Math.random() * 75 };
@@ -770,19 +775,19 @@
                     };
                 });
             };
-
+ 
             const getRoulettePool = () => collected.filter(id => {
                 const { name, variant } = splitId(id);
                 return sprites.some(sp => sp.name === name) && matchesFilters(variant, true, mastered.includes(id));
             });
-
+ 
             const rouletteItemRefs = useRef({});
             const longPressTimers = useRef({});
             const longPressFlag = useRef({});
             const filterChipLongPressTimers = useRef({});
             const filterChipLongPressFlag = useRef({});
             const activePress = useRef(null);
-
+ 
             const resolvePress = () => {
                 const press = activePress.current;
                 if (!press) return;
@@ -798,7 +803,7 @@
                 }
                 longPressFlag.current[id] = false;
             };
-
+ 
             const cancelPress = () => {
                 const press = activePress.current;
                 if (!press) return;
@@ -809,7 +814,7 @@
                 longPressFlag.current[press.id] = false;
                 activePress.current = null;
             };
-
+ 
             const handlePointerDown = (e, n, v) => {
                 e.preventDefault();
                 const id = n + '-' + v;
@@ -825,15 +830,15 @@
                     longPress(n, v);
                 }, 500);
             };
-
+ 
             const handlePointerUp = (e, n, v) => {
                 resolvePress();
             };
-
+ 
             const handlePointerCancel = (e, n, v) => {
                 cancelPress();
             };
-
+ 
             useEffect(() => {
                 const onWindowPointerUp = () => resolvePress();
                 const onWindowPointerCancel = () => cancelPress();
@@ -844,7 +849,7 @@
                     window.removeEventListener('pointercancel', onWindowPointerCancel);
                 };
             }, []);
-
+ 
             const handleFilterChipPointerDown = (e, variant) => {
                 e.preventDefault();
                 if (filterChipLongPressTimers.current[variant]) {
@@ -859,7 +864,7 @@
                     toggleVariantExclude(variant);
                 }, 500);
             };
-
+ 
             const handleFilterChipPointerUp = (e, variant) => {
                 const isLongPress = filterChipLongPressFlag.current[variant];
                 if (filterChipLongPressTimers.current[variant]) {
@@ -871,7 +876,7 @@
                 }
                 filterChipLongPressFlag.current[variant] = false;
             };
-
+ 
             const handleFilterChipPointerCancel = (e, variant) => {
                 if (filterChipLongPressTimers.current[variant]) {
                     clearTimeout(filterChipLongPressTimers.current[variant]);
@@ -879,7 +884,7 @@
                 }
                 filterChipLongPressFlag.current[variant] = false;
             };
-
+ 
             const resetToIdle = () => {
                 if (rouletteTimeoutRef.current) {
                     clearTimeout(rouletteTimeoutRef.current);
@@ -891,7 +896,7 @@
                 const pool = getRoulettePool();
                 setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
             };
-
+ 
             const resetRoulette = () => {
                 if (rouletteTimeoutRef.current) {
                     clearTimeout(rouletteTimeoutRef.current);
@@ -902,20 +907,20 @@
                 setFrozenPositions({});
                 setRouletteResult(null);
             };
-
+ 
             const openRoulette = () => {
                 resetRoulette();
                 const pool = getRoulettePool();
                 setScatterItems(pool.length > 0 ? generateScatterItems(pool) : []);
                 setRoulette(true);
             };
-
+ 
             const startRoll = () => {
                 const pool = getRoulettePool();
                 if (pool.length === 0 || scatterItems.length === 0) return;
                 if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current);
                 setRouletteResult(null);
-
+ 
                 const container = stageRef.current;
                 const frozen = {};
                 if (container) {
@@ -934,13 +939,13 @@
                     });
                 }
                 setFrozenPositions(frozen);
-
+ 
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         setRoulettePhase('gather');
                         const maxDelay = Math.max(0, ...scatterItems.map(it => it.gatherDelay));
                         const gatherDuration = maxDelay + 700;
-
+ 
                         rouletteTimeoutRef.current = setTimeout(() => {
                             setRoulettePhase('shake');
                             if (navigator.vibrate) navigator.vibrate(40);
@@ -960,11 +965,11 @@
                     });
                 });
             };
-
+ 
             useEffect(() => {
                 return () => { if (rouletteTimeoutRef.current) clearTimeout(rouletteTimeoutRef.current); };
             }, []);
-
+ 
             useEffect(() => {
                 if (garden && gardenScatterItems.length === 0) {
                     const allGardenSprites = [...sprites, ...ARCHIVED_SPRITES];
@@ -986,13 +991,13 @@
                     setGardenScatterItems(items);
                 }
             }, [garden, collected]);
-
+ 
             const toggle = (n, v) => {
                 const id = n + '-' + v;
                 setCollected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
                 setMastered(p => p.filter(x => x !== id));
             };
-
+ 
             const longPress = (n, v) => {
                 const id = n + '-' + v;
                 const c = collected.includes(id);
@@ -1011,7 +1016,7 @@
                     setMastered(p => p.filter(x => x !== id)); 
                 }
             };
-
+ 
             // ============================================
             // GLITCH TITLE COMPONENT
             // ============================================
@@ -1020,7 +1025,7 @@
                     setGlitchOn(true);
                     setTimeout(() => setGlitchOn(false), 2000);
                 };
-
+ 
                 return (
                     <div
                         onClick={handleClick}
@@ -1098,14 +1103,14 @@
                     </div>
                 );
             };
-
+ 
             // Main app view
             if (roulette) {
                 const pool = getRoulettePool();
                 const resultInfo = rouletteResult ? splitId(rouletteResult) : null;
                 const isBusy = roulettePhase === 'gather' || roulettePhase === 'shake' || roulettePhase === 'settle';
                 const goBack = () => { resetRoulette(); setRoulette(false); };
-
+ 
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={goBack} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
@@ -1114,12 +1119,12 @@
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.5rem 1rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
-
+ 
                     <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2.4rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.15rem 0', flexShrink: 0, textTransform: 'uppercase' }}>
                         Sprite Roulette
                     </GlitchTitle>
                     <div style={{ opacity: 0.7, marginBottom: '1.25rem', fontSize: '0.9rem', flexShrink: 0 }}>{pool.length} sprite{pool.length === 1 ? '' : 's'} in the pool{hasActiveFilters ? ' (filtered)' : ''}</div>
-
+ 
                     {pool.length === 0 ? (
                         <div style={{ background: cardBg, padding: '2rem', borderRadius: '1rem', border: `1px solid ${cardBorder}`, textAlign: 'center', maxWidth: '320px' }}>
                             {col === 0 ? 'Collect a few sprites first, then come back to roll!' : 'No collected sprites match your current filters. Adjust filters on the home screen to roll.'}
@@ -1157,7 +1162,7 @@
                                         </div>
                                     );
                                 })}
-
+ 
                                 <div
                                     style={{
                                         position: 'absolute', top: '50%', left: '50%',
@@ -1184,7 +1189,7 @@
                                         onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                 </div>
-
+ 
                                 {roulettePhase === 'burst' && resultInfo && (
                                     <>
                                         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', height: '200px', borderRadius: '50%', background: `radial-gradient(circle, ${tertiary}99 0%, transparent 70%)`, animation: 'burstFlash 0.6s ease-out forwards' }} />
@@ -1197,12 +1202,12 @@
                                     </>
                                 )}
                             </div>
-
+ 
                             <div style={{ textAlign: 'center', marginBottom: '0.5rem', minHeight: '2.4rem', flexShrink: 0, visibility: (roulettePhase === 'burst' && resultInfo) ? 'visible' : 'hidden', animation: (roulettePhase === 'burst' && resultInfo) ? 'popIn 0.4s ease-out 0.3s both' : 'none' }}>
                                 <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{resultInfo ? resultInfo.name : '\u00A0'}</div>
                                 <div style={{ fontSize: '0.9rem', color: primary }}>{resultInfo ? resultInfo.variant : '\u00A0'}</div>
                             </div>
-
+ 
                             <button
                                 onClick={roulettePhase === 'burst' ? resetToIdle : startRoll}
                                 disabled={isBusy}
@@ -1223,7 +1228,7 @@
                             </button>
                         </>
                     )}
-
+ 
                     {rollHistory.length > 0 && (
                         <div style={{ marginTop: '1.25rem', width: '100%', maxWidth: '420px', textAlign: 'center', flexShrink: 0, minHeight: 0, overflow: 'hidden' }}>
                             <div style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.7, marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last {rollHistory.length} roll{rollHistory.length === 1 ? '' : 's'}</div>
@@ -1256,18 +1261,18 @@
                     )}
                 </div>;
             }
-
+ 
             if (garden) {
                 return <div style={{ width: '100%', height: '100dvh', background: bg, color: text, padding: '1.5rem 1rem', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '480px', display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', flexShrink: 0 }}>
                         <button onClick={() => setGarden(false)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
                         <button onClick={() => setDark(!dark)} style={{ padding: '0.5rem 1rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
                     </div>
-
+ 
                     <div style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', margin: '0 0 0.5rem 0', flexShrink: 0, textTransform: 'uppercase', color: secondary }}>
                         SPRITE GARDEN
                     </div>
-
+ 
                     <div style={{ position: 'relative', width: 'min(85vw, 420px)', height: 'min(85vw, 420px)', marginBottom: '1.25rem', flexShrink: 0, background: 'rgba(91, 156, 196, 0.12)', borderRadius: '1rem', overflow: 'hidden', border: `1px solid rgba(90, 122, 111, 0.3)` }}>
                         {gardenScatterItems.map((item) => (
                             <div
@@ -1291,13 +1296,13 @@
                             </div>
                         ))}
                     </div>
-
+ 
                     <div style={{ fontSize: '0.9rem', opacity: 0.75, textAlign: 'center' }}>
                         {gardenScatterItems.length} sprites exploring the garden
                     </div>
                 </div>;
             }
-
+ 
             if (share) {
                 return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bg, color: text, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
@@ -1307,7 +1312,7 @@
                             {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
                         </div>
                     </div>
-
+ 
                     <div style={{ display: 'flex', border: `1.5px solid ${primary}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.6rem', flexShrink: 0 }}>
                         {[['full', 'Full Collection'], ['filtered', 'Filtered View']].map(([val, txt], i) => (
                             <button
@@ -1325,7 +1330,7 @@
                             </button>
                         ))}
                     </div>
-
+ 
                     <button
                         onClick={saveCollectionImage}
                         disabled={savingImage}
@@ -1339,7 +1344,7 @@
                     >
                         {savingImage ? 'Generating image…' : '✨ Share Collection'}
                     </button>
-
+ 
                     <div style={{ flexShrink: 0, margin: '1rem 0 0.75rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                         <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '2rem', fontWeight: 400, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                             MY SPRITE VAULT
@@ -1348,7 +1353,7 @@
                             <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: 0.85 }}>{getFilterSummaryText()}</div>
                         )}
                     </div>
-
+ 
                     <div ref={gridWrapperRef} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden' }}>
                         <div ref={captureRef} style={{ background: bg, width: '100%', transform: savingImage ? 'none' : `scale(${gridScale})`, transformOrigin: 'top center' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: `repeat(${shareColumns}, 1fr)`, gap: '1rem 0.75rem' }}>
@@ -1379,7 +1384,7 @@
                     </div>
                 </div>;
             }
-
+ 
             // Main home screen
             return <div style={{ width: '100%', background: bg, color: text, minHeight: '100vh', padding: '2rem 0' }}>
                 {showMasterCollectorPopup && <MasterCollectorPopup onClose={() => setShowMasterCollectorPopup(false)} onEnable={() => setMasterCollectorActive(true)} />}
@@ -1416,11 +1421,11 @@
                             </div>
                         </div>
                     </div>
-
+ 
                     <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}`, boxShadow: cardGlow }}>
                         <span style={{ color: primary, fontWeight: 'bold' }}>Tap</span> to collect • <span style={{ color: secondary, fontWeight: 'bold' }}>long press</span> to master • <span style={{ color: primary, fontWeight: 'bold' }}>↑</span> to screenshot • <span style={{ color: primary, fontWeight: 'bold' }}>🌲</span> for the garden • <span style={{ color: primary, fontWeight: 'bold' }}>🎲</span> to roll
                     </div>
-
+ 
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
                             onClick={() => setKeyExpanded(e => !e)}
@@ -1455,7 +1460,7 @@
                             </div>
                         )}
                     </div>
-
+ 
                     <GlitchTitle style={{ fontFamily: "'Anton', sans-serif", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase' }}>
                         {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                     </GlitchTitle>
@@ -1491,7 +1496,7 @@
                                         {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
                                     </div>
                                 </div>
-
+ 
                                 <div style={{ borderTop: `1px solid ${cardBorder}`, marginTop: '2rem', paddingTop: '1.5rem' }}>
                                     <button
                                         onClick={() => setShowResetConfirm(true)}
@@ -1507,7 +1512,7 @@
                             </div>
                         )}
                     </div>
-
+ 
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
                             onClick={() => setFiltersExpanded(e => !e)}
@@ -1564,10 +1569,10 @@
                                         </button>
                                     )}
                                 </div>
-
+ 
                                 {renderStatusFilter('Collected', filterCollectedMode, handleSetCollectedMode, 'collected', 'Collected', 'uncollected', 'Uncollected', primary, filterMasteredMode === 'mastered', 'Mastered items are always collected')}
                                 {renderStatusFilter('Mastered', filterMasteredMode, handleSetMasteredMode, 'mastered', 'Mastered', 'unmastered', 'Unmastered', tertiary, filterCollectedMode === 'uncollected', 'Uncollected items are never mastered')}
-
+ 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.4rem' }}>
                                     <div style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Variant</div>
                                     <button
@@ -1617,7 +1622,7 @@
                             </div>
                         )}
                     </div>
-
+ 
                     {listView ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {sprites.map(sp => {
@@ -1654,13 +1659,13 @@
                                                 const endRadius = makeEndRadius(6.4);
                                                 const bufferRadius = makeEndRadius(4.4);
                                                 const fillRadius = makeEndRadius(2.4);
-
+ 
                                                 const applicable = true; // All sprites have all 3 variants
                                                 const id = sp.name + '-' + variant;
                                                 const isC = collected.includes(id);
                                                 const isM = mastered.includes(id);
                                                 const matches = applicable && matchesFilters(variant, isC, isM);
-
+ 
                                                 if (!matches) {
                                                     return (
                                                         <div
@@ -1675,9 +1680,9 @@
                                                         />
                                                     );
                                                 }
-
+ 
                                                 const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : '#94a3b8');
-
+ 
                                                 return (
                                                     <div
                                                         key={variant}
@@ -1804,8 +1809,13 @@
                 </div>
             </div>;
         }
-
+ 
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
 </html>
+ 
+
+
+
+
