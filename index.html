@@ -462,6 +462,8 @@
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
                                 const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : '#94a3b8'));
+                                return (
+                                    <div
                                         key={variant}
                                         title={variant}
                                         style={{
