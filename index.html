@@ -329,7 +329,8 @@
             useEffect(() => { localStorage.setItem('rollHistory', JSON.stringify(rollHistory)); }, [rollHistory]);
             useEffect(() => { localStorage.setItem('glitchOn', JSON.stringify(glitchOn)); }, [glitchOn]);
 
-            const tot = sprites.length * 3; // 12 sprites × 3 variants = 36
+            // tot will be calculated after getVariantsForSprite is defined
+            let tot = 0;
             const col = collected.filter(id => {
                 const { name } = splitId(id);
                 return sprites.some(sp => sp.name === name);
@@ -505,6 +506,9 @@
                 if (fourVariantSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
                 return ALL_VARIANTS;
             };
+
+            // Calculate total collectibles based on actual variant counts
+            tot = sprites.reduce((acc, sp) => acc + getVariantsForSprite(sp.name).length, 0);
 
             const matchesFilters = (variant, isCollected, isMastered) => {
                 if (filterExcludedVariants.includes(variant)) return false;
