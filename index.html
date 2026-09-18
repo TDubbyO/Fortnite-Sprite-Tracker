@@ -1295,25 +1295,25 @@
 
             if (share) {
                 return <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '0.75rem 1rem', background: bg, color: text, height: '100dvh', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexShrink: 0 }}>
-                        <button onClick={() => setShare(false)} style={{ padding: '0.4rem 0.8rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>← Back</button>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <button onClick={() => setDark(!dark)} style={{ padding: '0.4rem 0.8rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>{dark ? '☀️' : '🌙'}</button>
-                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.4rem 0.8rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold' }}>✨</button>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem', flexShrink: 0 }}>
+                        <button onClick={() => setShare(false)} style={{ padding: '0.3rem 0.6rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>← Back</button>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button onClick={() => setDark(!dark)} style={{ padding: '0.3rem 0.6rem', background: icon, color: primary, border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>{dark ? '☀️' : '🌙'}</button>
+                            {masterCollectorUnlocked && <button onClick={() => setMasterCollectorActive(!masterCollectorActive)} style={{ padding: '0.3rem 0.6rem', background: masterCollectorActive ? primary : icon, color: masterCollectorActive ? '#0f0515' : primary, border: `2px solid ${primary}`, borderRadius: '0.5rem', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.9rem' }}>✨</button>}
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', border: `1.5px solid ${primary}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.6rem', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', border: `1.5px solid ${primary}`, borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '0.4rem', flexShrink: 0 }}>
                         {[['full', 'Full Collection'], ['filtered', 'Filtered View']].map(([val, txt], i) => (
                             <button
                                 key={val}
                                 onClick={() => setShareMode(val)}
                                 style={{
-                                    flex: 1, padding: '0.6rem 0.5rem', border: 'none', cursor: 'pointer',
+                                    flex: 1, padding: '0.4rem 0.4rem', border: 'none', cursor: 'pointer',
                                     borderLeft: i > 0 ? `1px solid ${shareMode === val ? 'rgba(255,255,255,0.4)' : primary}` : 'none',
                                     background: shareMode === val ? primary : 'transparent',
                                     color: shareMode === val ? '#0f0515' : primary,
-                                    fontWeight: 'bold', fontSize: '0.82rem'
+                                    fontWeight: 'bold', fontSize: '0.75rem'
                                 }}
                             >
                                 {txt}
@@ -1325,7 +1325,7 @@
                         onClick={saveCollectionImage}
                         disabled={savingImage}
                         style={{
-                            width: '100%', padding: '0.75rem', marginBottom: '0.6rem', borderRadius: '0.75rem',
+                            width: '100%', padding: '0.5rem', marginBottom: '0.4rem', borderRadius: '0.75rem',
                             border: 'none', cursor: savingImage ? 'default' : 'pointer', flexShrink: 0,
                             background: savingImage ? icon : primary,
                             color: savingImage ? primary : '#0f0515',
