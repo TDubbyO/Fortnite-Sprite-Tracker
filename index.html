@@ -273,7 +273,7 @@
                 window.addEventListener('resize', onResize);
                 return () => window.removeEventListener('resize', onResize);
             }, []);
-            const shareColumns = viewportWidth >= 700 ? 7 : 4;
+            const shareColumns = viewportWidth >= 700 ? 7 : 5;
             const [mastered, setMastered] = useState(() => JSON.parse(localStorage.getItem('m') || '[]'));
             const [share, setShare] = useState(false);
             const [dark, setDark] = useState(() => JSON.parse(localStorage.getItem('t') || 'true'));
