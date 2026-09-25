@@ -124,7 +124,7 @@
             { name: 'Storm Scout', color: '#a9a9a9' },
             { name: 'Blinky', color: '#e41400' },
             { name: 'Crash Bandicoot', color: '#ea580c' },
-            { name: 'Morgana', color: '#9333ea' },
+            { name: 'Morgana', color: '#2b2b2b' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -503,13 +503,13 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
+            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
 
             const getVariantsForSprite = (spriteName) => {
                 if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
                 if (spriteName === 'Mega-Man') return ['Base'];
-                const fourVariantSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Crash Bandicoot', 'Pond', 'Morgana'];
-                if (fourVariantSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
+                const standardSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Crash Bandicoot', 'Pond', 'Morgana'];
+                if (standardSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
                 return ALL_VARIANTS;
             };
 
