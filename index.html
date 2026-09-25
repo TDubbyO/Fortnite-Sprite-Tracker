@@ -118,12 +118,13 @@
             { name: 'Klombo', color: '#ff69b4' },
             { name: 'Mega-Man', color: '#4db8d4' },
             { name: 'Overshield', color: '#2b5f8f' },
+            { name: 'Pond', color: '#22c55e' },
             { name: 'X-Ray', color: '#d84040' },
             { name: 'Onigiri', color: '#8b7355' },
             { name: 'Storm Scout', color: '#a9a9a9' },
             { name: 'Blinky', color: '#e41400' },
             { name: 'Crash Bandicoot', color: '#ea580c' },
-            { name: 'Pond', color: '#22c55e' },
+            { name: 'Morgana', color: '#9333ea' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -174,7 +175,7 @@
                 'Klombo': 'Klombo', 'Jonesy': 'Jonesy', 'Sonic': 'Sonic',
                 'Crown': 'Crown', '8-Bit': '8-bit', 'Storm Scout': 'Storm-Scout',
                 'Overshield': 'Overshield', 'Mega-Man': 'Mega-Man', 'X-Ray': 'X-Ray', 'Onigiri': 'Onigiri',
-                'Blinky': 'Blinky', 'Crash Bandicoot': 'Crash-Bandicoot', 'Pond': 'Pond',
+                'Blinky': 'Blinky', 'Crash Bandicoot': 'Crash-Bandicoot', 'Pond': 'Pond', 'Morgana': 'Morgana',
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
@@ -507,7 +508,7 @@
             const getVariantsForSprite = (spriteName) => {
                 if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
                 if (spriteName === 'Mega-Man') return ['Base'];
-                const fourVariantSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Crash Bandicoot', 'Pond'];
+                const fourVariantSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Crash Bandicoot', 'Pond', 'Morgana'];
                 if (fourVariantSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker'];
                 return ALL_VARIANTS;
             };
