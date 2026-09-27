@@ -123,6 +123,7 @@
             { name: 'Onigiri', color: '#8b7355' },
             { name: 'Storm Scout', color: '#a9a9a9' },
             { name: 'Blinky', color: '#e41400' },
+            { name: 'Birthday Cake', color: '#6B4423' },
             { name: 'Crash Bandicoot', color: '#ea580c' },
             { name: 'Morgana', color: '#2b2b2b' },
         ];
@@ -175,7 +176,7 @@
                 'Klombo': 'Klombo', 'Jonesy': 'Jonesy', 'Sonic': 'Sonic',
                 'Crown': 'Crown', '8-Bit': '8-bit', 'Storm Scout': 'Storm-Scout',
                 'Overshield': 'Overshield', 'Mega-Man': 'Mega-Man', 'X-Ray': 'X-Ray', 'Onigiri': 'Onigiri',
-                'Blinky': 'Blinky', 'Crash Bandicoot': 'Crash-Bandicoot', 'Pond': 'Pond', 'Morgana': 'Morgana',
+                'Blinky': 'Blinky', 'Birthday Cake': 'Birthday', 'Crash Bandicoot': 'Crash-Bandicoot', 'Pond': 'Pond', 'Morgana': 'Morgana',
                 'Water': 'Water', 'Earth': 'Earth', 'Fire': 'Fire', 'Duck': 'Duck',
                 'Ghost': 'Ghost', 'Dream': 'Dream', 'Demon': 'Demon', 'Punk': 'Punk',
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
@@ -508,7 +509,7 @@
             const getVariantsForSprite = (spriteName) => {
                 if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
                 if (spriteName === 'Mega-Man') return ['Base'];
-                const standardSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Crash Bandicoot', 'Pond', 'Morgana'];
+                const standardSprites = ['Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Birthday Cake', 'Crash Bandicoot', 'Pond', 'Morgana'];
                 if (standardSprites.includes(spriteName)) return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter'];
                 return ALL_VARIANTS;
             };
