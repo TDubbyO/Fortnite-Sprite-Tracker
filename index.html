@@ -102,10 +102,9 @@
         const { useState, useEffect, useRef } = React;
 
         // ============================================
-        // NEW SEASON SPRITES (17 sprites, 3 variants each + Crown has 4)
+        // NEW SEASON SPRITES (27 sprites)
         // ============================================
         const BASE_SPRITES = [
-            { name: 'Dumpster Dive', color: '#A9A9A9' },
             { name: 'Jonesy', color: '#daa520' },
             { name: 'Adventure', color: '#228b22' },
             { name: 'Bush', color: '#6ba050' },
@@ -124,12 +123,15 @@
             { name: 'Onigiri', color: '#8b7355' },
             { name: 'Storm Scout', color: '#a9a9a9' },
             { name: 'Blinky', color: '#e41400' },
+            { name: 'Dumpster Dive', color: '#A9A9A9' },
             { name: 'Birthday Cake', color: '#6B4423' },
             { name: 'Crash Bandicoot', color: '#ea580c' },
             { name: 'Morgana', color: '#2b2b2b' },
             { name: 'Spooky', color: '#FF8C00' },
             { name: 'Deer', color: '#8B7355' },
             { name: 'Vampire', color: '#8B4789' },
+            { name: 'Honey', color: '#f5a623' },
+            { name: 'One Wish Willow', color: '#7c6fd6' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -171,7 +173,8 @@
             'Cheat Master': 'cheat-master',
             'Loot Hacker': 'loot-hacker',
             'Bounty Hunter': 'reaper',
-            'Trick or Treat': 'trick'
+            'Trick or Treat': 'trick',
+            'Quack': 'quack'
         };
 
         const getImagePath = (spriteName, variant) => {
@@ -187,7 +190,7 @@
                 'King': 'King', 'Burnt Peanut': 'Burntpeanut', 'Zero Point': 'Zeropoint',
                 'Fishy': 'Fishy', 'Striker': 'Striker', 'Aura': 'Aura', 'Boss': 'Boss', 'Grim': 'Grim',
                 'Seven': 'Seven', 'Air': 'Air', 'Batman': 'Batman', 'Pollo': 'Pollo', 'Vini Jr.': 'Vini-Jr', 'John Wick': 'John-Wick',
-                'Ironmouse': 'Ironmouse', "Lootin' Llama": 'Llama', 'Peeky Peely': 'Peely'
+                'Ironmouse': 'Ironmouse', "Lootin' Llama": 'Llama', 'Peeky Peely': 'Peely', 'Honey': 'Honey', 'One Wish Willow': 'One-Wish-Willow'
             };
             const mappedName = nameMap[spriteName];
             const suffix = VARIANT_FILE_SUFFIX[variant] || variant.toLowerCase();
@@ -474,7 +477,7 @@
                             {variants.map((variant, idx) => {
                                 const isCollected = collectedStatus && collectedStatus[idx];
                                 const isMastered = masteredStatus && masteredStatus[idx];
-                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : (variant === 'Bounty Hunter' ? '#e91e63' : (variant === 'Trick or Treat' ? '#FF8C00' : '#94a3b8'))));
+                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : (variant === 'Bounty Hunter' ? '#e91e63' : (variant === 'Trick or Treat' ? '#FF8C00' : (variant === 'Quack' ? '#a855f7' : '#94a3b8')))));
                                 return (
                                     <div
                                         key={variant}
@@ -509,14 +512,14 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter', 'Trick or Treat'];
+            const ALL_VARIANTS = ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter', 'Trick or Treat', 'Quack'];
 
             const getVariantsForSprite = (spriteName) => {
                 if (spriteName === 'Crown') return ['Base', 'Gold', 'Cheat Master', 'Loot Hacker', 'Bounty Hunter', 'Trick or Treat'];
                 if (spriteName === 'Mega-Man') return ['Base'];
-                const standardSprites = ['Dumpster Dive', 'Tails', 'Klombo', '8-Bit', 'X-Ray', 'Onigiri', 'Adventure', 'Overshield', 'Bush', 'Shadow', 'Jackrabbit', 'Sonic', 'Jonesy', 'Storm Scout', 'Killswitch', 'Blinky', 'Birthday Cake', 'Crash Bandicoot', 'Pond', 'Morgana', 'Spooky', 'Deer', 'Vampire'];
-                if (standardSprites.includes(spriteName)) return ALL_VARIANTS;
-                return ALL_VARIANTS;
+                const quackSprites = ['Jonesy', 'Adventure', 'Bush', 'Klombo', 'Spooky'];
+                if (quackSprites.includes(spriteName)) return ALL_VARIANTS;
+                return ALL_VARIANTS.filter(v => v !== 'Quack');
             };
 
             // Calculate total collectibles based on actual variant counts
@@ -537,12 +540,12 @@
             const renderVariantChips = (numeratorFn, format) => (
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.35rem', marginTop: '0.6rem' }}>
                     {ALL_VARIANTS.map(v => {
-                        const t = sprites.filter(sp => true).length; // All 12 sprites have all 3 variants
+                        const t = sprites.filter(sp => getVariantsForSprite(sp.name).includes(v)).length;
                         const n = numeratorFn(v);
                         const label = format === 'percentage' ? `${t > 0 ? Math.round((n / t) * 100) : 0}%` : `${n}/${t}`;
                         return (
                             <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.15rem 0.45rem' }}>
-                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (v === 'Trick or Treat' ? '#FF8C00' : '#94a3b8')))), flexShrink: 0 }} />
+                                <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (variant === 'Trick or Treat' ? '#FF8C00' : (variant === 'Quack' ? '#a855f7' : '#94a3b8'))))), flexShrink: 0 }} />
                                 <span>{label}</span>
                             </div>
                         );
@@ -1439,7 +1442,7 @@
                             <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
                                     {ALL_VARIANTS.map(v => {
-                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (v === 'Trick or Treat' ? '#FF8C00' : '#94a3b8'))));
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (v === 'Trick or Treat' ? '#FF8C00' : (v === 'Quack' ? '#a855f7' : '#94a3b8')))));
                                         return (
                                             <div key={v} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(0,0,0,0.15)', border: `1px solid ${cardBorder}`, borderRadius: '999px', padding: '0.35rem 0.7rem' }}>
                                                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: variantColor, flexShrink: 0 }} />
@@ -1593,7 +1596,7 @@
                                     {ALL_VARIANTS.map(v => {
                                         const isIncluded = filterVariants.includes(v);
                                         const isExcluded = filterExcludedVariants.includes(v);
-                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (v === 'Trick or Treat' ? '#FF8C00' : '#94a3b8'))));
+                                        const variantColor = v === 'Cheat Master' ? '#39FF14' : (v === 'Gold' ? '#fbbf24' : (v === 'Loot Hacker' ? '#0099ff' : (v === 'Bounty Hunter' ? '#e91e63' : (v === 'Trick or Treat' ? '#FF8C00' : (v === 'Quack' ? '#a855f7' : '#94a3b8')))));
                                         return (
                                             <button
                                                 key={v}
@@ -1657,7 +1660,7 @@
                                                 const bufferRadius = makeEndRadius(4.4);
                                                 const fillRadius = makeEndRadius(2.4);
 
-                                                const applicable = true; // All sprites have all 3 variants
+                                                const applicable = getVariantsForSprite(sp.name).includes(variant);
                                                 const id = sp.name + '-' + variant;
                                                 const isC = collected.includes(id);
                                                 const isM = mastered.includes(id);
@@ -1678,7 +1681,7 @@
                                                     );
                                                 }
 
-                                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : (variant === 'Bounty Hunter' ? '#e91e63' : (variant === 'Trick or Treat' ? '#FF8C00' : '#94a3b8'))));
+                                                const variantColor = variant === 'Cheat Master' ? '#39FF14' : (variant === 'Gold' ? '#fbbf24' : (variant === 'Loot Hacker' ? '#0099ff' : (variant === 'Bounty Hunter' ? '#e91e63' : (variant === 'Trick or Treat' ? '#FF8C00' : (variant === 'Quack' ? '#a855f7' : '#94a3b8')))));
 
                                                 return (
                                                     <div
