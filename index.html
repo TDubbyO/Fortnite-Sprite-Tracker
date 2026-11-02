@@ -108,16 +108,16 @@
         const BASE_SPRITES = [
             { name: "Lil' Squibbly", color: '#5B3A8E' },
             { name: 'Plundarrgh', color: '#9C6B30' },
-            { name: "Lil' Flacko", color: '#E85D9C' },
+            { name: "Lil' Flacko", color: '#1C6EA4' },
             { name: "Barry O'Fish", color: '#2E86AB' },
             { name: 'Exmarks', color: '#C9A66B' },
-            { name: 'Re-Pete', color: '#4FB286' },
+            { name: 'Re-Pete', color: '#C1440E' },
             { name: "Halfpeel'd", color: '#F2C14E' },
             { name: 'Chester', color: '#7A4A2B' },
-            { name: 'Transponder Snail', color: '#E07A5F' },
+            { name: 'Transponder Snail', color: '#00C2D1' },
             { name: 'Wayfinder', color: '#D4A017' },
-            { name: 'Kelper', color: '#2F6B4F' },
-            { name: 'Sweet Dream', color: '#A78BFA' },
+            { name: 'Kelper', color: '#F2805A' },
+            { name: 'Sweet Dream', color: '#3B2A5E' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -199,9 +199,9 @@
                 // Treasure Hunters season — mapped to the file names from your
                 // screenshot (official display name may differ from the file name)
                 "Lil' Squibbly": 'Squibbly', 'Plundarrgh': 'Plunder', "Lil' Flacko": 'Flacko',
-                "Barry O'Fish": 'Barry', 'Exmarks': 'Exmarx', 'Re-Pete': 'Repete',
+                "Barry O'Fish": 'Barry', 'Exmarks': 'Exmarks', 'Re-Pete': 'Repete',
                 "Halfpeel'd": 'Halfpeeld', 'Chester': 'Chester', 'Transponder Snail': 'Snail',
-                'Wayfinder': 'Wayfinder', 'Kelper': 'Kelper', 'Sweet Dream': 'Sweet-Dreams',
+                'Wayfinder': 'Wayfinder', 'Kelper': 'Kelper', 'Sweet Dream': 'Sweet-Dream',
                 // Archived sprites (Garden, currently disabled)
                 'Jackrabbit': 'Jackrabbit', 'Shadow': 'Shadow', 'Bush': 'Bush',
                 'Tails': 'Tails', 'Killswitch': 'Killswitch', 'Adventure': 'Adventure',
@@ -282,6 +282,35 @@
                     {mastered && <circle cx="0" cy="0" r={s * 0.86} fill="none" stroke={tertiary} strokeWidth={s * 0.22} />}
                     <polygon points={body} fill={color} />
                     <polygon points={facet} fill="#ffffff" opacity="0.32" />
+                </svg>
+            );
+        };
+
+        const CoinPile = () => {
+            const coins = [
+                { cx: 60, cy: 95, rx: 34, ry: 11, shade: '#B8860B' },
+                { cx: 108, cy: 100, rx: 30, ry: 10, shade: '#E8A317' },
+                { cx: 160, cy: 92, rx: 36, ry: 12, shade: '#D4941A' },
+                { cx: 212, cy: 98, rx: 32, ry: 10, shade: '#F2C14E' },
+                { cx: 258, cy: 90, rx: 30, ry: 10, shade: '#B8860B' },
+                { cx: 302, cy: 96, rx: 34, ry: 11, shade: '#E8A317' },
+                { cx: 342, cy: 88, rx: 28, ry: 9, shade: '#D4941A' },
+                { cx: 85, cy: 78, rx: 28, ry: 9, shade: '#F2C14E' },
+                { cx: 140, cy: 74, rx: 30, ry: 9, shade: '#E8A317' },
+                { cx: 195, cy: 76, rx: 28, ry: 9, shade: '#B8860B' },
+                { cx: 245, cy: 72, rx: 26, ry: 8, shade: '#F2C14E' },
+                { cx: 290, cy: 76, rx: 28, ry: 9, shade: '#D4941A' },
+                { cx: 160, cy: 58, rx: 24, ry: 8, shade: '#E8A317' },
+                { cx: 210, cy: 56, rx: 22, ry: 7, shade: '#F2C14E' },
+            ];
+            return (
+                <svg viewBox="0 0 400 115" preserveAspectRatio="xMidYMax meet" style={{ position: 'absolute', left: '50%', bottom: '-16px', transform: 'translateX(-50%)', width: '115%', maxWidth: '620px', height: 'auto', zIndex: 0, pointerEvents: 'none' }}>
+                    {coins.map((c, i) => (
+                        <g key={i}>
+                            <ellipse cx={c.cx} cy={c.cy} rx={c.rx} ry={c.ry} fill={c.shade} stroke="#7A5A0A" strokeWidth="1.5" />
+                            <ellipse cx={c.cx} cy={c.cy - c.ry * 0.3} rx={c.rx * 0.5} ry={c.ry * 0.35} fill="#ffffff" opacity="0.25" />
+                        </g>
+                    ))}
                 </svg>
             );
         };
@@ -410,7 +439,7 @@
             }, [col, tot, masterCollectorActive]);
 
             const getDarkModeColors = () => ({
-                bg: '#0B2E55',
+                bg: 'linear-gradient(180deg, #123A66 0%, #0B2E55 45%, #061B38 100%)',
                 text: '#EAF3FF',
                 primary: '#E8A317',
                 secondary: '#1B9C85',
@@ -422,7 +451,7 @@
             });
 
             const getLightModeColors = () => ({
-                bg: '#8EC6F0',
+                bg: 'linear-gradient(180deg, #CFE8FB 0%, #8EC6F0 55%, #4E95D1 100%)',
                 text: '#0a1428',
                 primary: '#C98A0A',
                 secondary: '#15806D',
@@ -434,7 +463,7 @@
             });
 
             const getMasterModeColors = () => ({
-                bg: '#06192F',
+                bg: 'linear-gradient(180deg, #0A2440 0%, #06192F 55%, #030D1C 100%)',
                 text: '#F6CE7A',
                 primary: '#E8A317',
                 secondary: '#1B9C85',
@@ -663,7 +692,7 @@
                     void captureRef.current.offsetHeight;
 
                     const gridCanvas = await window.html2canvas(captureRef.current, {
-                        backgroundColor: typeof bg === 'string' && !bg.includes('gradient') ? bg : '#1a0f2e',
+                        backgroundColor: typeof bg === 'string' && !bg.includes('gradient') ? bg : '#0B2E55',
                         scale: 2,
                         useCORS: true,
                         logging: false
@@ -680,7 +709,7 @@
                     finalCanvas.width = gridCanvas.width;
                     finalCanvas.height = gridCanvas.height + titleHeight;
                     const ctx = finalCanvas.getContext('2d');
-                    ctx.fillStyle = '#2E7FD4';
+                    ctx.fillStyle = '#0B2E55';
                     ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
                     const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, 0);
@@ -1036,7 +1065,7 @@
                         style={{
                             cursor: 'pointer',
                             position: 'relative',
-                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
+                            background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
@@ -1054,7 +1083,7 @@
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
+                                    background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -1071,7 +1100,7 @@
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
+                                    background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -1089,7 +1118,7 @@
                             </>
                         )}
                         <span style={{
-                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
+                            background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
@@ -1420,9 +1449,14 @@
                         )}
                     </div>
 
-                    <GlitchTitle style={{ fontFamily: "'Pirata One', cursive", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', margin: '1rem 0', textAlign: 'center', textTransform: 'uppercase' }}>
-                        {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
-                    </GlitchTitle>
+                    <div style={{ position: 'relative', margin: '2.5rem 0 1.5rem 0', textAlign: 'center' }}>
+                        <CoinPile />
+                        <div style={{ position: 'absolute', left: '22%', bottom: '-10px', zIndex: 0 }}><Gem size={13} color="#C8102E" /></div>
+                        <div style={{ position: 'absolute', right: '20%', bottom: '-14px', zIndex: 0 }}><Gem size={11} color="#1B9C85" /></div>
+                        <GlitchTitle style={{ position: 'relative', zIndex: 1, fontFamily: "'Pirata One', cursive", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+                            {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
+                        </GlitchTitle>
+                    </div>
                     
                     <div style={{ background: cardBg, borderRadius: '1rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem', boxShadow: cardGlow, overflow: 'hidden' }}>
                         <button
@@ -1603,7 +1637,7 @@
                                             />
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', width: '100px', flexShrink: 0 }}>
-                                            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                            <Gem size={7} color={sp.color} />
                                             <span title={sp.name} style={{ fontSize: '0.72rem', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sp.name}</span>
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', height: '28px', borderRadius: '0.4rem', overflow: 'hidden', border: `1px solid ${cardBorder}` }}>
@@ -1694,7 +1728,7 @@
                                 <div key={sp.name} style={{ background: cardBg, padding: compactView ? '0.75rem' : '1.5rem', borderRadius: '0.75rem', border: allMastered ? `2px solid ${tertiary}` : `1px solid ${cardBorder}`, position: 'relative', boxShadow: cardShadows.length > 0 ? cardShadows.join(', ') : 'none' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compactView ? '0.5rem' : '1rem' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', minWidth: 0, fontSize: compactView ? '0.85rem' : '1.125rem', fontWeight: 700 }}>
-                                            <span style={{ width: compactView ? '7px' : '9px', height: compactView ? '7px' : '9px', borderRadius: '50%', background: sp.color, flexShrink: 0 }} />
+                                            <Gem size={compactView ? 7 : 9} color={sp.color} />
                                             <span style={{ overflowWrap: 'break-word' }}>{sp.name}</span>
                                         </div>
                                         <div style={{
