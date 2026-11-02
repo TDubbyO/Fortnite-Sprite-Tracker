@@ -86,13 +86,9 @@
             98% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
             100% { transform: translate(-50%, -50%) translateY(0) scaleY(1); }
         }
-        @keyframes glitch {
-            0% { clip-path: inset(40% 0 61% 0); transform: translate(2px, -2px); }
-            20% { clip-path: inset(92% 0 1% 0); transform: translate(-2px, 2px); }
-            40% { clip-path: inset(43% 0 1% 0); transform: translate(-2px, -2px); }
-            60% { clip-path: inset(25% 0 58% 0); transform: translate(2px, 2px); }
-            80% { clip-path: inset(54% 0 7% 0); transform: translate(2px, -2px); }
-            100% { clip-path: inset(58% 0 43% 0); transform: translate(-2px, 2px); }
+        @keyframes waveSweep {
+            0% { background-position: -160% 0; }
+            100% { background-position: 160% 0; }
         }
     </style>
 </head>
@@ -1027,7 +1023,7 @@
             const GlitchTitle = ({ children, style = {} }) => {
                 const handleClick = () => {
                     setGlitchOn(true);
-                    setTimeout(() => setGlitchOn(false), 2000);
+                    setTimeout(() => setGlitchOn(false), 1300);
                 };
 
                 return (
@@ -1036,11 +1032,7 @@
                         style={{
                             cursor: 'pointer',
                             position: 'relative',
-                            color: '#E8A317',
-                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
+                            display: 'inline-block',
                             fontSize: 'inherit',
                             fontFamily: 'inherit',
                             fontWeight: 'inherit',
@@ -1048,52 +1040,11 @@
                             textTransform: 'inherit',
                             ...style
                         }}
-                        title="Click to trigger glitch"
+                        title="Click for a wave"
                     >
-                        {glitchOn && (
-                            <>
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    color: '#E8A317',
-                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
-                                    backgroundClip: 'text',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    animation: 'glitch 0.15s infinite',
-                                    zIndex: 1,
-                                    fontSize: 'inherit',
-                                    fontFamily: 'inherit',
-                                    fontWeight: 'inherit',
-                                    letterSpacing: 'inherit',
-                                    textTransform: 'inherit',
-                                }}>
-                                    {children}
-                                </div>
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    color: '#E8A317',
-                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
-                                    backgroundClip: 'text',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    animation: 'glitch 0.15s infinite reverse',
-                                    zIndex: 0,
-                                    fontSize: 'inherit',
-                                    fontFamily: 'inherit',
-                                    fontWeight: 'inherit',
-                                    letterSpacing: 'inherit',
-                                    textTransform: 'inherit',
-                                    opacity: 0.6,
-                                }}>
-                                    {children}
-                                </div>
-                            </>
-                        )}
                         <span style={{
                             color: '#E8A317',
-                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
+                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 0%, #C8102E 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
@@ -1102,12 +1053,32 @@
                             fontWeight: 'inherit',
                             letterSpacing: 'inherit',
                             textTransform: 'inherit',
-                            filter: glitchOn ? 'drop-shadow(0 0 10px rgba(232, 163, 23, 0.8))' : 'none',
-                            zIndex: glitchOn ? 2 : 'auto',
                             display: 'block'
                         }}>
                             {children}
                         </span>
+                        {glitchOn && (
+                            <span style={{
+                                position: 'absolute',
+                                inset: 0,
+                                color: 'transparent',
+                                backgroundImage: 'linear-gradient(100deg, transparent 38%, rgba(190,255,250,0.95) 50%, transparent 62%)',
+                                backgroundSize: '260% 100%',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                animation: 'waveSweep 1.2s ease-in-out forwards',
+                                fontSize: 'inherit',
+                                fontFamily: 'inherit',
+                                fontWeight: 'inherit',
+                                letterSpacing: 'inherit',
+                                textTransform: 'inherit',
+                                display: 'block',
+                                pointerEvents: 'none'
+                            }}>
+                                {children}
+                            </span>
+                        )}
                     </div>
                 );
             };
@@ -1425,7 +1396,7 @@
                     </div>
 
                     <div style={{ position: 'relative', margin: '2rem 0 1.5rem 0', textAlign: 'center' }}>
-                        <div style={{ position: 'absolute', inset: '-30px -15%', background: 'radial-gradient(ellipse at center, rgba(232,163,23,0) 0%, rgba(232,163,23,0.35) 100%)', zIndex: 0, pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: 'min(85%, 520px)', height: '150px', background: 'radial-gradient(ellipse at center, rgba(232,163,23,0) 0%, rgba(232,163,23,0.35) 55%, rgba(232,163,23,0) 100%)', zIndex: 0, pointerEvents: 'none' }} />
                         <GlitchTitle style={{ position: 'relative', zIndex: 1, fontFamily: "'Pirata One', cursive", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                             {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                         </GlitchTitle>
