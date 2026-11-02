@@ -286,35 +286,6 @@
             );
         };
 
-        const CoinPile = () => {
-            const coins = [
-                { cx: 60, cy: 95, rx: 34, ry: 11, shade: '#B8860B' },
-                { cx: 108, cy: 100, rx: 30, ry: 10, shade: '#E8A317' },
-                { cx: 160, cy: 92, rx: 36, ry: 12, shade: '#D4941A' },
-                { cx: 212, cy: 98, rx: 32, ry: 10, shade: '#F2C14E' },
-                { cx: 258, cy: 90, rx: 30, ry: 10, shade: '#B8860B' },
-                { cx: 302, cy: 96, rx: 34, ry: 11, shade: '#E8A317' },
-                { cx: 342, cy: 88, rx: 28, ry: 9, shade: '#D4941A' },
-                { cx: 85, cy: 78, rx: 28, ry: 9, shade: '#F2C14E' },
-                { cx: 140, cy: 74, rx: 30, ry: 9, shade: '#E8A317' },
-                { cx: 195, cy: 76, rx: 28, ry: 9, shade: '#B8860B' },
-                { cx: 245, cy: 72, rx: 26, ry: 8, shade: '#F2C14E' },
-                { cx: 290, cy: 76, rx: 28, ry: 9, shade: '#D4941A' },
-                { cx: 160, cy: 58, rx: 24, ry: 8, shade: '#E8A317' },
-                { cx: 210, cy: 56, rx: 22, ry: 7, shade: '#F2C14E' },
-            ];
-            return (
-                <svg viewBox="0 0 400 115" preserveAspectRatio="xMidYMax meet" style={{ position: 'absolute', left: '50%', bottom: '-16px', transform: 'translateX(-50%)', width: '115%', maxWidth: '620px', height: 'auto', zIndex: 0, pointerEvents: 'none' }}>
-                    {coins.map((c, i) => (
-                        <g key={i}>
-                            <ellipse cx={c.cx} cy={c.cy} rx={c.rx} ry={c.ry} fill={c.shade} stroke="#7A5A0A" strokeWidth="1.5" />
-                            <ellipse cx={c.cx} cy={c.cy - c.ry * 0.3} rx={c.rx * 0.5} ry={c.ry * 0.35} fill="#ffffff" opacity="0.25" />
-                        </g>
-                    ))}
-                </svg>
-            );
-        };
-
         const MasterCollectorPopup = ({ onClose, onEnable }) => (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                 <div style={{ background: 'linear-gradient(135deg, #06192F, #0B2E55)', padding: '3rem 2rem', borderRadius: '1rem', textAlign: 'center', maxWidth: '400px', border: '2px solid #1B9C85' }}>
@@ -1065,7 +1036,8 @@
                         style={{
                             cursor: 'pointer',
                             position: 'relative',
-                            background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
+                            color: '#E8A317',
+                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
@@ -1083,7 +1055,8 @@
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
+                                    color: '#E8A317',
+                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -1100,7 +1073,8 @@
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
+                                    color: '#E8A317',
+                                    background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
                                     backgroundClip: 'text',
                                     WebkitBackgroundClip: 'text',
                                     WebkitTextFillColor: 'transparent',
@@ -1118,7 +1092,8 @@
                             </>
                         )}
                         <span style={{
-                            background: 'radial-gradient(ellipse at 50% 35%, #F6CE7A 0%, #E8A317 55%, #C8102E 100%)',
+                            color: '#E8A317',
+                            background: 'radial-gradient(ellipse at 50% 50%, #E8A317 45%, #C8102E 100%)',
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
@@ -1449,10 +1424,8 @@
                         )}
                     </div>
 
-                    <div style={{ position: 'relative', margin: '2.5rem 0 1.5rem 0', textAlign: 'center' }}>
-                        <CoinPile />
-                        <div style={{ position: 'absolute', left: '22%', bottom: '-10px', zIndex: 0 }}><Gem size={13} color="#C8102E" /></div>
-                        <div style={{ position: 'absolute', right: '20%', bottom: '-14px', zIndex: 0 }}><Gem size={11} color="#1B9C85" /></div>
+                    <div style={{ position: 'relative', margin: '2rem 0 1.5rem 0', textAlign: 'center' }}>
+                        <div style={{ position: 'absolute', inset: '-30px -15%', background: 'radial-gradient(ellipse at center, rgba(232,163,23,0) 0%, rgba(232,163,23,0.35) 100%)', zIndex: 0, pointerEvents: 'none' }} />
                         <GlitchTitle style={{ position: 'relative', zIndex: 1, fontFamily: "'Pirata One', cursive", fontSize: '3rem', fontWeight: 400, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                             {isMasterCollector ? 'MASTER COLLECTOR' : 'SPRITE COLLECTION'}
                         </GlitchTitle>
@@ -1476,17 +1449,17 @@
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Collected</div>
                                         <Pie col={col} tot={tot} r={40} col_val={primary} format="fraction" />
-                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'fraction')}
+                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v && sprites.some(sp => sp.name === splitId(id).name)).length, 'fraction')}
                                     </div>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Mastered</div>
                                         <Pie col={mas} tot={tot} r={40} col_val={tertiary} format="fraction" />
-                                        {renderVariantChips(v => mastered.filter(id => splitId(id).variant === v).length, 'fraction')}
+                                        {renderVariantChips(v => mastered.filter(id => splitId(id).variant === v && sprites.some(sp => sp.name === splitId(id).name)).length, 'fraction')}
                                     </div>
                                     <div style={{ textAlign: 'center' }}>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', opacity: 0.8 }}>Progress</div>
                                         <Pie col={col} tot={tot} r={40} col_val={primary} format="percentage" />
-                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v).length, 'percentage')}
+                                        {renderVariantChips(v => collected.filter(id => splitId(id).variant === v && sprites.some(sp => sp.name === splitId(id).name)).length, 'percentage')}
                                     </div>
                                 </div>
 
