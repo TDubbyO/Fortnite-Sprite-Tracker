@@ -114,6 +114,11 @@
             { name: 'Wayfinder', color: '#D4A017' },
             { name: 'Kelper', color: '#F2805A' },
             { name: 'Sweet Dream', color: '#3B2A5E' },
+            { name: 'Squiplash', color: '#B05FD1' },
+            { name: "Lil' Uzi Vert Jr.", color: '#D9734E' },
+            { name: 'Mini Miku', color: '#2EC4B6' },
+            { name: 'Sir Oscar the Second', color: '#A67C52' },
+            { name: 'Zee', color: '#D94F9B' },
         ];
 
         const sprites = BASE_SPRITES;
@@ -183,6 +188,7 @@
             Base: 'base',
             Fortune: 'fortune',
             Gold: 'gold',
+            Cursed: 'cursed',
             'Cheat Master': 'cheat-master',
             'Loot Hacker': 'loot-hacker',
             'Bounty Hunter': 'reaper',
@@ -198,6 +204,8 @@
                 "Barry O'Fish": 'Barry', 'Exmarks': 'Exmarks', 'Re-Pete': 'Repete',
                 "Halfpeel'd": 'Halfpeeld', 'Chester': 'Chester', 'Transponder Snail': 'Snail',
                 'Wayfinder': 'Wayfinder', 'Kelper': 'Kelper', 'Sweet Dream': 'Sweet-Dream',
+                'Squiplash': 'Squiplash', "Lil' Uzi Vert Jr.": 'Uzi', 'Mini Miku': 'Miku',
+                'Sir Oscar the Second': 'Sir-Oscar-II', 'Zee': 'Zee',
                 // Archived sprites (Garden, currently disabled)
                 'Jackrabbit': 'Jackrabbit', 'Shadow': 'Shadow', 'Bush': 'Bush',
                 'Tails': 'Tails', 'Killswitch': 'Killswitch', 'Adventure': 'Adventure',
@@ -516,12 +524,17 @@
                 );
             };
 
-            const ALL_VARIANTS = ['Base', 'Fortune'];
+            const ALL_VARIANTS = ['Base', 'Gold', 'Fortune', 'Cursed'];
 
-            const getVariantColor = (variant) => variant === 'Fortune' ? '#C8102E' : '#D9CFB8';
+            const getVariantColor = (variant) => {
+                if (variant === 'Fortune') return '#C8102E';
+                if (variant === 'Gold') return '#D4A017';
+                if (variant === 'Cursed') return '#6A3FA0';
+                return '#D9CFB8';
+            };
 
             const getVariantsForSprite = (spriteName) => {
-                const baseOnly = ['Transponder Snail', 'Sweet Dream'];
+                const baseOnly = ['Transponder Snail', 'Sweet Dream', 'Zee'];
                 if (baseOnly.includes(spriteName)) return ['Base'];
                 return ALL_VARIANTS;
             };
